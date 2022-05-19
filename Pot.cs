@@ -212,12 +212,18 @@ namespace AudioLib
             {
                 int ydiff = _beginDragY - e.Y; // pixels
 
+                double oldval = Value;
                 //double val = Taper == Taper.Log ? Math.Log10(_value) : _value;
                 double min = Taper == Taper.Log ? Math.Log10(_minimum) : _minimum;
                 double max = Taper == Taper.Log ? Math.Log10(_maximum) : _maximum;
                 double delta = (max - min) * (ydiff / 100.0);
                 double newValue = MathUtils.Constrain(_beginDragValue + delta, min, max, _resolution);
                 Value = Taper == Taper.Log ? Math.Pow(newValue, 10) : newValue;
+
+                if (oldval != Value)
+                {
+                    ValueChanged?.Invoke(this, EventArgs.Empty);
+                }
             }
             base.OnMouseMove(e);
         }
@@ -238,6 +244,7 @@ namespace AudioLib
                 {
                     Value += _resolution;
                 }
+                ValueChanged?.Invoke(this, EventArgs.Empty);
             }
 
             base.OnKeyDown(e);

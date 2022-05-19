@@ -35,9 +35,9 @@ namespace AudioLib.Test
 
             pan1.ValueChanged += Pan1_ValueChanged;
 
-            slider1.ValueChanged += Slider1_ValueChanged;
+            volume1.ValueChanged += Volume1_ValueChanged;
 
-            slider2.ValueChanged += Slider2_ValueChanged;
+            volume2.ValueChanged += Volume2_ValueChanged;
 
             ///// Wave viewer.
             // Simple sin.
@@ -109,16 +109,16 @@ namespace AudioLib.Test
             meterLog.AddValue(pot1.Value);
         }
 
-        void Slider1_ValueChanged(object? sender, EventArgs e)
+        void Volume1_ValueChanged(object? sender, EventArgs e)
         {
             // 0 -> 1
-            meterLog.AddValue(slider1.Value * 100.0);
+            meterLog.AddValue(volume1.Value * 100.0);
         }
 
-        void Slider2_ValueChanged(object? sender, EventArgs e)
+        void Volume2_ValueChanged(object? sender, EventArgs e)
         {
             // 0 -> 10
-            meterDots.AddValue(slider2.Value);
+            meterDots.AddValue(volume2.Value);
         }
 
         void Pan1_ValueChanged(object? sender, EventArgs e)

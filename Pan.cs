@@ -49,7 +49,7 @@ namespace AudioLib
 
         #region Lifecycle
         /// <summary>
-        /// Creates a new PanSlider control.
+        /// Creates a new Pan control.
         /// </summary>
         public Pan()
         {

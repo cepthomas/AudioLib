@@ -34,11 +34,11 @@
             this.timeBar = new AudioLib.TimeBar();
             this.meterDots = new AudioLib.Meter();
             this.meterLog = new AudioLib.Meter();
-            this.slider2 = new AudioLib.Slider();
+            this.volume2 = new AudioLib.Volume();
             this.pan1 = new AudioLib.Pan();
             this.meterLinear = new AudioLib.Meter();
             this.pot1 = new AudioLib.Pot();
-            this.slider1 = new AudioLib.Slider();
+            this.volume1 = new AudioLib.Volume();
             this.waveViewer1 = new AudioLib.WaveViewer();
             this.waveViewer2 = new AudioLib.WaveViewer();
             this.SuspendLayout();
@@ -106,21 +106,18 @@
             this.meterLog.Size = new System.Drawing.Size(180, 60);
             this.meterLog.TabIndex = 22;
             // 
-            // slider2
+            // volume2
             // 
-            this.slider2.BackColor = System.Drawing.Color.Gainsboro;
-            this.slider2.DrawColor = System.Drawing.Color.SlateBlue;
-            this.slider2.Label = "Vertical";
-            this.slider2.Location = new System.Drawing.Point(685, 16);
-            this.slider2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.slider2.Maximum = 10D;
-            this.slider2.Minimum = 0D;
-            this.slider2.Name = "slider2";
-            this.slider2.Orientation = System.Windows.Forms.Orientation.Vertical;
-            this.slider2.Resolution = 0.1D;
-            this.slider2.Size = new System.Drawing.Size(42, 133);
-            this.slider2.TabIndex = 21;
-            this.slider2.Value = 5.4D;
+            this.volume2.BackColor = System.Drawing.Color.Gainsboro;
+            this.volume2.DrawColor = System.Drawing.Color.SlateBlue;
+            this.volume2.Label = "Vertical";
+            this.volume2.Location = new System.Drawing.Point(685, 16);
+            this.volume2.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.volume2.Name = "volume2";
+            this.volume2.Orientation = System.Windows.Forms.Orientation.Vertical;
+            this.volume2.Size = new System.Drawing.Size(42, 133);
+            this.volume2.TabIndex = 21;
+            this.volume2.Value = 0.6D;
             // 
             // pan1
             // 
@@ -165,22 +162,19 @@
             this.pot1.Taper = AudioLib.Taper.Linear;
             this.pot1.Value = 35D;
             // 
-            // slider1
+            // volume1
             // 
-            this.slider1.BackColor = System.Drawing.Color.Gainsboro;
-            this.slider1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.slider1.DrawColor = System.Drawing.Color.Orange;
-            this.slider1.Label = "Horizontal";
-            this.slider1.Location = new System.Drawing.Point(512, 16);
-            this.slider1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.slider1.Maximum = 1D;
-            this.slider1.Minimum = 0D;
-            this.slider1.Name = "slider1";
-            this.slider1.Orientation = System.Windows.Forms.Orientation.Horizontal;
-            this.slider1.Resolution = 0.05D;
-            this.slider1.Size = new System.Drawing.Size(153, 60);
-            this.slider1.TabIndex = 18;
-            this.slider1.Value = 0.30000000000000004D;
+            this.volume1.BackColor = System.Drawing.Color.Gainsboro;
+            this.volume1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.volume1.DrawColor = System.Drawing.Color.Orange;
+            this.volume1.Label = "Horizontal";
+            this.volume1.Location = new System.Drawing.Point(512, 16);
+            this.volume1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.volume1.Name = "volume1";
+            this.volume1.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.volume1.Size = new System.Drawing.Size(153, 60);
+            this.volume1.TabIndex = 18;
+            this.volume1.Value = 0.3D;
             // 
             // waveViewer1
             // 
@@ -221,11 +215,11 @@
             this.Controls.Add(this.timeBar);
             this.Controls.Add(this.meterDots);
             this.Controls.Add(this.meterLog);
-            this.Controls.Add(this.slider2);
+            this.Controls.Add(this.volume2);
             this.Controls.Add(this.pan1);
             this.Controls.Add(this.meterLinear);
             this.Controls.Add(this.pot1);
-            this.Controls.Add(this.slider1);
+            this.Controls.Add(this.volume1);
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "TestHost";
             this.Text = "TestHost";
@@ -242,11 +236,11 @@
         private TimeBar timeBar;
         private Meter meterDots;
         private Meter meterLog;
-        private Slider slider2;
+        private Volume volume2;
         private Pan pan1;
         private Meter meterLinear;
         private Pot pot1;
-        private Slider slider1;
+        private Volume volume1;
         private WaveViewer waveViewer1;
         private WaveViewer waveViewer2;
     }

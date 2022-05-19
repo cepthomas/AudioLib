@@ -1,4 +1,4 @@
-# AudioLib
+# AudioLib TODOX
 WinForms controls collected over the years.
 
 Requires VS2019 and .NET5.
@@ -14,7 +14,7 @@ Probably I should make this into a nuget package at some point.
 - Meter: Linear or log.
 - Pot: Just like on your guitar.
 - Pan: Just like on your hifi.
-- Slider: Just like on your mixer.
+- Volume: Just like on your mixer.
 - TimeBar: Elapsed time control.
 - WaveViewer:
 
