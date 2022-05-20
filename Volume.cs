@@ -8,26 +8,15 @@ using NBagOfTricks;
 namespace AudioLib
 {
     /// <summary>
-    /// Volume control. TODOX also log/db.
+    /// Volume control.
     /// </summary>
     public class Volume : UserControl
     {
-        #region Constants
-        public const double MIN_VOLUME = 0.0;
-        public const double MAX_VOLUME = 2.0;
-        public const double DEFAULT_VOLUME = 0.8;
-        public const double RESOLUTION = 0.1;
-        #endregion
+        // TODO log/db.
 
         #region Fields
         /// <summary>Current value.</summary>
-        double _value = DEFAULT_VOLUME;
-
-        /// <summary>Min value.</summary>
-        double _minimum = MIN_VOLUME;
-
-        /// <summary>Max value.</summary>
-        double _maximum = MAX_VOLUME;
+        double _value = VolumeDefs.DEFAULT;
 
         /// <summary>The brush.</summary>
         readonly SolidBrush _brush = new(Color.White);
@@ -50,7 +39,7 @@ namespace AudioLib
         public double Value
         {
             get { return _value; }
-            set { _value = MathUtils.Constrain(value, _minimum, _maximum, RESOLUTION); Invalidate(); }
+            set { _value = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX, VolumeDefs.RESOLUTION); Invalidate(); }
         }
         #endregion
 
@@ -94,17 +83,17 @@ namespace AudioLib
             // Draw the bar.
             if (Orientation == Orientation.Horizontal)
             {
-                double x = (_value - MIN_VOLUME) / (MAX_VOLUME - MIN_VOLUME);
+                double x = (_value - VolumeDefs.MIN) / (VolumeDefs.MAX - VolumeDefs.MIN);
                 pe.Graphics.FillRectangle(_brush, ClientRectangle.Left, ClientRectangle.Top, ClientRectangle.Width * (float)x, ClientRectangle.Height);
             }
             else
             {
-                double y = 1.0 - (_value - MIN_VOLUME) / (MAX_VOLUME - MIN_VOLUME);
+                double y = 1.0 - (_value - VolumeDefs.MIN) / (VolumeDefs.MAX - VolumeDefs.MIN);
                 pe.Graphics.FillRectangle(_brush, ClientRectangle.Left, ClientRectangle.Height * (float)y, ClientRectangle.Width, ClientRectangle.Bottom);
             }
 
             // Text.
-            string sval = _value.ToString("#0." + new string('0', MathUtils.DecPlaces(RESOLUTION)));
+            string sval = _value.ToString("#0." + new string('0', MathUtils.DecPlaces(VolumeDefs.RESOLUTION)));
             if (Label != "")
             {
                 Rectangle r = new Rectangle(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height / 2);
@@ -162,8 +151,8 @@ namespace AudioLib
             double oldval = Value;
             // Calculate the new value.
             double newval = Orientation == Orientation.Horizontal ?
-                MIN_VOLUME + e.X * (MAX_VOLUME - MIN_VOLUME) / Width :
-                MIN_VOLUME + (Height - e.Y) * (MAX_VOLUME - MIN_VOLUME) / Height;
+                VolumeDefs.MIN + e.X * (VolumeDefs.MAX - VolumeDefs.MIN) / Width :
+                VolumeDefs.MIN + (Height - e.Y) * (VolumeDefs.MAX - VolumeDefs.MIN) / Height;
 
             // This factors in the resolution.
             Value = newval;
@@ -183,12 +172,12 @@ namespace AudioLib
             {
                 if (e.KeyCode == Keys.Down)
                 {
-                    Value -= RESOLUTION;
+                    Value -= VolumeDefs.RESOLUTION;
                     ValueChanged?.Invoke(this, EventArgs.Empty);
                 }
                 else if (e.KeyCode == Keys.Up)
                 {
-                    Value += RESOLUTION;
+                    Value += VolumeDefs.RESOLUTION;
                     ValueChanged?.Invoke(this, EventArgs.Empty);
                 }
             }

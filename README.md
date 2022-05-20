@@ -14,7 +14,7 @@ Probably I should make this into a nuget package at some point.
 - Meter: Linear or log.
 - Pot: Just like on your guitar.
 - Pan: Just like on your hifi.
-- Volume: Just like on your mixer.
+- Volume: Just like on your mixer. fixed 0.0 to 2.0 with 0.1 resolution.
 - TimeBar: Elapsed time control.
 - WaveViewer:
 
