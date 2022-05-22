@@ -14,10 +14,15 @@ using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 
 
+//TODO Snipping, editing, etc.
+
 
 namespace AudioLib
 {
-    public partial class AudioPlayer : IDisposable
+    /// <summary>
+    /// A simple audio file player.
+    /// </summary>
+    public class AudioPlayer : IDisposable
     {
         #region Fields
         /// <summary>Wave output play device.</summary>
@@ -34,9 +39,8 @@ namespace AudioLib
         #endregion
 
         #region Events
-
-        public event EventHandler? PlaybackCompleted;//TODOX
-
+        /// <summary>Wave playing done.</summary>
+        public event EventHandler<StoppedEventArgs>? PlaybackStopped;
         #endregion
 
         #region Properties
@@ -64,19 +68,24 @@ namespace AudioLib
         public AudioPlayer(string wavOutDevice, int latency)
         {
             // Create output device.
-            for (int id = -1; id < WaveOut.DeviceCount; id++)
+            for (int i = 0; i < WaveOut.DeviceCount; i++)
             {
-                var cap = WaveOut.GetCapabilities(id);
+                var cap = WaveOut.GetCapabilities(i);
                 if (wavOutDevice == cap.ProductName)
                 {
                     _waveOut = new WaveOut
                     {
-                        DeviceNumber = id,
+                        DeviceNumber = i,
                         DesiredLatency = latency
                     };
                     _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
                     break;
                 }
+            }
+
+            if (_waveOut is null)
+            {
+                throw new ArgumentException($"Invalid midi device: {wavOutDevice}");
             }
         }
 
@@ -98,6 +107,7 @@ namespace AudioLib
         }
         #endregion
 
+        #region Public functions
         /// <summary>
         /// Bind the source to output.
         /// </summary>
@@ -120,7 +130,11 @@ namespace AudioLib
             if (go)
             {
                 _waveOut!.Play();
-                _state = AudioState.Playing;
+
+                if (_waveOut.PlaybackState == PlaybackState.Playing)
+                {
+                    _state = AudioState.Playing;
+                }
             }
             else
             {
@@ -139,7 +153,7 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Export wave data to text file.
+        /// Export wave data to text file. TODO This doesn't really belong here, ok for now.
         /// </summary>
         /// <param name="exportFileName"></param>
         /// <param name="rdr">Data source.</param>
@@ -197,21 +211,19 @@ namespace AudioLib
                 throw new InvalidOperationException("Audio file not open");
             }
         }
+        #endregion
 
+        #region Private functions
         /// <summary>
-        /// Usually end of file but could be error.
+        /// Usually end of file but could be error. Client can handle.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void WaveOut_PlaybackStopped(object? sender, StoppedEventArgs e)
         {
-            if (e.Exception is not null)
-            {
-                // TODOX? LogMessage("ERR", e.Exception.Message);
-            }
-
-            PlaybackCompleted?.Invoke(this, new EventArgs());
+            PlaybackStopped?.Invoke(this, e);
             _state = AudioState.Complete;
         }
+        #endregion
     }
 }

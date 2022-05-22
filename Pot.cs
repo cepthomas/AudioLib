@@ -107,16 +107,6 @@ namespace AudioLib
             AutoScaleMode = AutoScaleMode.Font;
             Name = "Pot";
             Size = new Size(115, 86);
-            Load += Pot_Load;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Pot_Load(object? sender, EventArgs e)
-        {
         }
 
         /// <summary> 

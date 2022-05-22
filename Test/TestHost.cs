@@ -24,10 +24,7 @@ namespace AudioLib.Test
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
-        }
 
-        void TestHost_Load(object? sender, EventArgs e)
-        {
             Location = new(20, 20);
 
             ///// Misc controls.
@@ -53,7 +50,7 @@ namespace AudioLib.Test
             waveViewer1.Marker2 = 130;
 
             // Real data.
-            string[] sdata = File.ReadAllLines(@"C:\Dev\repos\AudioLib\Test\Files\wav.txt");
+            string[] sdata = File.ReadAllLines(@"C:\Dev\repos\AudioLib\Test\wav.txt");
             float[] data2 = new float[sdata.Length];
             for (int i = 0; i < sdata.Length; i++)
             {

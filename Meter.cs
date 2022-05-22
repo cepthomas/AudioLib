@@ -60,14 +60,6 @@ namespace AudioLib
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
             Name = "Meter";
-            Load += Meter_Load;
-        }
-
-        /// <summary>
-        /// Init stuff.
-        /// </summary>
-        private void Meter_Load(object? sender, EventArgs e)
-        {
         }
 
         /// <summary>

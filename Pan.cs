@@ -54,16 +54,6 @@ namespace AudioLib
         public Pan()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
-            Load += Pan_Load;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Pan_Load(object? sender, EventArgs e)
-        {
         }
 
         /// <summary>

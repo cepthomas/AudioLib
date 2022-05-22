@@ -41,10 +41,10 @@ namespace AudioLib
 
         /// <summary>Ratio of data point to visual point.</summary>
         int _smplPerPixel;
+        #endregion
 
         int _marker1 = -1;
         int _marker2 = -1;
-        #endregion
 
         #region Properties
         /// <summary>For styling.</summary>
@@ -56,7 +56,7 @@ namespace AudioLib
         /// <summary>How to draw.</summary>
         public DrawMode Mode { get; set; } = DrawMode.Envelope;
 
-        /// <summary>Marker 1 data index or -1 to disable.</summary>
+        /// <summary>Marker 1 data index or -1 to disable.</summary>//TODOX do something with these + show progress. Make into array.
         public int Marker1
         {
             get
@@ -106,16 +106,6 @@ namespace AudioLib
         public WaveViewer()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
-            Load += WaveViewer_Load;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void WaveViewer_Load(object? sender, EventArgs e)
-        {
         }
 
         /// <summary>
