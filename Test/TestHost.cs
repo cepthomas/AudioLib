@@ -75,7 +75,7 @@ namespace AudioLib.Test
             timer1.Enabled = true;
         }
 
-        void TestHost_FormClosing(object? sender, FormClosingEventArgs e)
+        protected override void OnFormClosing(FormClosingEventArgs e)
         {
             // Inspect.
             //var at = ftree.AllTags;

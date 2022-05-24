@@ -223,7 +223,6 @@
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "TestHost";
             this.Text = "TestHost";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.TestHost_FormClosing);
             this.ResumeLayout(false);
             this.PerformLayout();
 

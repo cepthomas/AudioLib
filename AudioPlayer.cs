@@ -26,7 +26,7 @@ namespace AudioLib
     {
         #region Fields
         /// <summary>Wave output play device.</summary>
-        WaveOut? _waveOut = null;
+        readonly WaveOut _waveOut;
 
         /// <summary>Current state.</summary>
         AudioState _state = AudioState.Stopped;
@@ -67,8 +67,8 @@ namespace AudioLib
         /// <param name="latency">How slow.</param>
         public AudioPlayer(string wavOutDevice, int latency)
         {
-            // Create output device.
-            for (int i = 0; i < WaveOut.DeviceCount; i++)
+            // Create output device. –1 indicates the default output device, while 0 is the first output device
+            for (int i = -1; i < WaveOut.DeviceCount; i++)
             {
                 var cap = WaveOut.GetCapabilities(i);
                 if (wavOutDevice == cap.ProductName)
@@ -94,6 +94,11 @@ namespace AudioLib
         /// </summary>
         public AudioPlayer()
         {
+            _waveOut = new WaveOut
+            {
+                DeviceNumber = -1,
+                DesiredLatency = 500
+            };
         }
 
         /// <summary> 
@@ -101,9 +106,8 @@ namespace AudioLib
         /// </summary>
         public void Dispose()
         {
-            _waveOut?.Stop();
-            _waveOut?.Dispose();
-            _waveOut = null;
+            _waveOut.Stop();
+            _waveOut.Dispose();
         }
         #endregion
 
@@ -116,8 +120,9 @@ namespace AudioLib
         public bool Init(ISampleProvider smpl)
         {
             bool ok = true;
-            _waveOut!.Init(smpl);
-            _waveOut!.Volume = (float)Volume;
+            _waveOut.Init(smpl);
+            _waveOut.Volume = (float)Volume;
+            _state = AudioState.Stopped;
             return ok;
         }
 
@@ -129,7 +134,7 @@ namespace AudioLib
         {
             if (go)
             {
-                _waveOut!.Play();
+                _waveOut.Play();
 
                 if (_waveOut.PlaybackState == PlaybackState.Playing)
                 {
@@ -138,7 +143,7 @@ namespace AudioLib
             }
             else
             {
-                _waveOut!.Pause(); // or Stop?
+                _waveOut.Pause(); // or Stop?
                 //ResetMeters();
                 _state = AudioState.Stopped;
             }
@@ -153,7 +158,7 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Export wave data to text file. TODO This doesn't really belong here, ok for now.
+        /// Export wave data to text file. TODO This doesn't really belong here, but ok for now.
         /// </summary>
         /// <param name="exportFileName"></param>
         /// <param name="rdr">Data source.</param>
@@ -221,6 +226,10 @@ namespace AudioLib
         /// <param name="e"></param>
         void WaveOut_PlaybackStopped(object? sender, StoppedEventArgs e)
         {
+            var ss = (WaveOut)sender;
+            Debug.WriteLine($"WaveOut S:{ss.PlaybackState} P:{ss.GetPosition()}");
+
+
             PlaybackStopped?.Invoke(this, e);
             _state = AudioState.Complete;
         }
