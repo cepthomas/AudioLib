@@ -226,9 +226,7 @@ namespace AudioLib
         /// <param name="e"></param>
         void WaveOut_PlaybackStopped(object? sender, StoppedEventArgs e)
         {
-            var ss = (WaveOut)sender;
-            Debug.WriteLine($"WaveOut S:{ss.PlaybackState} P:{ss.GetPosition()}");
-
+            Debug.WriteLine($"WaveOut S:{_waveOut.PlaybackState} P:{_waveOut.GetPosition()}");
 
             PlaybackStopped?.Invoke(this, e);
             _state = AudioState.Complete;
