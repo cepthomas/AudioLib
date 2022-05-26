@@ -26,7 +26,7 @@ namespace AudioLib
     {
         #region Fields
         /// <summary>Wave output play device.</summary>
-        readonly WaveOut _waveOut;
+        readonly WaveOut? _waveOut = null;
 
         /// <summary>Current state.</summary>
         AudioState _state = AudioState.Stopped;
@@ -44,14 +44,17 @@ namespace AudioLib
         #endregion
 
         #region Properties
-        /// <inheritdoc />
+        /// <summary>Are we ok?</summary>
+        public bool Valid { get { return _waveOut is not null; } }
+
+        /// <summary>Volume.</summary>
         public double Volume
         {
             get { return _volume; }
             set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX); if (_waveOut != null) _waveOut.Volume = (float)_volume; }
         }
 
-        /// <inheritdoc />
+        /// <summary>State.</summary>
         public AudioState State
         {
             get { return _state; }
@@ -67,7 +70,7 @@ namespace AudioLib
         /// <param name="latency">How slow.</param>
         public AudioPlayer(string wavOutDevice, int latency)
         {
-            // Create output device. –1 indicates the default output device, while 0 is the first output device
+            // Create output device. –1 indicates the default output device, while 0 is the first output device.
             for (int i = -1; i < WaveOut.DeviceCount; i++)
             {
                 var cap = WaveOut.GetCapabilities(i);
@@ -82,23 +85,6 @@ namespace AudioLib
                     break;
                 }
             }
-
-            if (_waveOut is null)
-            {
-                throw new ArgumentException($"Invalid midi device: {wavOutDevice}");
-            }
-        }
-
-        /// <summary>
-        /// Empty constructor to satisfy nullability.
-        /// </summary>
-        public AudioPlayer()
-        {
-            _waveOut = new WaveOut
-            {
-                DeviceNumber = -1,
-                DesiredLatency = 500
-            };
         }
 
         /// <summary> 
@@ -106,8 +92,8 @@ namespace AudioLib
         /// </summary>
         public void Dispose()
         {
-            _waveOut.Stop();
-            _waveOut.Dispose();
+            _waveOut?.Stop();
+            _waveOut?.Dispose();
         }
         #endregion
 
@@ -119,9 +105,12 @@ namespace AudioLib
         /// <returns></returns>
         public bool Init(ISampleProvider smpl)
         {
-            bool ok = true;
-            _waveOut.Init(smpl);
-            _waveOut.Volume = (float)Volume;
+            bool ok = false;
+            if (_waveOut is not null)
+            {
+                _waveOut.Init(smpl);
+                _waveOut.Volume = (float)Volume;
+            }
             _state = AudioState.Stopped;
             return ok;
         }
@@ -132,19 +121,26 @@ namespace AudioLib
         /// <param name="go">Or no.</param>
         public void Run(bool go)
         {
-            if (go)
+            if (_waveOut is not null)
             {
-                _waveOut.Play();
-
-                if (_waveOut.PlaybackState == PlaybackState.Playing)
+                if (go)
                 {
-                    _state = AudioState.Playing;
+                    _waveOut.Play();
+
+                    if (_waveOut.PlaybackState == PlaybackState.Playing)
+                    {
+                        _state = AudioState.Playing;
+                    }
+                }
+                else
+                {
+                    _waveOut.Pause(); // or Stop?
+                    //ResetMeters();
+                    _state = AudioState.Stopped;
                 }
             }
             else
             {
-                _waveOut.Pause(); // or Stop?
-                //ResetMeters();
                 _state = AudioState.Stopped;
             }
         }
@@ -226,7 +222,7 @@ namespace AudioLib
         /// <param name="e"></param>
         void WaveOut_PlaybackStopped(object? sender, StoppedEventArgs e)
         {
-            Debug.WriteLine($"WaveOut S:{_waveOut.PlaybackState} P:{_waveOut.GetPosition()}");
+            //Debug.WriteLine($"WaveOut S:{_waveOut.PlaybackState} P:{_waveOut.GetPosition()}");
 
             PlaybackStopped?.Invoke(this, e);
             _state = AudioState.Complete;

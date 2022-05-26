@@ -56,7 +56,7 @@ namespace AudioLib
         /// <summary>How to draw.</summary>
         public DrawMode Mode { get; set; } = DrawMode.Envelope;
 
-        /// <summary>Marker 1 data index or -1 to disable.</summary>//TODOX do something with these + show progress. Make into array.
+        /// <summary>Marker 1 data index or -1 to disable.</summary>
         public int Marker1
         {
             get
