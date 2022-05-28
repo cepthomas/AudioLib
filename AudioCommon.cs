@@ -8,8 +8,8 @@ using NBagOfTricks;
 namespace AudioLib
 {
     #region Types
-    /// <summary>Player state.</summary>
-    public enum AudioState { Stopped = 0, Playing = 1, Complete = 2 }
+    ///// <summary>Player state.</summary>
+    // public enum AudioState { Stopped = 0, Playing = 1, Complete = 2 }
 
     public class VolumeDefs
     {

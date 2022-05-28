@@ -28,9 +28,6 @@ namespace AudioLib
         /// <summary>Wave output play device.</summary>
         readonly WaveOut? _waveOut = null;
 
-        /// <summary>Current state.</summary>
-        AudioState _state = AudioState.Stopped;
-            
         /// <summary>Stream read chunk.</summary>
         const int READ_BUFF_SIZE = 1000000;
 
@@ -55,11 +52,14 @@ namespace AudioLib
         }
 
         /// <summary>State.</summary>
-        public AudioState State
-        {
-            get { return _state; }
-            set { _state = value; Run(_state == AudioState.Playing); }
-        }
+        public bool Playing { get; private set; }
+
+        ///// <summary>Current time.</summary>
+        //public int CurrentTime TODOX
+        //{
+        //    get { return (int)_waveOut.GetPosition(); }
+        //    set { _currentSubdiv = MathUtils.Constrain(value, 0, _..TotalSubdivs); }
+        //}
         #endregion
 
         #region Lifecycle
@@ -111,7 +111,8 @@ namespace AudioLib
                 _waveOut.Init(smpl);
                 _waveOut.Volume = (float)Volume;
             }
-            _state = AudioState.Stopped;
+            //_state = AudioState.Stopped;
+            Playing = false;
             return ok;
         }
 
@@ -129,19 +130,20 @@ namespace AudioLib
 
                     if (_waveOut.PlaybackState == PlaybackState.Playing)
                     {
-                        _state = AudioState.Playing;
+                        Playing = true;
                     }
                 }
                 else
                 {
                     _waveOut.Pause(); // or Stop?
                     //ResetMeters();
-                    _state = AudioState.Stopped;
+                    Playing = false;
                 }
             }
             else
             {
-                _state = AudioState.Stopped;
+                Playing = false;
+                //_state = AudioState.Stopped;
             }
         }
 
@@ -225,7 +227,8 @@ namespace AudioLib
             //Debug.WriteLine($"WaveOut S:{_waveOut.PlaybackState} P:{_waveOut.GetPosition()}");
 
             PlaybackStopped?.Invoke(this, e);
-            _state = AudioState.Complete;
+            //_state = AudioState.Complete;
+            Playing = false;
         }
         #endregion
     }
