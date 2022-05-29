@@ -48,18 +48,11 @@ namespace AudioLib
         public double Volume
         {
             get { return _volume; }
-            set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX); if (_waveOut != null) _waveOut.Volume = (float)_volume; }
+            set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX); if (_waveOut is not null) _waveOut.Volume = (float)_volume; }
         }
 
         /// <summary>State.</summary>
         public bool Playing { get; private set; }
-
-        ///// <summary>Current time.</summary>
-        //public int CurrentTime TODOX
-        //{
-        //    get { return (int)_waveOut.GetPosition(); }
-        //    set { _currentSubdiv = MathUtils.Constrain(value, 0, _..TotalSubdivs); }
-        //}
         #endregion
 
         #region Lifecycle
@@ -108,10 +101,10 @@ namespace AudioLib
             bool ok = false;
             if (_waveOut is not null)
             {
-                _waveOut.Init(smpl);
+                _waveOut.Init(smpl); //TODOX calling this more than once seems to unhook the event callback.
                 _waveOut.Volume = (float)Volume;
+                ok = true;
             }
-            //_state = AudioState.Stopped;
             Playing = false;
             return ok;
         }
@@ -136,14 +129,12 @@ namespace AudioLib
                 else
                 {
                     _waveOut.Pause(); // or Stop?
-                    //ResetMeters();
                     Playing = false;
                 }
             }
             else
             {
                 Playing = false;
-                //_state = AudioState.Stopped;
             }
         }
 
@@ -152,7 +143,7 @@ namespace AudioLib
         /// </summary>
         public void Rewind()
         {
-            // Nothing to do.
+            // Nothing to do - client owns the reader.
         }
 
         /// <summary>
@@ -224,11 +215,9 @@ namespace AudioLib
         /// <param name="e"></param>
         void WaveOut_PlaybackStopped(object? sender, StoppedEventArgs e)
         {
-            //Debug.WriteLine($"WaveOut S:{_waveOut.PlaybackState} P:{_waveOut.GetPosition()}");
-
-            PlaybackStopped?.Invoke(this, e);
-            //_state = AudioState.Complete;
+            //Debug.WriteLine($"WaveOut_PlaybackStopped()");
             Playing = false;
+            PlaybackStopped?.Invoke(this, e);
         }
         #endregion
     }
