@@ -101,7 +101,7 @@ namespace AudioLib
             bool ok = false;
             if (_waveOut is not null)
             {
-                _waveOut.Init(smpl); //TODOX calling this more than once seems to unhook the event callback.
+                _waveOut.Init(smpl); // TODO sometimes calling this more than once seems to unhook the event callback.
                 _waveOut.Volume = (float)Volume;
                 ok = true;
             }
