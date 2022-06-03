@@ -18,5 +18,3 @@ This application uses these FOSS components:
 - [NAudio](https://github.com/naudio/NAudio) (Microsoft Public License).
 - [NBagOfTricks](https://github.com/cepthomas/NBagOfTricks/blob/main/README.md)
 
-
-https://github.com/cepthomas/NBagOfUis/blob/master/LICENSE

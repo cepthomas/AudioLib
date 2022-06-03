@@ -6,10 +6,10 @@
     <UseWindowsForms>true</UseWindowsForms>
     <Version>$([System.DateTime]::UtcNow.ToString(yy.MM.dd))</Version> 
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Description>NBagOfUis tester</Description>
+    <Description>AudioLib tester</Description>
     <Copyright>MIT License</Copyright>
-    <RootNamespace>NBagOfUis.Test</RootNamespace>
-    <AssemblyName>NBagOfUis.Test</AssemblyName>
+    <RootNamespace>AudioLib.Test</RootNamespace>
+    <AssemblyName>AudioLib.Test</AssemblyName>
     <OutputPath>bin\</OutputPath>
     <!-- <DefineConstants>DEBUG;TRACE</DefineConstants> -->
     <WarningLevel>4</WarningLevel>
@@ -35,31 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Files\color-picker-small.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Files\color-picker.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Files\crabe.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Files\glyphicons-22-snowflake.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Files\mono-gradient-small.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Files\mono-gradient.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Files\morito.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Files\test-settings.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Files\wav.txt">
+    <None Update="wav.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>
