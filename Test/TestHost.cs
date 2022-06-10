@@ -49,7 +49,7 @@ namespace AudioLib.Test
             waveViewer1.Marker2 = 130;
 
             // Real data.
-            string[] sdata = File.ReadAllLines(@"C:\Dev\repos\AudioLib\Test\wav.txt");
+            string[] sdata = File.ReadAllLines(@"..\..\wav.txt");
             float[] data2 = new float[sdata.Length];
             for (int i = 0; i < sdata.Length; i++)
             {
@@ -80,6 +80,7 @@ namespace AudioLib.Test
             //var at = ftree.AllTags;
             //var tp = ftree.TaggedPaths;
             //var po = _testClass;
+            base.OnFormClosing(e);
         }
 
         void Timer1_Tick(object? sender, EventArgs e)

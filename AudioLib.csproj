@@ -1,63 +1,64 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFrameworks>net5.0-windows</TargetFrameworks>
-    <OutputType>Library</OutputType>
-    <UseWindowsForms>true</UseWindowsForms>
-    <Version>$([System.DateTime]::UtcNow.ToString(yy.MM.dd))</Version> 
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <Description>AudioLib functions and UI components</Description>
-    <Copyright>MIT License</Copyright>
-    <RootNamespace>AudioLib</RootNamespace>
-    <AssemblyName>AudioLib</AssemblyName>
-    <OutputPath>bin\</OutputPath>
-    <!-- <DefineConstants>DEBUG;TRACE</DefineConstants> -->
-    <WarningLevel>4</WarningLevel>
-    <NoWarn>CS1591,CA1837,IDE0063,IDE0090,CA1822,CA1816</NoWarn>
-    <Nullable>enable</Nullable>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <SatelliteResourceLanguages>none</SatelliteResourceLanguages> <!-- en none -->
-  </PropertyGroup>
+    <PropertyGroup>
+        <TargetFrameworks>net5.0-windows</TargetFrameworks>
+        <OutputType>Library</OutputType>
+        <UseWindowsForms>true</UseWindowsForms>
+        <Version>$([System.DateTime]::UtcNow.ToString(yy.MM.dd))</Version>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <Description>AudioLib functions and UI components</Description>
+        <Copyright>MIT License</Copyright>
+        <RootNamespace>AudioLib</RootNamespace>
+        <AssemblyName>AudioLib</AssemblyName>
+        <OutputPath>bin\</OutputPath>
+        <!-- <DefineConstants>DEBUG;TRACE</DefineConstants> -->
+        <WarningLevel>4</WarningLevel>
+        <NoWarn>CS1591;CA1816;CA1822</NoWarn>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <SatelliteResourceLanguages>none</SatelliteResourceLanguages>
+        <!-- en none -->
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Remove="lib\**" />
-    <Compile Remove="Test\**" />
-    <EmbeddedResource Remove="lib\**" />
-    <EmbeddedResource Remove="Test\**" />
-    <None Remove="lib\**" />
-    <None Remove="Test\**" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Remove="lib\**" />
+        <Compile Remove="Test\**" />
+        <EmbeddedResource Remove="lib\**" />
+        <EmbeddedResource Remove="Test\**" />
+        <None Remove="lib\**" />
+        <None Remove="Test\**" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="NAudio" Version="2.1.0" />
-    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="NAudio" Version="2.1.0" />
+        <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="NBagOfTricks">
-      <HintPath>lib\NBagOfTricks.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+    <ItemGroup>
+        <Reference Include="NBagOfTricks">
+            <HintPath>lib\NBagOfTricks.dll</HintPath>
+        </Reference>
+    </ItemGroup>
 
-  <ItemGroup>
-    <Compile Update="Meter.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="Pan.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="Pot.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="Slider.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="TimeBar.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-    <Compile Update="WaveViewer.cs">
-      <SubType>UserControl</SubType>
-    </Compile>
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Update="Meter.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="Pan.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="Pot.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="Slider.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="TimeBar.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+        <Compile Update="WaveViewer.cs">
+            <SubType>UserControl</SubType>
+        </Compile>
+    </ItemGroup>
 
 </Project>
