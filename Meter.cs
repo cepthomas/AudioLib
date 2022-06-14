@@ -169,7 +169,7 @@ namespace AudioLib
 
             if (Label.Length > 0)
             {
-                Rectangle r = new Rectangle(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height / 2);
+                Rectangle r = new(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height / 2);
                 pe.Graphics.DrawString(Label, Font, Brushes.Black, r, _format);
             }
         }

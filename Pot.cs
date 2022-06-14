@@ -150,7 +150,7 @@ namespace AudioLib
             e.Graphics.Clear(BackColor);
             e.Graphics.TranslateTransform(Width / 2, Height / 2);
             e.Graphics.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
-            e.Graphics.DrawArc(_pen, new Rectangle(diameter / -2, diameter / -2, diameter, diameter), 135, 270);
+            e.Graphics.DrawArc(_pen, new(diameter / -2, diameter / -2, diameter, diameter), 135, 270);
 
             double val = Taper == Taper.Log ? Math.Log10(_value) : _value;
             double min = Taper == Taper.Log ? Math.Log10(_minimum) : _minimum;
@@ -162,11 +162,11 @@ namespace AudioLib
             double y = (diameter / 2.0) * Math.Sin(Math.PI * degrees / 180);
             e.Graphics.DrawLine(_pen, 0, 0, (float)x, (float)y);
 
-            Rectangle srect = new Rectangle(0, 7, 0, 0);
+            Rectangle srect = new(0, 7, 0, 0);
             string sval = _value.ToString("#0." + new string('0', MathUtils.DecPlaces(_resolution)));
             e.Graphics.DrawString(sval, Font, Brushes.Black, srect, _format);
 
-            srect = new Rectangle(0, 20, 0, 0);
+            srect = new(0, 20, 0, 0);
             e.Graphics.DrawString(Label, Font, Brushes.Black, srect, _format);
 
             e.Graphics.Restore(state);

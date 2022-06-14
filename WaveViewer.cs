@@ -268,7 +268,7 @@ namespace AudioLib
         {
             if (data is not null)
             {
-                List<string> ss = new List<string>();
+                List<string> ss = new();
                 for (int i = 0; i < data.Length; i++)
                 {
                     ss.Add($"{i + 1}, {data[i]}");

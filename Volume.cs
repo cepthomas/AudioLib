@@ -96,10 +96,10 @@ namespace AudioLib
             string sval = _value.ToString("#0." + new string('0', MathUtils.DecPlaces(VolumeDefs.RESOLUTION)));
             if (Label != "")
             {
-                Rectangle r = new Rectangle(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height / 2);
+                Rectangle r = new(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height / 2);
                 pe.Graphics.DrawString(Label, Font, Brushes.Black, r, _format);
 
-                r = new Rectangle(ClientRectangle.X, ClientRectangle.Height / 2, ClientRectangle.Width, ClientRectangle.Height / 2);
+                r = new(ClientRectangle.X, ClientRectangle.Height / 2, ClientRectangle.Width, ClientRectangle.Height / 2);
                 pe.Graphics.DrawString(sval, Font, Brushes.Black, r, _format);
             }
             else

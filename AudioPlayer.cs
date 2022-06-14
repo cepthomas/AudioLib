@@ -22,7 +22,7 @@ namespace AudioLib
     /// <summary>
     /// A simple audio file player.
     /// </summary>
-    public class AudioPlayer : IDisposable
+    public sealed class AudioPlayer : IDisposable
     {
         #region Fields
         /// <summary>Wave output play device.</summary>
