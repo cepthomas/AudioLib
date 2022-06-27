@@ -13,6 +13,7 @@ using System.Drawing.Design;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.Json.Serialization;
 using NBagOfTricks;
+using AudioLib;
 
 
 namespace AudioLib.Test
@@ -23,6 +24,8 @@ namespace AudioLib.Test
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
+
+            AudioSettings.LibSettings = new();
 
             Location = new(20, 20);
 
@@ -83,6 +86,31 @@ namespace AudioLib.Test
             base.OnFormClosing(e);
         }
 
+        void EditSettings()
+        {
+            PropertyGrid pg = new()
+            {
+                Dock = DockStyle.Fill,
+                PropertySort = PropertySort.Categorized,
+                SelectedObject = AudioSettings.LibSettings
+            };
+
+            using Form f = new()
+            {
+                ClientSize = new(450, 450),
+                AutoScaleMode = AutoScaleMode.None,
+                Location = Cursor.Position,
+                StartPosition = FormStartPosition.Manual,
+                FormBorderStyle = FormBorderStyle.SizableToolWindow,
+                ShowIcon = false,
+                ShowInTaskbar = false
+            };
+
+            f.Controls.Add(pg);
+
+            f.ShowDialog();
+        }
+
         void Timer1_Tick(object? sender, EventArgs e)
         {
             if (chkRunBars.Checked)
@@ -126,7 +154,13 @@ namespace AudioLib.Test
 
         void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
-            //txtInfo.AddLine($"Current time:{timeBar.CurrentTime}");
+            txtInfo.AppendText($"Current time:{timeBar.Current}");
+        }
+        void Settings_Click(object sender, EventArgs e)
+        {
+            EditSettings();
+
+            txtInfo.AppendText(AudioSettings.LibSettings.ToString());
         }
     }
 }

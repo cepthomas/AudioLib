@@ -4,6 +4,78 @@
         <name>NBagOfTricks</name>
     </assembly>
     <members>
+        <member name="T:NBagOfTricks.Bag">
+            <summary>
+            General purpose storage for things using a two part key.
+            </summary>
+        </member>
+        <member name="P:NBagOfTricks.Bag.FileName">
+            <summary>The file name.</summary> 
+        </member>
+        <member name="P:NBagOfTricks.Bag.Values">
+            <summary>Misc dynamic values that we want to persist. Needs to be public so serializer can see it.</summary>
+        </member>
+        <member name="P:NBagOfTricks.Bag.Valid">
+            <summary>Is this bag ok?</summary>
+        </member>
+        <member name="M:NBagOfTricks.Bag.Clear">
+            <summary>
+            Reset everything.
+            </summary>
+        </member>
+        <member name="M:NBagOfTricks.Bag.GetDouble(System.String,System.String,System.Double)">
+            <summary>
+            Lazy helper.
+            </summary>
+            <param name="owner"></param>
+            <param name="valname"></param>
+            <param name="defval"></param>
+            <returns>The value or default if not in the collection.</returns>
+        </member>
+        <member name="M:NBagOfTricks.Bag.GetInteger(System.String,System.String,System.Int32)">
+            <summary>
+            Lazy helper.
+            </summary>
+            <param name="owner"></param>
+            <param name="valname"></param>
+            <param name="defval"></param>
+            <returns>The value or default if not in the collection.</returns>
+        </member>
+        <member name="M:NBagOfTricks.Bag.GetString(System.String,System.String,System.String)">
+            <summary>
+            Lazy helper.
+            </summary>
+            <param name="owner"></param>
+            <param name="valname"></param>
+            <param name="defval"></param>
+            <returns>The value or default if not in the collection.</returns>
+        </member>
+        <member name="M:NBagOfTricks.Bag.SetValue(System.String,System.String,System.Object)">
+            <summary>
+            Lazy helper.
+            </summary>
+            <param name="owner"></param>
+            <param name="valname"></param>
+            <param name="value"></param>
+        </member>
+        <member name="M:NBagOfTricks.Bag.MakeKey(System.String,System.String)">
+            <summary>
+            Common key maker.
+            </summary>
+            <param name="owner"></param>
+            <param name="valname"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NBagOfTricks.Bag.Save">
+            <summary>
+            Save to json file.
+            </summary>
+        </member>
+        <member name="M:NBagOfTricks.Bag.Load(System.String)">
+            <summary>
+            Create from json file.
+            </summary>
+        </member>
         <member name="T:NBagOfTricks.ArgOptType">
             <summary>Argument and value options: None, required, optional.</summary>
         </member>
@@ -339,19 +411,19 @@
             <param name="appName"></param>
             <returns></returns>
         </member>
-        <member name="M:NBagOfTricks.MiscUtils.SecondsToTimeSpan(System.Double)">
+        <member name="M:NBagOfTricks.MiscUtils.FixEndian(System.UInt32)">
             <summary>
-            Convert time to TimeSpan.
+            Endian support.
             </summary>
-            <param name="sec">Time in seconds.</param>
-            <returns>TimeSpan</returns>
+            <param name="i">Number to fix.</param>
+            <returns>Fixed number.</returns>
         </member>
-        <member name="M:NBagOfTricks.MiscUtils.TimeSpanToSeconds(System.TimeSpan)">
+        <member name="M:NBagOfTricks.MiscUtils.FixEndian(System.UInt16)">
             <summary>
-            Convert TimeSpan to time.
+            Endian support.
             </summary>
-            <param name="ts"></param>
-            <returns>Time in seconds.</returns>
+            <param name="i">Number to fix.</param>
+            <returns>Fixed number.</returns>
         </member>
         <member name="M:NBagOfTricks.MiscUtils.Subset``1(``0[],System.Int32,System.Int32)">
             <summary>
@@ -365,13 +437,7 @@
         </member>
         <member name="M:NBagOfTricks.MiscUtils.InvokeIfRequired``1(``0,NBagOfTricks.MiscUtils.InvokeIfRequiredDelegate{``0})">
             <summary>
-            Invoke helper. See http://stackoverflow.com/a/29497681
-            Usage:
-            progressBar1.InvokeIfRequired(o => 
-            {
-                o.Style = ProgressBarStyle.Marquee;
-                o.MarqueeAnimationSpeed = 40;
-            });
+            Invoke helper, maybe.
             </summary>
             <typeparam name="T"></typeparam>
             <param name="obj"></param>
@@ -443,6 +509,9 @@
         <member name="F:NBagOfTricks.MmTimerEx._timeProc">
             <summary>Called by Windows when a mm timer event occurs.</summary>
         </member>
+        <member name="F:NBagOfTricks.MmTimerEx._disposed">
+            <summary>Resource management.</summary>
+        </member>
         <member name="T:NBagOfTricks.MmTimerEx.NativeMethods">
             <summary>Win32 Multimedia Timer Functions.</summary>
         </member>
@@ -483,9 +552,19 @@
             Initializes a new instance of the Timer class.
             </summary>
         </member>
+        <member name="M:NBagOfTricks.MmTimerEx.Finalize">
+            <summary>
+            Override finalizer only if 'Dispose(bool disposing)' has code to free unmanaged resources.
+            </summary>
+        </member>
         <member name="M:NBagOfTricks.MmTimerEx.Dispose">
             <summary>
-            Frees timer resources.
+            Boilerplate.
+            </summary>
+        </member>
+        <member name="M:NBagOfTricks.MmTimerEx.Dispose(System.Boolean)">
+            <summary>
+            Boilerplate.
             </summary>
         </member>
         <member name="M:NBagOfTricks.MmTimerEx.SetTimer(System.Int32,NBagOfTricks.MmTimerEx.TimeProc)">
@@ -570,6 +649,111 @@
             <summary>
             Resource clean up.
             </summary>
+        </member>
+        <member name="T:NBagOfTricks.MusicDefinitions">
+            <summary>Definitions for use inside scripts. For doc see MusicDefinitions.md.</summary>
+        </member>
+        <member name="F:NBagOfTricks.MusicDefinitions._chordsScales">
+            <summary>The chord/scale note definitions. Key is chord/scale name, value is list of constituent notes.</summary>
+        </member>
+        <member name="F:NBagOfTricks.MusicDefinitions.NOTES_PER_OCTAVE">
+            <summary>all the notes.</summary>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.#cctor">
+            <summary>
+            Load chord and scale definitions.
+            </summary>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.FormatDoc">
+            <summary>
+            Make markdown content from the definitions.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="F:NBagOfTricks.MusicDefinitions._noteNames">
+            <summary>All possible note names and aliases.</summary>
+        </member>
+        <member name="F:NBagOfTricks.MusicDefinitions._naturals">
+            <summary>Helpers.</summary>
+        </member>
+        <member name="F:NBagOfTricks.MusicDefinitions._intervals">
+            <summary>Helpers.</summary>
+        </member>
+        <member name="F:NBagOfTricks.MusicDefinitions._chordDefs">
+            <summary>All the builtin chord defs.</summary>
+        </member>
+        <member name="F:NBagOfTricks.MusicDefinitions._scaleDefs">
+            <summary>All the builtin scale defs.</summary>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.NoteNumberToName(System.Int32)">
+            <summary>
+            Convert note number into name.
+            </summary>
+            <param name="inote"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.NoteNameToNumber(System.String)">
+            <summary>
+            Convert note name into number.
+            </summary>
+            <param name="snote">The root of the note without octave.</param>
+            <returns>The number or -1 if invalid.</returns>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.GetNotesFromString(System.String)">
+            <summary>
+            Parse note or notes from input value.
+            </summary>
+            <param name="noteString">Standard string to parse.</param>
+            <returns>List of note numbers - empty if invalid.</returns>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.IsNatural(System.Int32)">
+            <summary>
+            Is it a white key?
+            </summary>
+            <param name="notenum">Which note</param>
+            <returns>True/false</returns>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.SplitNoteNumber(System.Int32)">
+            <summary>
+            Split a midi note number into root note and octave.
+            </summary>
+            <param name="notenum">Absolute note number</param>
+            <returns>tuple of root and octave</returns>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.GetInterval(System.String)">
+            <summary>
+            Get interval offset from name.
+            </summary>
+            <param name="sinterval"></param>
+            <returns>Offset or -1 if invalid.</returns>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.GetInterval(System.Int32)">
+            <summary>
+            Get interval name from note number offset.
+            </summary>
+            <param name="iint">The name or empty if invalid.</param>
+            <returns></returns>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.FormatNotes(System.Collections.Generic.List{System.Int32})">
+            <summary>
+            Try to make a note and/or chord string from the param. If it can't find a chord return the individual notes.
+            </summary>
+            <param name="notes"></param>
+            <returns></returns>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.AddChordScale(System.String,System.String)">
+            <summary>
+            Add a new chord or scale definition.
+            </summary>
+            <param name="name">which</param>
+            <param name="notes">what</param>
+        </member>
+        <member name="M:NBagOfTricks.MusicDefinitions.GetChordScale(System.String)">
+            <summary>
+            Get a defined chord or scale definition.
+            </summary>
+            <param name="name">which</param>
+            <returns>The list of notes or empty if invalid.</returns>
         </member>
         <member name="T:NBagOfTricks.StringUtils">
             <summary>
@@ -761,7 +945,7 @@
             <param name="limit"></param>
             <returns></returns>
         </member>
-        <member name="M:NBagOfTricks.Tools.MarkdownToHtml(System.Collections.Generic.List{System.String},System.String,System.String,System.Boolean)">
+        <member name="M:NBagOfTricks.Tools.MarkdownToHtml(System.Collections.Generic.List{System.String},System.Drawing.Color,System.Drawing.Font,System.Boolean)">
             <summary>
             Convert list of markdown lines to html.
             </summary>
@@ -1039,6 +1223,9 @@
         <member name="P:NBagOfTricks.ScriptCompiler.CompileResult.Message">
             <summary>Content.</summary>
         </member>
+        <member name="M:NBagOfTricks.ScriptCompiler.CompileResult.ToString">
+            <summary>For humans.</summary>
+        </member>
         <member name="T:NBagOfTricks.ScriptCompiler.FileContext">
             <summary>Parser helper class.</summary>
         </member>
@@ -1053,9 +1240,6 @@
         </member>
         <member name="T:NBagOfTricks.ScriptCompiler.ScriptCompilerCore">
             <summary>Parses/compiles script file(s).</summary>
-        </member>
-        <member name="P:NBagOfTricks.ScriptCompiler.ScriptCompilerCore.WorkPath">
-            <summary>Client needs to tell us this.</summary>
         </member>
         <member name="P:NBagOfTricks.ScriptCompiler.ScriptCompilerCore.IgnoreWarnings">
             <summary>Client needs to tell us this.</summary>
@@ -1090,14 +1274,14 @@
         <member name="F:NBagOfTricks.ScriptCompiler.ScriptCompilerCore._filesToCompile">
             <summary>Products of file preprocess. Key is generated file name.</summary>
         </member>
-        <member name="M:NBagOfTricks.ScriptCompiler.ScriptCompilerCore.PreExecute">
-            <summary>Hook to override.</summary>
+        <member name="M:NBagOfTricks.ScriptCompiler.ScriptCompilerCore.PreCompile">
+            <summary>Called before compiler starts.</summary>
         </member>
-        <member name="M:NBagOfTricks.ScriptCompiler.ScriptCompilerCore.PostExecute">
-            <summary>Hook to override.</summary>
+        <member name="M:NBagOfTricks.ScriptCompiler.ScriptCompilerCore.PostCompile">
+            <summary>Called after compiler finished.</summary>
         </member>
-        <member name="M:NBagOfTricks.ScriptCompiler.ScriptCompilerCore.PreprocessFile(System.String,NBagOfTricks.ScriptCompiler.FileContext)">
-            <summary>Hook to override.</summary>
+        <member name="M:NBagOfTricks.ScriptCompiler.ScriptCompilerCore.PreprocessLine(System.String,NBagOfTricks.ScriptCompiler.FileContext)">
+            <summary>Called for each line in the source file before compiling.</summary>
             <param name="sline">Trimmed line</param>
             <param name="pcont">File context</param>
             <returns>True if handled</returns>
@@ -1256,6 +1440,158 @@
             <summary>
             Listen for client messages. Interruptible by setting _cancelEvent.
             </summary>
+        </member>
+        <member name="T:NBagOfTricks.Slog.LogLevel">
+            <summary>Log level options.</summary>
+        </member>
+        <member name="T:NBagOfTricks.Slog.LogEntry">
+            <summary>Internal log entry data container.</summary>
+        </member>
+        <member name="T:NBagOfTricks.Slog.LogEventArgs">
+            <summary>Log event for notification.</summary>
+        </member>
+        <member name="T:NBagOfTricks.Slog.Scoper">
+            <summary>Experimental class to log enter/exit scope. Use syntax "using new Scoper(...);"</summary>
+        </member>
+        <member name="T:NBagOfTricks.Slog.Logger">
+            <summary>Client creates as many of these as needed.</summary>
+        </member>
+        <member name="P:NBagOfTricks.Slog.Logger.Name">
+            <summary>ID for this logger.</summary>
+        </member>
+        <member name="P:NBagOfTricks.Slog.Logger.Enable">
+            <summary>Turn logger on or off.</summary>
+        </member>
+        <member name="M:NBagOfTricks.Slog.Logger.#ctor(System.String)">
+            <summary>
+            Constructor.
+            </summary>
+            <param name="name">Client assigned name.</param>
+        </member>
+        <member name="M:NBagOfTricks.Slog.Logger.Trace(System.String,System.String,System.Int32)">
+            <summary>
+            Convenience function.
+            </summary>
+            <param name="msg">Content.</param>
+            <param name="file">Ignore - compiler use.</param>
+            <param name="line">Ignore - compiler use.</param>
+        </member>
+        <member name="M:NBagOfTricks.Slog.Logger.Debug(System.String,System.String,System.Int32)">
+            <summary>
+            Convenience function.
+            </summary>
+            <param name="msg">Content.</param>
+            <param name="file">Ignore - compiler use.</param>
+            <param name="line">Ignore - compiler use.</param>
+        </member>
+        <member name="M:NBagOfTricks.Slog.Logger.Info(System.String,System.String,System.Int32)">
+            <summary>
+            Convenience function.
+            </summary>
+            <param name="msg">Content.</param>
+            <param name="file">Ignore - compiler use.</param>
+            <param name="line">Ignore - compiler use.</param>
+        </member>
+        <member name="M:NBagOfTricks.Slog.Logger.Warn(System.String,System.String,System.Int32)">
+            <summary>
+            Convenience function.
+            </summary>
+            <param name="msg">Content.</param>
+            <param name="file">Ignore - compiler use.</param>
+            <param name="line">Ignore - compiler use.</param>
+        </member>
+        <member name="M:NBagOfTricks.Slog.Logger.Error(System.String,System.String,System.Int32)">
+            <summary>
+            Convenience function.
+            </summary>
+            <param name="msg">Content.</param>
+            <param name="file">Ignore - compiler use.</param>
+            <param name="line">Ignore - compiler use.</param>
+        </member>
+        <member name="M:NBagOfTricks.Slog.Logger.Exception(System.Exception,System.String,System.String,System.Int32)">
+            <summary>
+            Log an exception.
+            </summary>
+            <param name="ex">The exception.</param>
+            <param name="msg">Extra info.</param>
+            <param name="file">Ignore - compiler use.</param>
+            <param name="line">Ignore - compiler use.</param>
+        </member>
+        <member name="M:NBagOfTricks.Slog.Logger.AddEntry(NBagOfTricks.Slog.LogLevel,System.String,System.String,System.Int32)">
+            <summary>
+            Private common function.
+            </summary>
+            <param name="level"></param>
+            <param name="msg"></param>
+            <param name="file"></param>
+            <param name="line"></param>
+        </member>
+        <member name="T:NBagOfTricks.Slog.LogManager">
+            <summary>Global server.</summary>
+        </member>
+        <member name="F:NBagOfTricks.Slog.LogManager._instance">
+            <summary>Lazy singleton. https://csharpindepth.com/Articles/Singleton.</summary>
+        </member>
+        <member name="F:NBagOfTricks.Slog.LogManager._loggers">
+            <summary>All loggers. Key is client supplied name.</summary>
+        </member>
+        <member name="F:NBagOfTricks.Slog.LogManager._queue">
+            <summary>Log record queue.</summary>
+        </member>
+        <member name="F:NBagOfTricks.Slog.LogManager._housekeepTime">
+            <summary>For checking file rollover.</summary>
+        </member>
+        <member name="F:NBagOfTricks.Slog.LogManager._levelNames">
+            <summary>Constant width strings for visual aid.</summary>
+        </member>
+        <member name="F:NBagOfTricks.Slog.LogManager._running">
+            <summary>Queue management.</summary>
+        </member>
+        <member name="F:NBagOfTricks.Slog.LogManager._tokenSource">
+            <summary>Queue management.</summary>
+        </member>
+        <member name="P:NBagOfTricks.Slog.LogManager.Instance">
+            <summary>Singleton accessor.</summary>
+        </member>
+        <member name="P:NBagOfTricks.Slog.LogManager.MinLevelFile">
+            <summary>Event filter for file.</summary>
+        </member>
+        <member name="P:NBagOfTricks.Slog.LogManager.MinLevelNotif">
+            <summary>Event filter for callback event.</summary>
+        </member>
+        <member name="P:NBagOfTricks.Slog.LogManager.TimeFormat">
+            <summary>Format for file records.</summary>
+        </member>
+        <member name="P:NBagOfTricks.Slog.LogManager.QueueSize">
+            <summary>For diagnostics.</summary>
+        </member>
+        <member name="E:NBagOfTricks.Slog.LogManager.LogEvent">
+            <summary>Callback event.</summary>
+        </member>
+        <member name="M:NBagOfTricks.Slog.LogManager.CreateLogger(System.String)">
+            <summary>
+            Create a new client side logger.
+            </summary>
+            <param name="name">Logger ID. Can be shared.</param>
+            <returns>Minty fresh logger.</returns>
+        </member>
+        <member name="M:NBagOfTricks.Slog.LogManager.Run(System.String,System.Int32)">
+            <summary>
+            Inititialize builtin file logger.
+            </summary>
+            <param name="logFilePath">Builtin logger file path.</param>
+            <param name="logSize">Builtin logger max size. 0 means no file logger, just notifications.</param>
+        </member>
+        <member name="M:NBagOfTricks.Slog.LogManager.Stop">
+            <summary>
+            Be polite, shut it down.
+            </summary>
+        </member>
+        <member name="M:NBagOfTricks.Slog.LogManager.LogThis(NBagOfTricks.Slog.LogEntry)">
+            <summary>
+            Client logger wants to log something.
+            </summary>
+            <param name="le"></param>
         </member>
     </members>
 </doc>

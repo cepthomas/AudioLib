@@ -41,6 +41,8 @@
             this.volume1 = new AudioLib.Volume();
             this.waveViewer1 = new AudioLib.WaveViewer();
             this.waveViewer2 = new AudioLib.WaveViewer();
+            this.btnSettings = new System.Windows.Forms.Button();
+            this.txtInfo = new System.Windows.Forms.RichTextBox();
             this.SuspendLayout();
             // 
             // timer1
@@ -117,7 +119,7 @@
             this.volume2.Orientation = System.Windows.Forms.Orientation.Vertical;
             this.volume2.Size = new System.Drawing.Size(42, 133);
             this.volume2.TabIndex = 21;
-            this.volume2.Value = 0.6D;
+            this.volume2.Value = 0.60000000000000009D;
             // 
             // pan1
             // 
@@ -174,7 +176,7 @@
             this.volume1.Orientation = System.Windows.Forms.Orientation.Horizontal;
             this.volume1.Size = new System.Drawing.Size(153, 60);
             this.volume1.TabIndex = 18;
-            this.volume1.Value = 0.3D;
+            this.volume1.Value = 0.30000000000000004D;
             // 
             // waveViewer1
             // 
@@ -204,11 +206,32 @@
             this.waveViewer2.Size = new System.Drawing.Size(353, 87);
             this.waveViewer2.TabIndex = 27;
             // 
+            // btnSettings
+            // 
+            this.btnSettings.Location = new System.Drawing.Point(881, 16);
+            this.btnSettings.Name = "btnSettings";
+            this.btnSettings.Size = new System.Drawing.Size(94, 29);
+            this.btnSettings.TabIndex = 28;
+            this.btnSettings.Text = "Settings";
+            this.btnSettings.UseVisualStyleBackColor = true;
+            this.btnSettings.Click += new System.EventHandler(this.Settings_Click);
+            // 
+            // txtInfo
+            // 
+            this.txtInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtInfo.Location = new System.Drawing.Point(784, 145);
+            this.txtInfo.Name = "txtInfo";
+            this.txtInfo.Size = new System.Drawing.Size(395, 120);
+            this.txtInfo.TabIndex = 29;
+            this.txtInfo.Text = "";
+            // 
             // TestHost
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1191, 281);
+            this.Controls.Add(this.txtInfo);
+            this.Controls.Add(this.btnSettings);
             this.Controls.Add(this.waveViewer2);
             this.Controls.Add(this.waveViewer1);
             this.Controls.Add(this.chkRunBars);
@@ -241,5 +264,7 @@
         private Volume volume1;
         private WaveViewer waveViewer1;
         private WaveViewer waveViewer2;
+        private System.Windows.Forms.Button btnSettings;
+        private System.Windows.Forms.RichTextBox txtInfo;
     }
 }

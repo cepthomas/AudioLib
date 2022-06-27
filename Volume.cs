@@ -39,7 +39,7 @@ namespace AudioLib
         public double Value
         {
             get { return _value; }
-            set { _value = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX, VolumeDefs.RESOLUTION); Invalidate(); }
+            set { _value = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX, VolumeDefs.STEP); Invalidate(); }
         }
         #endregion
 
@@ -93,7 +93,7 @@ namespace AudioLib
             }
 
             // Text.
-            string sval = _value.ToString("#0." + new string('0', MathUtils.DecPlaces(VolumeDefs.RESOLUTION)));
+            string sval = _value.ToString("#0." + new string('0', MathUtils.DecPlaces(VolumeDefs.STEP)));
             if (Label != "")
             {
                 Rectangle r = new(ClientRectangle.X, ClientRectangle.Y, ClientRectangle.Width, ClientRectangle.Height / 2);
@@ -172,12 +172,12 @@ namespace AudioLib
             {
                 if (e.KeyCode == Keys.Down)
                 {
-                    Value -= VolumeDefs.RESOLUTION;
+                    Value -= VolumeDefs.STEP;
                     ValueChanged?.Invoke(this, EventArgs.Empty);
                 }
                 else if (e.KeyCode == Keys.Up)
                 {
-                    Value += VolumeDefs.RESOLUTION;
+                    Value += VolumeDefs.STEP;
                     ValueChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
