@@ -6,6 +6,7 @@ Requires VS2019 and .NET5.
 
 Contents:
 - AudioPlayer: Fairly thin wrapper around the basic NAudio wave player. Devices are limited to the ones available on your box.
+- Settings container/editor for use by clients.
 - Meter: Linear or log.
 - Pot: Just like on your guitar.
 - Pan: Just like on your hifi.
