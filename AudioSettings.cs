@@ -47,11 +47,11 @@ namespace AudioLib
     /// <summary>Converter for selecting property value from known lists.</summary>
     public class FixedListTypeConverter : TypeConverter
     {
-        public override bool GetStandardValuesSupported(ITypeDescriptorContext context) { return true; }
-        public override bool GetStandardValuesExclusive(ITypeDescriptorContext context) { return true; }
+        public override bool GetStandardValuesSupported(ITypeDescriptorContext? context) { return true; }
+        public override bool GetStandardValuesExclusive(ITypeDescriptorContext? context) { return true; }
 
         // Get the specific list based on the property name.
-        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext context)
+        public override StandardValuesCollection GetStandardValues(ITypeDescriptorContext? context)
         {
             List<string>? rec = null;
 

@@ -2,7 +2,7 @@
 
 WinForms library of various audio components and controls.
 
-Requires VS2019 and .NET5.
+Requires VS2019 and .NET6.
 
 Contents:
 - AudioPlayer: Fairly thin wrapper around the basic NAudio wave player. Devices are limited to the ones available on your box.
