@@ -55,7 +55,7 @@ namespace AudioLib
         {
             List<string>? rec = null;
 
-            switch (context.PropertyDescriptor.Name)
+            switch (context!.PropertyDescriptor.Name)
             {
                 case "Latency":
                     rec = new List<string>()
