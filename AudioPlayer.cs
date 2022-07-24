@@ -29,7 +29,7 @@ namespace AudioLib
         readonly WaveOut? _waveOut = null;
 
         /// <summary>The volume.</summary>
-        double _volume = VolumeDefs.DEFAULT;
+        double _volume = AudioLibDefs.VOLUME_DEFAULT;
         #endregion
 
         #region Events
@@ -44,8 +44,15 @@ namespace AudioLib
         /// <summary>Volume.</summary>
         public double Volume
         {
-            get { return _volume; }
-            set { _volume = MathUtils.Constrain(value, VolumeDefs.MIN, VolumeDefs.MAX); if (_waveOut is not null) _waveOut.Volume = (float)_volume; }
+            get
+            {
+                return _volume;
+            }
+            set 
+            {
+                _volume = MathUtils.Constrain(value, AudioLibDefs.VOLUME_MIN, AudioLibDefs.VOLUME_MAX);
+                if (_waveOut is not null) _waveOut.Volume = (float)_volume;
+            }
         }
 
         /// <summary>State.</summary>
