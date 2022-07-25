@@ -1,11 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
@@ -29,7 +26,7 @@ namespace AudioLib
         readonly WaveOut? _waveOut = null;
 
         /// <summary>The volume.</summary>
-        double _volume = AudioLibDefs.VOLUME_DEFAULT;
+        double _volume = 0.6;
         #endregion
 
         #region Events
@@ -51,7 +48,7 @@ namespace AudioLib
             set 
             {
                 _volume = MathUtils.Constrain(value, AudioLibDefs.VOLUME_MIN, AudioLibDefs.VOLUME_MAX);
-                if (_waveOut is not null) _waveOut.Volume = (float)_volume;
+                if (_waveOut is not null) { _waveOut.Volume = (float)_volume; }
             }
         }
 

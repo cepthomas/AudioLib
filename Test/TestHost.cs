@@ -14,7 +14,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.Text.Json.Serialization;
 using NBagOfTricks;
 using AudioLib;
-
+using NAudio.Wave;
 
 namespace AudioLib.Test
 {
@@ -130,25 +130,26 @@ namespace AudioLib.Test
 
         void Pot1_ValueChanged(object? sender, EventArgs e)
         {
-            // 0 -> 1
+            // 25 -> 50
             meterLog.AddValue(pot1.Value);
         }
 
         void Volume1_ValueChanged(object? sender, EventArgs e)
         {
-            // 0 -> 1
-            meterLog.AddValue(volume1.Value * 100.0);
+            // meterLog -60 -> +3
+            // meterLinear 0 -> 100
+            // meterDots -10 -> +10
+
+            meterLinear.AddValue(volume1.Value * 100.0);
         }
 
         void Volume2_ValueChanged(object? sender, EventArgs e)
         {
-            // 0 -> 10
-            meterDots.AddValue(volume2.Value);
+            meterDots.AddValue(volume2.Value * 20.0 - 10.0);
         }
 
         void Pan1_ValueChanged(object? sender, EventArgs e)
         {
-            // -1 -> +1
             meterLog.AddValue(pan1.Value * 50.0 + 50.0);
         }
 

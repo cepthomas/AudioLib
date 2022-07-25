@@ -21,18 +21,6 @@ namespace AudioLib
     public partial class Pot : UserControl
     {
         #region Fields
-        /// <summary> </summary>
-        double _minimum = 0.0;
-
-        /// <summary> </summary>
-        double _maximum = 1.0;
-
-        /// <summary> </summary>
-        double _value = 0.5;
-
-        /// <summary>Restrict to discrete steps.</summary>
-        double _resolution = 0.1;
-
         /// <summary>If user resets. This is the first value assigned to Value.</summary>
         double _resetVal = double.NaN;
 
@@ -62,33 +50,38 @@ namespace AudioLib
         /// <summary>Taper.</summary>
         public Taper Taper { get; set; } = Taper.Linear;
 
-        /// <summary>Per step resolution of this slider.</summary>
+        /// <summary>Per step resolution of this pot.</summary>
         public double Resolution
         {
             get { return _resolution; }
             set { _resolution = value; Rescale(); }
         }
+        double _resolution = 5.0;
 
-        /// <summary>Minimum Value of the slider.</summary>
+
+        /// <summary>Minimum Value of the pot.</summary>
         public double Minimum
         {
             get { return _minimum; }
             set { _minimum = value; Rescale(); }
         }
+        double _minimum = 0.0;
 
-        /// <summary>Maximum Value of the slider.</summary>
+        /// <summary>Maximum Value of the pot.</summary>
         public double Maximum
         {
             get { return _maximum; }
             set { _maximum = value; Rescale(); }
         }
+        double _maximum = 100.0;
 
-        /// <summary>The current value of the slider.</summary>
+        /// <summary>The current value of the pot.</summary>
         public double Value
         {
             get { return _value; }
             set { _value = MathUtils.Constrain(value, _minimum, _maximum, _resolution); if (double.IsNaN(_resetVal)) _resetVal = value; Invalidate(); }
         }
+        double _value = 50.0;
         #endregion
 
         #region Events
