@@ -29,15 +29,6 @@ namespace AudioLib.Test
 
             Location = new(20, 20);
 
-            ///// Misc controls.
-            pot1.ValueChanged += Pot1_ValueChanged;
-
-            pan1.ValueChanged += Pan1_ValueChanged;
-
-            volume1.ValueChanged += Volume1_ValueChanged;
-
-            volume2.ValueChanged += Volume2_ValueChanged;
-
             ///// Wave viewer.
             // Simple sin.
             float[] data1 = new float[150];
@@ -126,31 +117,6 @@ namespace AudioLib.Test
 
         void TimeBar_CurrentTimeChanged1(object? sender, EventArgs e)
         {
-        }
-
-        void Pot1_ValueChanged(object? sender, EventArgs e)
-        {
-            // 25 -> 50
-            meterLog.AddValue(pot1.Value);
-        }
-
-        void Volume1_ValueChanged(object? sender, EventArgs e)
-        {
-            // meterLog -60 -> +3
-            // meterLinear 0 -> 100
-            // meterDots -10 -> +10
-
-            meterLinear.AddValue(volume1.Value * 100.0);
-        }
-
-        void Volume2_ValueChanged(object? sender, EventArgs e)
-        {
-            meterDots.AddValue(volume2.Value * 20.0 - 10.0);
-        }
-
-        void Pan1_ValueChanged(object? sender, EventArgs e)
-        {
-            meterLog.AddValue(pan1.Value * 50.0 + 50.0);
         }
 
         void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
