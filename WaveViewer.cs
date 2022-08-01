@@ -15,17 +15,9 @@ namespace AudioLib
 {
     public partial class WaveViewer : UserControl
     {
-        public enum DrawMode { Raw, Envelope }
-
         #region Fields
         /// <summary>From client.</summary>
         float[]? _rawVals = null;
-
-        /// <summary>Maximum value of _rawVals (+-).</summary>
-        float _rawMax = 1.0f;
-
-        /// <summary>Storage for display.</summary>
-        float[]? _scaledBuff = null;
 
         /// <summary>For drawing.</summary>
         readonly Pen _penDraw = new(Color.Black, 1);
@@ -52,9 +44,6 @@ namespace AudioLib
 
         /// <summary>For styling.</summary>
         public Color MarkerColor { get { return _penMarker.Color; } set { _penMarker.Color = value; } }
-
-        /// <summary>How to draw.</summary>
-        public DrawMode Mode { get; set; } = DrawMode.Envelope;
 
         /// <summary>Marker 1 data index or -1 to disable.</summary>
         public int Marker1
@@ -134,12 +123,8 @@ namespace AudioLib
         {
             //Dump(vals, "raw.csv");
             _rawVals = vals;
-            _rawMax = max;
             _marker1 = -1;
             _marker2 = -1;
-
-            Rescale();
-            //Dump(_buff, "buff.csv");
             Invalidate();
         }
 
@@ -149,8 +134,6 @@ namespace AudioLib
         public void Reset()
         {
             _rawVals = null;
-            _scaledBuff = null;
-            _rawMax = 0;
             Invalidate();
         }
         #endregion
@@ -164,35 +147,38 @@ namespace AudioLib
             // Setup.
             pe.Graphics.Clear(BackColor);
 
-            if (_scaledBuff is null)
+            if (_rawVals is null || _rawVals.Length == 0)
             {
                 pe.Graphics.DrawString("No data", _textFont, Brushes.Gray, ClientRectangle, _format);
             }
             else
             {
-                // Draw data points.
-                for (int i = 0; i < _scaledBuff.Length; i++)
+                // https://stackoverflow.com/a/1215472
+                int border = 5;
+                float fitWidth = Width - (2 * border);
+                float fitHeight = Height - (2 * border);
+                float size = _rawVals.Length;
+
+
+                float zoom = 0.01f;
+                size *= zoom;
+
+                for (int index = 0; index < fitWidth; index++)
                 {
-                    float val = _scaledBuff[i];
-
-                    if(!float.IsNaN(val))
+                    // determine start and end points within WAV
+                    float start = index * (size / fitWidth);
+                    float end = (index + 1) * (size / fitWidth);
+                    float min = float.MaxValue;
+                    float max = float.MinValue;
+                    for (int i = (int)start; i < end; i++)
                     {
-                        switch (Mode)
-                        {
-                            case DrawMode.Envelope:
-                                float y1 = (float)MathUtils.Map(val, -_rawMax, _rawMax, Height, 0);
-                                //float y2 = Height / 2; // Line from val to 0
-                                float y2 = (float)MathUtils.Map(val, -_rawMax, _rawMax, 0, Height); // Line from +val to -val
-                                pe.Graphics.DrawLine(_penDraw, i, y1, i, y2);
-                                break;
-
-                            case DrawMode.Raw:
-                                // Simple dot
-                                float y = (float)MathUtils.Map(val, -_rawMax, _rawMax, Height, 0);
-                                pe.Graphics.DrawRectangle(_penDraw, i, y, 1, 1);
-                                break;
-                        }
+                        float val = _rawVals[i];
+                        min = val < min ? val : min;
+                        max = val > max ? val : max;
                     }
+                    float yMax = border + fitHeight - ((max + 1) * 0.5f * fitHeight);
+                    float yMin = border + fitHeight - ((min + 1) * 0.5f * fitHeight);
+                    pe.Graphics.DrawLine(_penDraw, index + border, yMax, index + border, yMin);
                 }
 
                 // Draw  markers.
@@ -209,45 +195,6 @@ namespace AudioLib
                 }
             }
         }
-        #endregion
-
-        #region Private functions
-        /// <summary>
-        /// Scale raw values to fit in available space.
-        /// </summary>
-        void Rescale()
-        {
-            if(_rawVals is null)
-            {
-                _scaledBuff = null;
-            }
-            else
-            {
-                int fitWidth = Width;
-                _smplPerPixel = _rawVals.Length / fitWidth;
-                _scaledBuff = new float[fitWidth];
-
-                if (_smplPerPixel > 0)
-                {
-                    int r = 0; // index into raw
-                    for (int i = 0; i < fitWidth; i++)
-                    {
-                        float[] subset = new float[_smplPerPixel];
-                        Array.Copy(_rawVals, r, subset, 0, _smplPerPixel);
-                        var rms = MathUtils.RMS(subset);
-                        _scaledBuff[i] = rms;
-                        r += _smplPerPixel;
-                    }
-                }
-                else
-                {
-                    for (int i = 0; i < _scaledBuff.Length; i++)
-                    {
-                        _scaledBuff[i] = i < _rawVals.Length ? _rawVals[i] : float.NaN;
-                    }
-                }
-            }
-        }
 
         /// <summary>
         /// Update drawing area.
@@ -255,10 +202,11 @@ namespace AudioLib
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            Rescale();
             Invalidate();
         }
+        #endregion
 
+        #region Private functions
         /// <summary>
         /// Simple utility.
         /// </summary>

@@ -13,18 +13,6 @@ namespace AudioLib
     public partial class TimeBar : UserControl
     {
         #region Fields
-        /// <summary>Total length.</summary>
-        TimeSpan _length = new();
-
-        /// <summary>Current time/position.</summary>
-        TimeSpan _current = new();
-
-        /// <summary>One marker.</summary>
-        TimeSpan _start = new();
-
-        /// <summary>Other marker.</summary>
-        TimeSpan _end = new();
-
         /// <summary>For tracking mouse moves.</summary>
         int _lastXPos = 0;
 
@@ -54,18 +42,22 @@ namespace AudioLib
         /// <summary>Where we be now.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public TimeSpan Current { get { return _current; } set { _current = value; Invalidate(); } }
+        TimeSpan _current = new();
 
         /// <summary>Total length.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public TimeSpan Length { get { return _length; } set { _length = value; Invalidate(); } }
+        TimeSpan _length = new();
 
         /// <summary>One marker.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public TimeSpan Start { get { return _start; } set { _start = value; Invalidate(); } }
+        TimeSpan _start = new();
 
         /// <summary>Other marker.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public TimeSpan End { get { return _end; } set { _end = value; Invalidate(); } }
+        TimeSpan _end = new();
 
         /// <summary>Snap to this increment value.</summary>
         public int SnapMsec { get; set; } = 0;

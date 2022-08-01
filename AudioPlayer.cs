@@ -121,11 +121,7 @@ namespace AudioLib
                 if (go)
                 {
                     _waveOut.Play();
-
-                    if (_waveOut.PlaybackState == PlaybackState.Playing)
-                    {
-                        Playing = true;
-                    }
+                    Playing = _waveOut.PlaybackState == PlaybackState.Playing;
                 }
                 else
                 {
