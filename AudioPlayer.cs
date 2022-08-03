@@ -11,9 +11,6 @@ using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 
 
-//TODO Snipping, editing, etc.
-
-
 namespace AudioLib
 {
     /// <summary>
@@ -102,7 +99,7 @@ namespace AudioLib
             bool ok = false;
             if (_waveOut is not null)
             {
-                _waveOut.Init(smpl); // TODO sometimes calling this more than once seems to unhook the event callback.
+                _waveOut.Init(smpl); // TODO sometimes calling this more than once seems to unhook the event callback. Don't do it!!
                 _waveOut.Volume = (float)Volume;
                 ok = true;
             }

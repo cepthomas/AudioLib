@@ -37,10 +37,10 @@ namespace AudioLib
         [TypeConverter(typeof(FixedListTypeConverter))]
         public string Latency { get; set; } = "200";
 
-        [DisplayName("Snap To Grid")]
-        [Description("Snap to msec.")]
-        [Browsable(true)]
-        public int SnapMsec { get; set; } = 100;
+        //[DisplayName("Snap To Grid")]
+        //[Description("Snap to msec in TimeBar.")]
+        //[Browsable(true)]
+        //public int SnapMsec { get; set; } = 100;
         #endregion
     }
 
