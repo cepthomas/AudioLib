@@ -15,6 +15,7 @@ using System.Text.Json.Serialization;
 using NBagOfTricks;
 using AudioLib;
 using NAudio.Wave;
+using NAudio.Wave.SampleProviders;
 
 namespace AudioLib.Test
 {
@@ -29,38 +30,69 @@ namespace AudioLib.Test
 
             Location = new(20, 20);
 
-            ///// Wave viewer.
+            ///// Wave viewers.
+
             // Simple sin.
-            float[] data1 = new float[150];
+            var data1 = new float[1000];
             for (int i = 0; i < data1.Length; i++)
             {
-                data1[i] = (float)Math.Sin(Math.PI * i / 180.0);
+                data1[i] = (float)Math.Sin(Math.PI * i / 30.0);
             }
-            waveViewer1.Mode = WaveViewer.DrawMode.Raw;
             waveViewer1.DrawColor = Color.Green;
-            waveViewer1.Init(data1, 1.0f);
-            waveViewer1.Marker1 = 20;
-            waveViewer1.Marker2 = 130;
+            waveViewer1.Init(data1);
+            waveViewer1.Marker = 333;
 
             // Real data.
-            string[] sdata = File.ReadAllLines(@"..\..\wav.txt");
-            float[] data2 = new float[sdata.Length];
+            var sdata = File.ReadAllLines(@"..\..\one-sec.txt");
+            var data2 = new float[sdata.Length];
             for (int i = 0; i < sdata.Length; i++)
             {
                 data2[i] = float.Parse(sdata[i]);
             }
-            waveViewer2.Mode = WaveViewer.DrawMode.Envelope;
-            waveViewer2.DrawColor = Color.Green;
-            waveViewer2.Init(data2, 1.0f);
-            waveViewer2.Marker1 = -1; // hide
-            waveViewer2.Marker2 = data2.Length / 2;
+            waveViewer2.DrawColor = Color.Blue;
+            waveViewer2.Init(data2);
+            waveViewer2.Marker = 20000;
+
+            // From file.
+            var dir = @"C:\Dev\repos\TestAudioFiles\";
+            var fn = 
+                //"ambi_swoosh.flac";
+                //"one-sec.mp3";
+                //"one-sec.wav";
+                "avTouch_sample.m4a";
+                //"ambi_swoosh.flac;
+                //"Cave Ceremony 01.wav";
+                //"3-04 Kid Charlemagne.mp3";
+                //"sin-stereo-audible.wav";
+            using (var _reader = new AudioFileReader(dir + fn))
+            {
+                txtInfo.AppendText($"{fn}:{_reader.WaveFormat}{Environment.NewLine}");
+
+                int len = (int)_reader.Length / (_reader.WaveFormat.BitsPerSample / 8);
+                var data3 = new float[len];
+                int offset = 0;
+                bool done = false;
+                while (!done)
+                {
+                    int toread = 50000;
+                    if (len - offset < toread)
+                    {
+                        toread = len - offset;
+                        done = true; // last bunch
+                    }
+                    offset += _reader.Read(data3, offset, toread);
+                }
+                waveViewer3.DrawColor = Color.Red;
+                waveViewer3.Init(data3);
+                waveViewer3.Marker = 30000;
+            }
 
             ///// Time bar.
             timeBar.SnapMsec = 10;
             timeBar.Length = new TimeSpan(0, 0, 1, 23, 456);
             timeBar.Start = new TimeSpan(0, 0, 0, 10, 333);
             timeBar.End = new TimeSpan(0, 0, 0, 44, 777);
-            timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged1;
+            timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
             timeBar.ProgressColor = Color.CornflowerBlue;
             timeBar.BackColor = Color.Salmon;
 
@@ -68,33 +100,17 @@ namespace AudioLib.Test
             timer1.Enabled = true;
         }
 
-        protected override void OnFormClosing(FormClosingEventArgs e)
-        {
-            // Inspect.
-            //var at = ftree.AllTags;
-            //var tp = ftree.TaggedPaths;
-            //var po = _testClass;
-            base.OnFormClosing(e);
-        }
-
         void EditSettings()
         {
             PropertyGrid pg = new()
             {
                 Dock = DockStyle.Fill,
-                PropertySort = PropertySort.Categorized,
                 SelectedObject = AudioSettings.LibSettings
             };
 
             using Form f = new()
             {
                 ClientSize = new(450, 450),
-                AutoScaleMode = AutoScaleMode.None,
-                Location = Cursor.Position,
-                StartPosition = FormStartPosition.Manual,
-                FormBorderStyle = FormBorderStyle.SizableToolWindow,
-                ShowIcon = false,
-                ShowInTaskbar = false
             };
 
             f.Controls.Add(pg);
@@ -115,13 +131,11 @@ namespace AudioLib.Test
             }
         }
 
-        void TimeBar_CurrentTimeChanged1(object? sender, EventArgs e)
-        {
-        }
-
         void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
-            txtInfo.AppendText($"Current time:{timeBar.Current}");
+            //txtInfo.AppendText($"Current time:{timeBar.Current}");
+            waveViewer1.Marker = 999;//TODO
+            waveViewer2.Marker = 999;
         }
         void Settings_Click(object sender, EventArgs e)
         {

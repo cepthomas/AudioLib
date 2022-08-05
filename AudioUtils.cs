@@ -74,6 +74,22 @@ namespace AudioLib
             }
         }
 
-
+        /// <summary>
+        /// Simple dump utility.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="fn"></param>
+        public static void Dump(float[] data, string fn)
+        {
+            if (data is not null)
+            {
+                List<string> ss = new();
+                for (int i = 0; i < data.Length; i++)
+                {
+                    ss.Add($"{i + 1}, {data[i]}");
+                }
+                File.WriteAllLines(fn, ss);
+            }
+        }
     }
 }

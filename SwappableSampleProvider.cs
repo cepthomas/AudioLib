@@ -23,15 +23,15 @@ namespace AudioLib
         /// <summary>The WaveFormat of this sample provider. ISampleProvider implementation.</summary>
         public WaveFormat WaveFormat { get; private set; }
 
-        /// <summary>
-        /// When set to true, the Read method always returns the number of samples requested, even if there are
-        /// no inputs, or if the current inputs reach their end.
-        /// Setting this to true effectively makes this a never-ending sample provider, so take care if you plan to write it out to a file.
-        /// </summary>
+        /// <summary>If true Read always returns the number of samples requested by padding.</summary>
         public bool ReadFully { get; set; }
         #endregion
 
-        #region Public functions.
+        #region Public functions
+        /// <summary>
+        /// Normal constructor.
+        /// </summary>
+        /// <param name="waveFormat">Format to use. All ins and outs must be the same.</param>
         public SwappableSampleProvider(WaveFormat waveFormat)
         {
             WaveFormat = waveFormat;
