@@ -23,8 +23,8 @@ namespace AudioLib
         /// <summary>The WaveFormat of this sample provider. ISampleProvider implementation.</summary>
         public WaveFormat WaveFormat { get; private set; }
 
-        /// <summary>If true Read always returns the number of samples requested by padding.</summary>
-        public bool ReadFully { get; set; }
+        // /// <summary>If true Read always returns the number of samples requested by padding.</summary>
+        // public bool ReadFully { get; set; }//TODO needed?
         #endregion
 
         #region Public functions
@@ -71,15 +71,15 @@ namespace AudioLib
         /// <summary>
         /// Reads samples from this sample provider. ISampleProvider implementation.
         /// </summary>
-        /// <param name="buffer">Sample buffer.</param>
-        /// <param name="offset">Offset into sample buffer.</param>
+        /// <param name="vals">Sample buffer.</param>
+        /// <param name="offset">Offset into source.</param>
         /// <param name="count">Number of samples required.</param>
         /// <returns>Number of samples read.</returns>
-        public int Read(float[] buffer, int offset, int count)
+        public int Read(float[] vals, int offset, int count)
         {
             if (_currentInput is null)
             {
-                throw new ArgumentException("Invalid _source.");
+                throw new ArgumentException("Invalid source.");
             }
 
             if (_inputBuffer.Length < count)
@@ -87,43 +87,48 @@ namespace AudioLib
                 _inputBuffer = new float[count];
             }
 
-            int outputSamples = 0;
+           // int outputSamples = 0;
 
             lock (_locker)
             {
                 int samplesRead = _currentInput.Read(_inputBuffer, 0, count);
                 int outIndex = offset;
-                for (int n = 0; n < samplesRead; n++)
-                {
-                    if (n >= outputSamples)
-                    {
-                        buffer[outIndex++] = _inputBuffer[n];
-                    }
-                    else
-                    {
-                        buffer[outIndex++] += _inputBuffer[n];
-                    }
-                }
-                outputSamples = Math.Max(samplesRead, outputSamples);
 
-                if (samplesRead < count)
-                {
-                   // InputEnded?.Invoke(this, new SampleProviderEventArgs(source));
-                }
+                int outputSamples = Math.Min(samplesRead, _inputBuffer.Length - offset);
+
+                Array.Copy(_inputBuffer, 0, vals, 0, outputSamples);
+
+                //for (int n = 0; n < samplesRead; n++)
+                //{
+                //    if (n >= outputSamples)
+                //    {
+                //        vals[outIndex++] = _inputBuffer[n];
+                //    }
+                //    else
+                //    {
+                //        vals[outIndex++] += _inputBuffer[n];
+                //    }
+                //}
+                //outputSamples = Math.Max(samplesRead, outputSamples);
+
+                // if (samplesRead < count)
+                // {
+                //    // InputEnded?.Invoke(this, new SampleProviderEventArgs(source));
+                // }
+
+                // // Optionally ensure we return a full buffer.
+                // if (ReadFully && outputSamples < count)
+                // {
+                //     int outputIndex = offset + outputSamples;
+                //     while (outputIndex < offset + count)
+                //     {
+                //         vals[outputIndex++] = 0;
+                //     }
+                //     outputSamples = count;
+                // }
+
+                return outputSamples;
             }
-
-            // Optionally ensure we return a full buffer.
-            if (ReadFully && outputSamples < count)
-            {
-                int outputIndex = offset + outputSamples;
-                while (outputIndex < offset + count)
-                {
-                    buffer[outputIndex++] = 0;
-                }
-                outputSamples = count;
-            }
-
-            return outputSamples;
         }
     }
     #endregion

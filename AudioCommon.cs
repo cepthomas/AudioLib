@@ -5,7 +5,6 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 
 
