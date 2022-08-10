@@ -21,9 +21,6 @@ namespace AudioLib
         #region Fields
         /// <summary>Wave output play device.</summary>
         readonly WaveOut? _waveOut = null;
-
-        /// <summary>The volume.</summary>
-        double _volume = 0.6;
         #endregion
 
         #region Events
@@ -48,6 +45,7 @@ namespace AudioLib
                 if (_waveOut is not null) { _waveOut.Volume = (float)_volume; }
             }
         }
+        double _volume = 0.6;
 
         /// <summary>State.</summary>
         public bool Playing { get; private set; }
@@ -99,7 +97,7 @@ namespace AudioLib
             bool ok = false;
             if (_waveOut is not null)
             {
-                _waveOut.Init(smpl); // TODO sometimes calling this more than once seems to unhook the event callback. Don't do it!!
+                _waveOut.Init(smpl); // TODO prevent calling more than once.
                 _waveOut.Volume = (float)Volume;
                 ok = true;
             }

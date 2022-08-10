@@ -6,16 +6,13 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using NBagOfTricks;
-
+using NAudio.Wave;
 
 namespace AudioLib
 {
     public partial class WaveViewer : UserControl
     {
         #region Fields
-        /// <summary>The full buffer from client.</summary>
-        float[] _vals = Array.Empty<float>();
-
         /// <summary>For drawing.</summary>
         readonly Pen _pen = new(Color.Black, 1);
 
@@ -30,6 +27,10 @@ namespace AudioLib
         #endregion
 
         #region Properties
+        /// <summary>The full buffer from client.</summary>
+        public float[] Values { get { return _vals; } set { _vals = value; Invalidate(); } }
+        float[] _vals = Array.Empty<float>();
+
         /// <summary>For styling.</summary>
         public Color DrawColor { get { return _pen.Color; } set { _pen.Color = value; } }
 
@@ -37,7 +38,7 @@ namespace AudioLib
         public int Marker
         {
             get { return _marker; }
-            set { _marker = MathUtils.Constrain(value, 0, _vals.Length); Invalidate(); }
+            set { _marker = value; Invalidate(); }
         }
         int _marker = -1;
         #endregion
@@ -67,18 +68,6 @@ namespace AudioLib
         }
         #endregion
 
-        #region Public functions
-        /// <summary>
-        /// Populate with data in +/-1.0f units.
-        /// </summary>
-        /// <param name="vals">Values to display</param>
-        public void Init(float[] vals)
-        {
-            _vals = vals;
-            Invalidate();
-        }
-        #endregion
-
         #region Drawing
         /// <summary>
         /// Paints the waveform.
@@ -94,38 +83,26 @@ namespace AudioLib
             }
             else
             {
-                // https://stackoverflow.com/a/1215472
                 int border = 5;
-                float fitWidth = Width - (2 * border);
-                float fitHeight = Height - (2 * border);
-                float numVals = _vals.Length;
+                int fitWidth = Width - (2 * border);
+                int fitHeight = Height - (2 * border);
+                int numVals = _vals.Length;
+                int samplesPerPixel = _vals.Length / fitWidth;
 
+                var peaks = PeakProvider.GetPeaks(_vals, 0, samplesPerPixel, fitWidth);
 
-                //float zoom = 0.01f;
-                //size *= zoom;
-
-                for (int index = 0; index < fitWidth; index++)
+                for (int i = 0; i < peaks.Count; i++)
                 {
-                    // Determine start and end points within vals.
-                    float start = index * (numVals / fitWidth);
-                    float end = (index + 1) * (numVals / fitWidth);
-                    float min = float.MaxValue;
-                    float max = float.MinValue;
-                    for (int i = (int)start; i < end; i++)
-                    {
-                        float val = _vals[i];
-                        min = val < min ? val : min;
-                        max = val > max ? val : max;
-                    }
-                    float yMax = border + fitHeight - ((max + 1) * 0.5f * fitHeight);
-                    float yMin = border + fitHeight - ((min + 1) * 0.5f * fitHeight);
-                    pe.Graphics.DrawLine(_pen, index + border, yMax, index + border, yMin);
+                    float yMax = border + fitHeight - ((peaks[i].max + 1) * 0.5f * fitHeight);
+                    float yMin = border + fitHeight - ((peaks[i].min + 1) * 0.5f * fitHeight);
+                    pe.Graphics.DrawLine(_pen, i + border, yMax, i + border, yMin);
                 }
 
                 // Draw  marker.
+                _marker = MathUtils.Constrain(_marker, 0, _vals.Length);
                 if (_marker > 0)
                 {
-                    int mpos = (int)(_marker * (fitWidth / numVals));
+                    int mpos = _marker * (fitWidth / numVals);
                     pe.Graphics.DrawLine(_penMarker, mpos, 0, mpos, Height);
                 }
             }
