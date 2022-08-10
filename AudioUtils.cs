@@ -56,7 +56,8 @@ namespace AudioLib
         /// Sanity check for only 32bit fp, 44100Hz, mono.
         /// </summary>
         /// <param name="waveFormat">Format to check.</param>
-        public static void ValidateFormat(WaveFormat waveFormat)
+        /// <param name="mono">Must be mono.</param>
+        public static void ValidateFormat(WaveFormat waveFormat, bool mono)
         {
             if (waveFormat.Encoding != WaveFormatEncoding.IeeeFloat)
             {
@@ -68,7 +69,7 @@ namespace AudioLib
                 throw new ArgumentException("Mismatched sample rate.");
             }
 
-            if (waveFormat.Channels != 1)
+            if (mono && waveFormat.Channels != 1)
             {
                 throw new ArgumentException("Only mono please");
             }

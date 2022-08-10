@@ -66,6 +66,16 @@ namespace AudioLib
            }
            base.Dispose(disposing);
         }
+
+        /// <summary>
+        /// Hard reset.
+        /// </summary>
+        public void Reset()
+        {
+            _vals = Array.Empty<float>();
+            _marker = -1;
+            Invalidate();
+        }
         #endregion
 
         #region Drawing

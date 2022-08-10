@@ -29,7 +29,7 @@ namespace AudioLib
         int _currentIndex = 0;
 
         /// <summary>Gain while iterating samples.</summary>
-        double _currentGain = 1.0f;
+        readonly double _currentGain = 1.0f;
 
         /// <summary>The lock() target.</summary>
         readonly object _locker = new();
@@ -69,7 +69,7 @@ namespace AudioLib
         /// <param name="provider">Format to use.</param>
         public ClipSampleProvider(ISampleProvider provider)
         {
-            AudioUtils.ValidateFormat(provider.WaveFormat);
+            AudioUtils.ValidateFormat(provider.WaveFormat, true);
             FileName = "";
             _vals = AudioUtils.ReadAll(provider);
         }
@@ -82,7 +82,7 @@ namespace AudioLib
         /// <param name="fn">Maybe associated filename.</param>
         public ClipSampleProvider(WaveFormat waveFormat, float[] vals, string fn = "")
         {
-            AudioUtils.ValidateFormat(waveFormat);
+            AudioUtils.ValidateFormat(waveFormat, true);
             FileName = fn;
             _vals = vals;
         }
@@ -96,21 +96,19 @@ namespace AudioLib
         {
             FileName = fn;
 
-            using (var reader = new AudioFileReader(fn))
+            using var reader = new AudioFileReader(fn);
+            ISampleProvider prov = new AudioFileReader(fn);
+
+            if (prov.WaveFormat.Channels == 2)
             {
-                ISampleProvider prov = new AudioFileReader(fn);
-
-                if (prov.WaveFormat.Channels == 2)
+                prov = new StereoToMonoSampleProvider(prov)
                 {
-                    prov = new StereoToMonoSampleProvider(prov)
-                    {
-                        LeftVolume = mode == StereoCoerce.Mono ? 0.5f : (mode == StereoCoerce.Left ? 1.0f : 0.0f),
-                        RightVolume = mode == StereoCoerce.Mono ? 0.5f : (mode == StereoCoerce.Right ? 1.0f : 0.0f)
-                    };
-                }
-
-                _vals = AudioUtils.ReadAll(prov);
+                    LeftVolume = mode == StereoCoerce.Mono ? 0.5f : (mode == StereoCoerce.Left ? 1.0f : 0.0f),
+                    RightVolume = mode == StereoCoerce.Mono ? 0.5f : (mode == StereoCoerce.Right ? 1.0f : 0.0f)
+                };
             }
+
+            _vals = AudioUtils.ReadAll(prov);
         }
         #endregion
 

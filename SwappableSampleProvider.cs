@@ -12,9 +12,6 @@ namespace AudioLib
         /// <summary>The current input.</summary>
         ISampleProvider? _currentInput;
 
-        /// <summary>The input values.</summary>
-        float[] _buffer = Array.Empty<float>();
-
         /// <summary>The lock() target.</summary>
         readonly object _locker = new();
         #endregion
@@ -28,15 +25,6 @@ namespace AudioLib
         #endregion
 
         #region Public functions
-        // /// <summary>
-        // /// Normal constructor.
-        // /// </summary>
-        // /// <param name="waveFormat">Format to use. All ins and outs must be the same.</param>
-        // public SwappableSampleProvider(WaveFormat waveFormat)
-        // {
-        //     WaveFormat = waveFormat;
-        // }
-
         /// <summary>
         /// Sets the input source.
         /// </summary>
@@ -46,7 +34,7 @@ namespace AudioLib
             lock (_locker)
             {
                 // Sanity checks.
-                AudioUtils.ValidateFormat(input.WaveFormat);
+                AudioUtils.ValidateFormat(input.WaveFormat, false);
                 // Everything is good.
                 _currentInput = input;
             }
@@ -66,17 +54,15 @@ namespace AudioLib
                 throw new ArgumentException("Invalid source.");
             }
 
-            if (_buffer.Length < count)
-            {
-                _buffer = new float[count];
-            }
-
             lock (_locker)
             {
-                int samplesRead = _currentInput.Read(_buffer, 0, count);
-                int outIndex = offset;
-                int outputSamples = Math.Min(samplesRead, _buffer.Length - offset);
-                Array.Copy(_buffer, 0, buffer, 0, outputSamples);
+                float[] input = new float[count];
+                int samplesRead = _currentInput.Read(input, 0, count);
+                int outputSamples = Math.Min(samplesRead, buffer.Length - offset);
+                for (int i = 0; i < outputSamples; i++)
+                {
+                    buffer[offset + i] = input[i];
+                }
                 return outputSamples;
             }
         }

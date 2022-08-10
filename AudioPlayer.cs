@@ -21,6 +21,9 @@ namespace AudioLib
         #region Fields
         /// <summary>Wave output play device.</summary>
         readonly WaveOut? _waveOut = null;
+
+        /// <summary>WaveOut doesn't like calling Init() more than once.</summary>
+        readonly SwappableSampleProvider _swapper = new();
         #endregion
 
         #region Events
@@ -68,9 +71,11 @@ namespace AudioLib
                     _waveOut = new WaveOut
                     {
                         DeviceNumber = i,
-                        DesiredLatency = latency
+                        DesiredLatency = latency,
+                        Volume = (float)Volume
                     };
                     _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
+                    _waveOut.Init(_swapper);
                     break;
                 }
             }
@@ -92,12 +97,12 @@ namespace AudioLib
         /// </summary>
         /// <param name="smpl"></param>
         /// <returns></returns>
-        public bool Init(ISampleProvider smpl)
+        public bool SetProvider(ISampleProvider smpl)
         {
-            bool ok = false;
+            bool ok = true;
+            _swapper.SetInput(smpl);
             if (_waveOut is not null)
             {
-                _waveOut.Init(smpl); // TODO prevent calling more than once.
                 _waveOut.Volume = (float)Volume;
                 ok = true;
             }

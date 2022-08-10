@@ -21,16 +21,17 @@ namespace AudioLib.Test
 {
     public partial class TestHost : Form
     {
-        string _filesDir = @"C:\Dev\repos\TestAudioFiles\";
+        readonly string _filesDir = @"C:\Dev\repos\TestAudioFiles\";
 
         float[] _data = Array.Empty<float>();
 
-        ClipSampleProvider _clip;
-        ClipSampleProvider _clip2;
+        ClipSampleProvider? _clip;
 
-        SwappableSampleProvider _swapper = new();
+        ClipSampleProvider? _clip2;
 
-        AudioPlayer _player = new("Microsoft Sound Mapper", 200);
+        readonly SwappableSampleProvider _swapper = new();
+
+        readonly AudioPlayer _player = new("Microsoft Sound Mapper", 200);
 
 
         public TestHost()
@@ -50,6 +51,13 @@ namespace AudioLib.Test
             timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
             timeBar.ProgressColor = Color.CornflowerBlue;
             timeBar.BackColor = Color.Salmon;
+
+            _player.Volume = 0.5;
+            _player.PlaybackStopped += (_, __) =>
+            {
+                LogLine("player finished");
+                this.InvokeIfRequired(_ => { btnPlayer.Checked = false; });
+            };
 
             // Go-go-go.
             timer1.Enabled = true;
@@ -151,10 +159,8 @@ namespace AudioLib.Test
         {
             if (_clip is not null)
             {
-                _player.Volume = 0.5;
-                _player.PlaybackStopped += (_, __) => { LogLine("player finished"); };
                 _clip.Position = 0;
-                _player.Init(_clip);
+                _player.SetProvider(_clip);
                 _player.Run(btnPlayer.Checked);
             }
             else
@@ -226,8 +232,6 @@ namespace AudioLib.Test
             f.Controls.Add(pg);
 
             f.ShowDialog();
-
-            LogLine(AudioSettings.LibSettings.ToString());
         }
 
         /// <summary>
