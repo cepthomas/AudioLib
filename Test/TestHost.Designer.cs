@@ -29,6 +29,7 @@
             this.wavToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mp3ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.flacToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.m4aToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sinToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
@@ -70,7 +71,6 @@
             this.waveViewer1.Name = "waveViewer1";
             this.waveViewer1.Size = new System.Drawing.Size(986, 262);
             this.waveViewer1.TabIndex = 26;
-            this.waveViewer1.Values = new float[0];
             // 
             // txtInfo
             // 
@@ -137,6 +137,7 @@
             this.wavToolStripMenuItem,
             this.mp3ToolStripMenuItem,
             this.flacToolStripMenuItem,
+            this.m4aToolStripMenuItem,
             this.txtToolStripMenuItem,
             this.sinToolStripMenuItem});
             this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
@@ -147,35 +148,42 @@
             // wavToolStripMenuItem
             // 
             this.wavToolStripMenuItem.Name = "wavToolStripMenuItem";
-            this.wavToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
+            this.wavToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.wavToolStripMenuItem.Text = "wav";
             this.wavToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // mp3ToolStripMenuItem
             // 
             this.mp3ToolStripMenuItem.Name = "mp3ToolStripMenuItem";
-            this.mp3ToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
+            this.mp3ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.mp3ToolStripMenuItem.Text = "mp3";
             this.mp3ToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // flacToolStripMenuItem
             // 
             this.flacToolStripMenuItem.Name = "flacToolStripMenuItem";
-            this.flacToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
+            this.flacToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.flacToolStripMenuItem.Text = "flac";
             this.flacToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
+            // 
+            // m4aToolStripMenuItem
+            // 
+            this.m4aToolStripMenuItem.Name = "m4aToolStripMenuItem";
+            this.m4aToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.m4aToolStripMenuItem.Text = "m4a";
+            this.m4aToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // txtToolStripMenuItem
             // 
             this.txtToolStripMenuItem.Name = "txtToolStripMenuItem";
-            this.txtToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
+            this.txtToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.txtToolStripMenuItem.Text = "txt";
             this.txtToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // sinToolStripMenuItem
             // 
             this.sinToolStripMenuItem.Name = "sinToolStripMenuItem";
-            this.sinToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
+            this.sinToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
             this.sinToolStripMenuItem.Text = "sin";
             this.sinToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
@@ -248,5 +256,6 @@
         private System.Windows.Forms.ToolStripButton btnPlayer;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripButton btnSwap;
+        private System.Windows.Forms.ToolStripMenuItem m4aToolStripMenuItem;
     }
 }

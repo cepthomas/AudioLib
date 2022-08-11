@@ -14,28 +14,32 @@ namespace AudioLib
     public class AudioUtils
     {
         /// <summary>
-        /// Make a buffer out of the provider contents.
+        /// Make a buffer out of the provider contents. Mono only.
         /// </summary>
         /// <param name="sprov">The provider.</param>
-        /// <param name="len">Optional known length. TODO?</param>
         /// <returns></returns>
-        public static float[] ReadAll(ISampleProvider sprov, int len = 0)
+        public static float[] ReadAll(ISampleProvider sprov)
         {
+            ValidateFormat(sprov.WaveFormat, true);
+
+            SetProviderPosition(sprov, 0);
+
             List<float[]> parts = new();
 
             bool done = false;
             while (!done)
             {
                 // Get a chunk.
-                int toRead = 20000;//TODO fix.
+                int toRead = 100000;
                 var data = new float[toRead];
 
                 int numRead = sprov.Read(data, 0, toRead);
 
                 if(numRead != toRead)
                 {
+                    // last bunch
                     Array.Resize(ref data, numRead);
-                    done = true; // last bunch
+                    done = true;
                 }
                 parts.Add(data);
             }
@@ -50,6 +54,23 @@ namespace AudioLib
             parts.ForEach(p => { p.CopyTo(all, i); i += p.Length; } );
 
             return all;
+        }
+
+        /// <summary>
+        /// Agnostic position setter.
+        /// </summary>
+        /// <param name="sprov"></param>
+        /// <param name="pos"></param>
+        public static void SetProviderPosition(ISampleProvider sprov, int pos)
+        {
+            if (sprov is ClipSampleProvider provider)
+            {
+                provider.Position = pos;
+            }
+            else if (sprov is AudioFileReader reader)
+            {
+                reader.Position = pos;
+            }
         }
 
         /// <summary>

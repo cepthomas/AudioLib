@@ -11,7 +11,7 @@ using NBagOfTricks;
 namespace AudioLib
 {
     /// <summary>
-    /// Provider that encapsulates a client supplied audio data subset.
+    /// Provider that encapsulates a client supplied audio data subset. Mono only - coerces stereo.
     /// Supplies some basic editing:
     ///   - Gain envelope.
     ///   - Gain overall.
@@ -19,11 +19,11 @@ namespace AudioLib
     public sealed class ClipSampleProvider : ISampleProvider
     {
         /// <summary>How to handle stereo files.</summary>
-        public enum StereoCoerce { Left, Right, Mono }
+        public enum StereoCoercion { Left, Right, Mono }
 
         #region Fields
         /// <summary>The full buffer from client.</summary>
-        readonly float[] _vals = Array.Empty<float>();
+        float[] _vals = Array.Empty<float>();
 
         /// <summary>Make this look like a streaam.</summary>
         int _currentIndex = 0;
@@ -39,7 +39,7 @@ namespace AudioLib
         #endregion
 
         #region Properties
-        /// <summary>The WaveFormat of this sample provider. ISampleProvider implementation.</summary>
+        /// <summary>The WaveFormat of this sample provider. Fixed to mono. ISampleProvider implementation.</summary>
         public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
 
         /// <summary>The associated file name. Empty if new.</summary>
@@ -52,7 +52,7 @@ namespace AudioLib
         public int Length { get { return _vals.Length; } }
 
         ///// <summary>Length of the clip in seconds.</summary>
-        //public Duration { get; init; } = 123; // TODO
+        //public TimeSpan TotalTime { get; init; } = 123; // TODO like _audioFileReader.TotalTime;
 
         /// <summary>Position of the simulated stream as sample index.</summary>
         public int Position
@@ -64,51 +64,38 @@ namespace AudioLib
 
         #region Constructors
         /// <summary>
-        /// Constructor from a sample provider.
+        /// Constructor from a sample provider. Coerces stereo to mono.
         /// </summary>
-        /// <param name="provider">Format to use.</param>
-        public ClipSampleProvider(ISampleProvider provider)
+        /// <param name="source">Source provider to use.</param>
+        /// <param name="mode">How to handle stereo files.</param>
+        public ClipSampleProvider(ISampleProvider source, StereoCoercion mode = StereoCoercion.Mono)
         {
-            AudioUtils.ValidateFormat(provider.WaveFormat, true);
+            AudioUtils.ValidateFormat(source.WaveFormat, false);
             FileName = "";
-            _vals = AudioUtils.ReadAll(provider);
+            ReadSource(source, mode);
         }
 
         /// <summary>
-        /// Constructor from a buffer.
+        /// Constructor from a buffer. Mono only.
         /// </summary>
-        /// <param name="waveFormat">Format to use.</param>
         /// <param name="vals">The data to use.</param>
         /// <param name="fn">Maybe associated filename.</param>
-        public ClipSampleProvider(WaveFormat waveFormat, float[] vals, string fn = "")
+        public ClipSampleProvider(float[] vals, string fn = "")
         {
-            AudioUtils.ValidateFormat(waveFormat, true);
             FileName = fn;
             _vals = vals;
         }
 
         /// <summary>
-        /// Constructor from a file. Deals with stereo files.
+        /// Constructor from a file. Coerces stereo to mono.
         /// </summary>
         /// <param name="fn">File to use.</param>
         /// <param name="mode">How to handle stereo files.</param>
-        public ClipSampleProvider(string fn, StereoCoerce mode = StereoCoerce.Mono)
+        public ClipSampleProvider(string fn, StereoCoercion mode = StereoCoercion.Mono)
         {
             FileName = fn;
-
-            using var reader = new AudioFileReader(fn);
-            ISampleProvider prov = new AudioFileReader(fn);
-
-            if (prov.WaveFormat.Channels == 2)
-            {
-                prov = new StereoToMonoSampleProvider(prov)
-                {
-                    LeftVolume = mode == StereoCoerce.Mono ? 0.5f : (mode == StereoCoerce.Left ? 1.0f : 0.0f),
-                    RightVolume = mode == StereoCoerce.Mono ? 0.5f : (mode == StereoCoerce.Right ? 1.0f : 0.0f)
-                };
-            }
-
-            _vals = AudioUtils.ReadAll(prov);
+            using var prov = new AudioFileReader(fn);
+            ReadSource(prov, mode);
         }
         #endregion
 
@@ -179,6 +166,27 @@ namespace AudioLib
         public void RemoveGain(int sampleIndex)
         {
             // if in _envelope, remove.
+        }
+        #endregion
+
+        #region Private
+        /// <summary>
+        /// Common buff loader. Coerces stereo to mono.
+        /// </summary>
+        /// <param name="source">Source provider to use.</param>
+        /// <param name="mode">How to handle stereo files.</param>
+        void ReadSource(ISampleProvider source, StereoCoercion mode)
+        {
+            if (source.WaveFormat.Channels == 2)
+            {
+                source = new StereoToMonoSampleProvider(source)
+                {
+                    LeftVolume = mode == StereoCoercion.Mono ? 0.5f : (mode == StereoCoercion.Left ? 1.0f : 0.0f),
+                    RightVolume = mode == StereoCoercion.Mono ? 0.5f : (mode == StereoCoercion.Right ? 1.0f : 0.0f)
+                };
+            }
+
+            _vals = AudioUtils.ReadAll(source);
         }
         #endregion
     }

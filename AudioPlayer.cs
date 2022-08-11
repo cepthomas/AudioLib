@@ -13,9 +13,7 @@ using NBagOfTricks;
 
 namespace AudioLib
 {
-    /// <summary>
-    /// A simple audio file player.
-    /// </summary>
+    /// <summary>A simple audio file player.</summary>
     public sealed class AudioPlayer : IDisposable
     {
         #region Fields
@@ -38,17 +36,14 @@ namespace AudioLib
         /// <summary>Volume.</summary>
         public double Volume
         {
-            get
-            {
-                return _volume;
-            }
+            get { return _volume; }
             set 
             {
                 _volume = MathUtils.Constrain(value, AudioLibDefs.VOLUME_MIN, AudioLibDefs.VOLUME_MAX);
                 if (_waveOut is not null) { _waveOut.Volume = (float)_volume; }
             }
         }
-        double _volume = 0.6;
+        double _volume = AudioLibDefs.VOLUME_MAX * 0.7;
 
         /// <summary>State.</summary>
         public bool Playing { get; private set; }
@@ -99,7 +94,7 @@ namespace AudioLib
         /// <returns></returns>
         public bool SetProvider(ISampleProvider smpl)
         {
-            bool ok = true;
+            bool ok = false;
             _swapper.SetInput(smpl);
             if (_waveOut is not null)
             {
@@ -152,7 +147,7 @@ namespace AudioLib
         /// <param name="e"></param>
         void WaveOut_PlaybackStopped(object? sender, StoppedEventArgs e)
         {
-            //Debug.WriteLine($"WaveOut_PlaybackStopped()");
+            // Debug.WriteLine($"WaveOut_PlaybackStopped()");
             Playing = false;
             PlaybackStopped?.Invoke(this, e);
         }

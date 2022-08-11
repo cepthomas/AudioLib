@@ -25,9 +25,9 @@ namespace AudioLib.Test
 
         float[] _data = Array.Empty<float>();
 
-        ClipSampleProvider? _clip;
+        ISampleProvider? _sprov1;
 
-        ClipSampleProvider? _clip2;
+        ISampleProvider _sprov2;
 
         readonly SwappableSampleProvider _swapper = new();
 
@@ -43,7 +43,7 @@ namespace AudioLib.Test
 
             Location = new(20, 20);
 
-            ///// Time bar.
+            ///// Time bar. TODO impl
             timeBar.SnapMsec = 10;
             //timeBar.Length = new TimeSpan(0, 0, 1, 23, 456);
             //timeBar.Start = new TimeSpan(0, 0, 0, 10, 333);
@@ -59,6 +59,10 @@ namespace AudioLib.Test
                 this.InvokeIfRequired(_ => { btnPlayer.Checked = false; });
             };
 
+            _sprov2 = new ClipSampleProvider(_filesDir + "one-sec.wav");
+            _swapper.SetInput(_sprov2);
+            waveViewer1.SampleProvider = _swapper;
+
             // Go-go-go.
             timer1.Enabled = true;
         }
@@ -70,14 +74,15 @@ namespace AudioLib.Test
                 case "sin":
                     {
                         // Draw a sin wave.
-                        _data = new float[1000];
+                        _data = new float[10000];
                         for (int i = 0; i < _data.Length; i++)
                         {
                             _data[i] = (float)Math.Sin(Math.PI * i / 30.0);
                         }
+                        _sprov1 = new ClipSampleProvider(_data);
                         waveViewer1.DrawColor = Color.Green;
-                        waveViewer1.Values = _data;
                         waveViewer1.Marker = 333;
+                        waveViewer1.SampleProvider = _sprov1;
                     }
                     break;
 
@@ -90,66 +95,61 @@ namespace AudioLib.Test
                         {
                             _data[i] = float.Parse(sdata[i]);
                         }
+                        _sprov1 = new ClipSampleProvider(_data);
                         waveViewer1.DrawColor = Color.Blue;
-                        waveViewer1.Values = _data;
                         waveViewer1.Marker = 20000;
+                        waveViewer1.SampleProvider = _sprov1;
                     }
                     break;
 
                 case "wav":
                     {
                         // From file.
-                        var fn =
-                         "one-sec.wav";
-                        // Cave Ceremony 01.wav
-                        // Fat Box 01.wav
-                        // Horns 01.wav
-                        // Orchestra 03.wav
-                        // ref-stereo.wav
-                        // sin-stereo-audible.wav
-                        // sin.wav
-                        // test.wav
-
-                        _clip = new ClipSampleProvider(_filesDir + fn);
-                        _data = AudioUtils.ReadAll(_clip);
+                        // Cave Ceremony 01.wav   Fat Box 01.wav  Horns 01.wav  one-sec.wav
+                        // Orchestra 03.wav  ref-stereo.wav  sin-stereo-audible.wav  sin.wav  test.wav
+                        var fn = "one-sec.wav";
+                        _sprov1 = new ClipSampleProvider(_filesDir + fn);
+                        _data = AudioUtils.ReadAll(_sprov1);
                         waveViewer1.DrawColor = Color.Red;
-                        waveViewer1.Values = _data;
                         waveViewer1.Marker = 30000;
+                        waveViewer1.SampleProvider = _sprov1;
                     }
                     break;
 
                 case "mp3":
                     {
-                        // kidch.mp3
-                        // one-sec.mp3
-                        _clip = new ClipSampleProvider(_filesDir + "_kidch.mp3");
-                        _data = AudioUtils.ReadAll(_clip);
+                        // Uses ClipSampleProvider.
+                        // kidch.mp3   one-sec.mp3
+                        _sprov1 = new ClipSampleProvider(_filesDir + "one-sec.mp3");
+                        _data = AudioUtils.ReadAll(_sprov1);
                         waveViewer1.DrawColor = Color.Red;
-                        waveViewer1.Values = _data;
                         waveViewer1.Marker = 30000;
+                        waveViewer1.SampleProvider = _sprov1;
                     }
                     break;
 
                 case "flac":
                     {
-                        // ambi_swoosh.flac
-                        // bass_woodsy_c.flac
-                        _clip = new ClipSampleProvider(_filesDir + "ambi_swoosh.flac");
-                        _data = AudioUtils.ReadAll(_clip);
+                        // Uses AudioFileReader.
+                        // ambi_swoosh.flac  bass_woodsy_c.flac
+                        var audioFileReader = new AudioFileReader(_filesDir + "ambi_swoosh.flac");
+                        var length = audioFileReader.TotalTime;
+                        _sprov1 = audioFileReader;
                         waveViewer1.DrawColor = Color.Red;
-                        waveViewer1.Values = _data;
                         waveViewer1.Marker = 30000;
+                        waveViewer1.SampleProvider = _sprov1;
                     }
                     break;
 
                 case "m4a":
                     {
+                        // Uses ClipSampleProvider.
                         // avTouch_sample.m4a
-                        _clip = new ClipSampleProvider(_filesDir + "avTouch_sample.m4a");
-                        _data = AudioUtils.ReadAll(_clip);
+                        _sprov1 = new ClipSampleProvider(_filesDir + "avTouch_sample.m4a");
+                        _data = AudioUtils.ReadAll(_sprov1);
                         waveViewer1.DrawColor = Color.Red;
-                        waveViewer1.Values = _data;
                         waveViewer1.Marker = 30000;
+                        waveViewer1.SampleProvider = _sprov1;
                     }
                     break;
             }
@@ -157,46 +157,32 @@ namespace AudioLib.Test
 
         void Player_Click(object sender, EventArgs e)
         {
-            if (_clip is not null)
+            if (_sprov1 is null)
             {
-                _clip.Position = 0;
-                _player.SetProvider(_clip);
-                _player.Run(btnPlayer.Checked);
+                LogLine("open a file first please");
             }
             else
             {
-                LogLine("open a file first please");
+                AudioUtils.SetProviderPosition(_sprov1, 0);
+                AudioUtils.SetProviderPosition(_sprov2, 0);
+                _player.Run(btnPlayer.Checked);
             }
         }
 
         void Swap_Click(object sender, EventArgs e)
         {
-            if(_clip2 is null)
-            {
-                _clip2 = new ClipSampleProvider(_filesDir + "one-sec.wav");
-            }
-
-            if (_clip is not null)
-            {
-                if(btnSwap.Checked)
-                {
-                    _clip2.Position = 0;
-                    _swapper.SetInput(_clip2);
-                }
-                else
-                {
-                    _clip.Position = 0;
-                    _swapper.SetInput(_clip);
-                }
-
-                var data = AudioUtils.ReadAll(_swapper);
-                waveViewer1.Values = data;
-            }
-            else
+            if (_sprov1 is null)
             {
                 LogLine("open a file first please");
             }
+            else
+            {
+                AudioUtils.SetProviderPosition(_sprov1, 0);
+                AudioUtils.SetProviderPosition(_sprov2, 0);
+                _swapper.SetInput(btnSwap.Checked ? _sprov2 : _sprov1);
+            }
         }
+
 
         void Timer1_Tick(object? sender, EventArgs e)
         {
