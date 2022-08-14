@@ -11,16 +11,15 @@ using NBagOfTricks;
 namespace AudioLib
 {
     /// <summary>
-    /// Provider that encapsulates a client supplied audio data subset. Mono only - coerces stereo.
+    /// Provider that encapsulates a client supplied audio data subset.
+    /// Mono output only - coerces stereo input per client call. Can be used for splitting stereo files.
+    /// If you need stereo, use AudioFileReader.
     /// Supplies some basic editing:
     ///   - Gain envelope.
     ///   - Gain overall.
     /// </summary>
-    public sealed class ClipSampleProvider : ISampleProvider
+    public class ClipSampleProvider : ISampleProvider
     {
-        /// <summary>How to handle stereo files.</summary>
-        public enum StereoCoercion { Left, Right, Mono }
-
         #region Fields
         /// <summary>The full buffer from client.</summary>
         float[] _vals = Array.Empty<float>();
@@ -34,7 +33,7 @@ namespace AudioLib
         /// <summary>The lock() target.</summary>
         readonly object _locker = new();
 
-        /// <summary>Piecewise gain envelope. Key is index, value is gain.</summary>
+        /// <summary>Piecewise gain envelope. Key is index, value is gain. TODO all</summary>
         readonly Dictionary<int, double> _envelope = new();
         #endregion
 
@@ -51,8 +50,8 @@ namespace AudioLib
         /// <summary>Length of the clip in samples.</summary>
         public int Length { get { return _vals.Length; } }
 
-        ///// <summary>Length of the clip in seconds.</summary>
-        //public TimeSpan TotalTime { get; init; } = 123; // TODO like _audioFileReader.TotalTime;
+        /// <summary>Length of the clip in seconds.</summary>
+        public TimeSpan TotalTime { get { return TimeSpan.FromSeconds((double)Length / WaveFormat.SampleRate); } }
 
         /// <summary>Position of the simulated stream as sample index.</summary>
         public int Position
@@ -68,9 +67,8 @@ namespace AudioLib
         /// </summary>
         /// <param name="source">Source provider to use.</param>
         /// <param name="mode">How to handle stereo files.</param>
-        public ClipSampleProvider(ISampleProvider source, StereoCoercion mode = StereoCoercion.Mono)
+        public ClipSampleProvider(ISampleProvider source, StereoCoercion mode)
         {
-            AudioUtils.ValidateFormat(source.WaveFormat, false);
             FileName = "";
             ReadSource(source, mode);
         }
@@ -91,7 +89,7 @@ namespace AudioLib
         /// </summary>
         /// <param name="fn">File to use.</param>
         /// <param name="mode">How to handle stereo files.</param>
-        public ClipSampleProvider(string fn, StereoCoercion mode = StereoCoercion.Mono)
+        public ClipSampleProvider(string fn, StereoCoercion mode)
         {
             FileName = fn;
             using var prov = new AudioFileReader(fn);
@@ -99,7 +97,7 @@ namespace AudioLib
         }
         #endregion
 
-        #region Public
+        #region Public functions
         /// <summary>
         /// Reads samples from this sample provider with adjustments for envelope and overall gain.
         /// ISampleProvider implementation.
@@ -157,6 +155,8 @@ namespace AudioLib
 
             return numRead;
         }
+        #endregion
+
 
         public void AddGain(int sampleIndex, double gain)
         {
@@ -167,16 +167,18 @@ namespace AudioLib
         {
             // if in _envelope, remove.
         }
-        #endregion
+
 
         #region Private
         /// <summary>
-        /// Common buff loader. Coerces stereo to mono.
+        /// Common buff loader. Coerces stereo to mono per client request.
         /// </summary>
         /// <param name="source">Source provider to use.</param>
         /// <param name="mode">How to handle stereo files.</param>
         void ReadSource(ISampleProvider source, StereoCoercion mode)
         {
+            source.Validate(false);
+
             if (source.WaveFormat.Channels == 2)
             {
                 source = new StereoToMonoSampleProvider(source)
@@ -186,7 +188,7 @@ namespace AudioLib
                 };
             }
 
-            _vals = AudioUtils.ReadAll(source);
+            _vals = NAudioEx.ReadAll(source);
         }
         #endregion
     }

@@ -22,17 +22,10 @@ namespace AudioLib.Test
     public partial class TestHost : Form
     {
         readonly string _filesDir = @"C:\Dev\repos\TestAudioFiles\";
-
-        float[] _data = Array.Empty<float>();
-
-        ISampleProvider? _sprov1;
-
-        ISampleProvider _sprov2;
-
-        readonly SwappableSampleProvider _swapper = new();
-
-        readonly AudioPlayer _player = new("Microsoft Sound Mapper", 200);
-
+        ISampleProvider? _prov;
+        readonly ISampleProvider _provSwap;
+        readonly SwappableSampleProvider _waveOutSwapper;
+        readonly AudioPlayer _player;
 
         public TestHost()
         {
@@ -43,148 +36,248 @@ namespace AudioLib.Test
 
             Location = new(20, 20);
 
-            ///// Time bar. TODO impl
+            ///// Time bar.
             timeBar.SnapMsec = 10;
-            //timeBar.Length = new TimeSpan(0, 0, 1, 23, 456);
-            //timeBar.Start = new TimeSpan(0, 0, 0, 10, 333);
-            //timeBar.End = new TimeSpan(0, 0, 0, 44, 777);
             timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
             timeBar.ProgressColor = Color.CornflowerBlue;
             timeBar.BackColor = Color.Salmon;
 
-            _player.Volume = 0.5;
+            _waveOutSwapper = new();
+            _player = new("Microsoft Sound Mapper", 200, _waveOutSwapper) { Volume = 0.5 };
             _player.PlaybackStopped += (_, __) =>
             {
                 LogLine("player finished");
                 this.InvokeIfRequired(_ => { btnPlayer.Checked = false; });
             };
 
-            _sprov2 = new ClipSampleProvider(_filesDir + "one-sec.wav");
-            _swapper.SetInput(_sprov2);
-            waveViewer1.SampleProvider = _swapper;
+            _provSwap = new ClipSampleProvider(_filesDir + "test.wav", StereoCoercion.Mono);
 
             // Go-go-go.
             timer1.Enabled = true;
         }
 
-        private void Load_Click(object sender, EventArgs e)
+        void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
-            switch(sender.ToString())
+            //LogLine($"Current time:{timeBar.Current}");
+           // waveViewer1.Marker = (int)timeBar.Current.TotalMilliseconds;
+        }
+
+        private void Load_Click(object? sender, EventArgs args)
+        {
+            _player.Run(false);
+            btnPlayer.Checked = false;
+            btnSwap.Checked = false;
+
+            switch(sender!.ToString())
             {
-                case "sin":
-                    {
-                        // Draw a sin wave.
-                        _data = new float[10000];
-                        for (int i = 0; i < _data.Length; i++)
-                        {
-                            _data[i] = (float)Math.Sin(Math.PI * i / 30.0);
-                        }
-                        _sprov1 = new ClipSampleProvider(_data);
-                        waveViewer1.DrawColor = Color.Green;
-                        waveViewer1.Marker = 333;
-                        waveViewer1.SampleProvider = _sprov1;
-                    }
-                    break;
-
-                case "txt":
-                    {
-                        // one-sec.txt
-                        var sdata = File.ReadAllLines(_filesDir + "one-sec.txt");
-                        _data = new float[sdata.Length];
-                        for (int i = 0; i < sdata.Length; i++)
-                        {
-                            _data[i] = float.Parse(sdata[i]);
-                        }
-                        _sprov1 = new ClipSampleProvider(_data);
-                        waveViewer1.DrawColor = Color.Blue;
-                        waveViewer1.Marker = 20000;
-                        waveViewer1.SampleProvider = _sprov1;
-                    }
-                    break;
-
                 case "wav":
                     {
-                        // From file.
-                        // Cave Ceremony 01.wav   Fat Box 01.wav  Horns 01.wav  one-sec.wav
-                        // Orchestra 03.wav  ref-stereo.wav  sin-stereo-audible.wav  sin.wav  test.wav
-                        var fn = "one-sec.wav";
-                        _sprov1 = new ClipSampleProvider(_filesDir + fn);
-                        _data = AudioUtils.ReadAll(_sprov1);
-                        waveViewer1.DrawColor = Color.Red;
-                        waveViewer1.Marker = 30000;
-                        waveViewer1.SampleProvider = _sprov1;
+                        try
+                        {
+                            // Cave Ceremony 01.wav   Fat Box 01.wav  Horns 01.wav  one-sec.wav
+                            // Orchestra 03.wav  ref-stereo.wav  sin-stereo-audible.wav  sin.wav  test.wav
+                            string fn = _filesDir + "ref-stereo.wav";
+                            var prov = new AudioFileReader(fn);
+                            _prov = prov;
+                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            ShowWave(prov, prov.Length);
+                        }
+                        catch (Exception e)
+                        {
+                            LogLine("!!! " + e.Message);
+                        }
                     }
                     break;
 
                 case "mp3":
                     {
-                        // Uses ClipSampleProvider.
-                        // kidch.mp3   one-sec.mp3
-                        _sprov1 = new ClipSampleProvider(_filesDir + "one-sec.mp3");
-                        _data = AudioUtils.ReadAll(_sprov1);
-                        waveViewer1.DrawColor = Color.Red;
-                        waveViewer1.Marker = 30000;
-                        waveViewer1.SampleProvider = _sprov1;
+                        try
+                        {
+                            // kidch.mp3   one-sec.mp3
+                            string fn = _filesDir + "one-sec.mp3";
+                            var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            _prov = prov;
+                            ShowWave(prov, prov.Length);
+                        }
+                        catch (Exception e)
+                        {
+                            LogLine("!!! " + e.Message);
+                        }
                     }
                     break;
 
                 case "flac":
                     {
-                        // Uses AudioFileReader.
-                        // ambi_swoosh.flac  bass_woodsy_c.flac
-                        var audioFileReader = new AudioFileReader(_filesDir + "ambi_swoosh.flac");
-                        var length = audioFileReader.TotalTime;
-                        _sprov1 = audioFileReader;
-                        waveViewer1.DrawColor = Color.Red;
-                        waveViewer1.Marker = 30000;
-                        waveViewer1.SampleProvider = _sprov1;
+                        try
+                        {
+                            // ambi_swoosh.flac  bass_woodsy_c.flac
+                            string fn = _filesDir + "ambi_swoosh.flac";
+                            var prov = new AudioFileReader(fn);
+                            _prov = prov;
+                            ShowWave(prov, prov.Length);
+                        }
+                        catch (Exception e)
+                        {
+                            LogLine("!!! " + e.Message);
+                        }
                     }
                     break;
 
                 case "m4a":
                     {
-                        // Uses ClipSampleProvider.
-                        // avTouch_sample.m4a
-                        _sprov1 = new ClipSampleProvider(_filesDir + "avTouch_sample.m4a");
-                        _data = AudioUtils.ReadAll(_sprov1);
-                        waveViewer1.DrawColor = Color.Red;
-                        waveViewer1.Marker = 30000;
-                        waveViewer1.SampleProvider = _sprov1;
+                        try
+                        {
+                            // avTouch_sample.m4a
+                            string fn = _filesDir + "avTouch_sample.m4a";
+                            var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            _prov = prov;
+                            ShowWave(prov, prov.Length);
+                        }
+                        catch (Exception e)
+                        {
+                            LogLine("!!! " + e.Message);
+                        }
+                    }
+                    break;
+
+                case "sin":
+                    {
+                        try
+                        {
+                            // Draw a sin wave. Store in ClipSampleProvider.
+                            var data = new float[10000];
+                            for (int i = 0; i < data.Length; i++)
+                            {
+                                data[i] = (float)Math.Sin(Math.PI * i / 30.0);
+                            }
+                            var prov = new ClipSampleProvider(data);
+                            _prov = prov;
+                            ShowWave(prov, prov.Length);
+                        }
+                        catch (Exception e)
+                        {
+                            LogLine("!!! " + e.Message);
+                        }
+                    }
+                    break;
+
+                case "txt":
+                    {
+                        try
+                        {
+                            // Wave from csv file. Store in ClipSampleProvider.
+                            var sdata = File.ReadAllLines(_filesDir + "one-sec.txt");
+                            var data = new float[sdata.Length];
+                            for (int i = 0; i < sdata.Length; i++)
+                            {
+                                data[i] = float.Parse(sdata[i]);
+                            }
+                            var prov = new ClipSampleProvider(data);
+                            _prov = prov;
+                            ShowWave(prov, prov.Length);
+                        }
+                        catch (Exception e)
+                        {
+                            LogLine("!!! " + e.Message);
+                        }
                     }
                     break;
             }
         }
 
-        void Player_Click(object sender, EventArgs e)
+        void ShowWave(ISampleProvider prov, long length = 0)
         {
-            if (_sprov1 is null)
+            _waveOutSwapper.SetInput(prov);
+
+            int bytesPerSample = prov.WaveFormat.BitsPerSample / 8;
+            int sclen = (int)(length / bytesPerSample);
+
+            int ht = waveViewer2.Bottom - waveViewer1.Top;
+            int wd = waveViewer1.Width;
+
+            // If it's stereo split into two monos, one viewer per.
+            if (prov.WaveFormat.Channels == 2) // stereo
+            {
+                prov.SetPosition(0);
+                waveViewer1.Size = new(wd, ht / 2);
+                waveViewer1.DrawColor = Color.Red;
+                waveViewer1.Marker = sclen / 3;
+                waveViewer1.SampleProvider = new StereoToMonoSampleProvider(prov) { LeftVolume = 1.0f, RightVolume = 0.0f };
+
+                prov.SetPosition(0);
+                waveViewer2.Visible = true;
+                waveViewer2.Size = new(wd, ht / 2);
+                waveViewer2.DrawColor = Color.Blue;
+                waveViewer2.Marker = sclen / 4;
+                waveViewer2.SampleProvider = new StereoToMonoSampleProvider(prov) { LeftVolume = 0.0f, RightVolume = 1.0f };
+            }
+            else // mono
+            {
+                waveViewer2.Visible = false;
+                waveViewer1.Size = new(wd, ht);
+                waveViewer1.DrawColor = Color.Red;
+                waveViewer1.Marker = sclen / 2;
+                waveViewer1.SampleProvider = prov;
+            }
+
+            prov.SetPosition(0);
+            Text = NAudioEx.GetInfo(prov);
+
+            timeBar.Start = new TimeSpan();
+            timeBar.End = new TimeSpan();
+            //int days, int hours, int minutes, int seconds, int milliseconds
+            timeBar.Length = new(0, 0, 0, 0, 1000 * sclen / prov.WaveFormat.SampleRate); // msec;
+        }
+
+        void Player_Click(object? sender, EventArgs args)
+        {
+            if (_prov is null)
             {
                 LogLine("open a file first please");
             }
             else
             {
-                AudioUtils.SetProviderPosition(_sprov1, 0);
-                AudioUtils.SetProviderPosition(_sprov2, 0);
                 _player.Run(btnPlayer.Checked);
             }
         }
 
-        void Swap_Click(object sender, EventArgs e)
+        void Swap_Click(object? sender, EventArgs args)
         {
-            if (_sprov1 is null)
+            if (_prov is null)
             {
                 LogLine("open a file first please");
             }
             else
             {
-                AudioUtils.SetProviderPosition(_sprov1, 0);
-                AudioUtils.SetProviderPosition(_sprov2, 0);
-                _swapper.SetInput(btnSwap.Checked ? _sprov2 : _sprov1);
+                var newProv = btnSwap.Checked ? _provSwap : _prov;
+                ShowWave(newProv);
+                Text = NAudioEx.GetInfo(newProv);
             }
         }
 
+        void FileInfo_Click(object? sender, EventArgs args)
+        {
+            // Cave Ceremony 01.wav   Fat Box 01.wav  Horns 01.wav  one-sec.wav
+            // Orchestra 03.wav  ref-stereo.wav  sin-stereo-audible.wav  sin.wav  test.wav
+            // kidch.mp3   one-sec.mp3
+            // ambi_swoosh.flac  bass_woodsy_c.flac
+            // avTouch_sample.m4a
 
-        void Timer1_Tick(object? sender, EventArgs e)
+            bool verbose = false;
+
+            string s = AudioFileInfo.GetFileInfo(_filesDir + "one-sec.mp3", verbose);
+            txtInfo.AppendText(s + Environment.NewLine);
+            s = AudioFileInfo.GetFileInfo(_filesDir + "Cave Ceremony 01.wav", verbose);
+            txtInfo.AppendText(s + Environment.NewLine);
+            s = AudioFileInfo.GetFileInfo(_filesDir + "ambi_swoosh.flac", verbose);
+            txtInfo.AppendText(s + Environment.NewLine);
+            s = AudioFileInfo.GetFileInfo(_filesDir + "avTouch_sample.m4a", verbose);
+            txtInfo.AppendText(s + Environment.NewLine);
+            s = AudioFileInfo.GetFileInfo(@"C:\Users\cepth\OneDrive\Audio\SoundFonts\FluidR3 GM.sf2", verbose);
+            txtInfo.AppendText(s + Environment.NewLine);
+        }
+
+        void Timer1_Tick(object? sender, EventArgs args)
         {
             if (btnRunBars.Checked)
             {
@@ -197,33 +290,18 @@ namespace AudioLib.Test
             }
         }
 
-        void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
+        void Settings_Click(object? sender, EventArgs args)
         {
-            //LogLine($"Current time:{timeBar.Current}");
-            waveViewer1.Marker = 999;//TODO
-        }
-        void Settings_Click(object sender, EventArgs e)
-        {
-            PropertyGrid pg = new()
-            {
-                Dock = DockStyle.Fill,
-                SelectedObject = AudioSettings.LibSettings
-            };
-
-            using Form f = new()
-            {
-                ClientSize = new(450, 450),
-            };
-
-            f.Controls.Add(pg);
-
+            using Form f = new() { ClientSize = new(450, 450) };
+            f.Controls.Add(new PropertyGrid() { Dock = DockStyle.Fill, SelectedObject = AudioSettings.LibSettings });
             f.ShowDialog();
         }
 
-        /// <summary>
-        /// Clean up any resources being used.
-        /// </summary>
-        /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        void LogLine(string s)
+        {
+            this.InvokeIfRequired(_ => { txtInfo.AppendText(s + Environment.NewLine); });
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))
@@ -233,11 +311,6 @@ namespace AudioLib.Test
             _player?.Dispose();
 
             base.Dispose(disposing);
-        }
-
-        void LogLine(string s)
-        {
-            this.InvokeIfRequired(_ => { txtInfo.AppendText(s + Environment.NewLine); });
         }
     }
 }

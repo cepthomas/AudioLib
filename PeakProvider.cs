@@ -10,7 +10,10 @@ using NBagOfTricks;
 
 namespace AudioLib
 {
-    public class PeakProvider // Use : IPeakProvider?
+    /// <summary>
+    /// Customized version of NAudio's IPeakProvider family.
+    /// </summary>
+    public class PeakProvider
     {
         /// <summary>
         /// Get wave peak values for UI display.
@@ -24,7 +27,7 @@ namespace AudioLib
         {
             List<(float max, float min)> scaledVals = new();
 
-            // Uses buckets with min/max. TODO could also use average, MathUtils.rms, max/min, ...
+            // Uses buckets with min/max. Could implement average, rms, max/min, ...
             for (int srcIndex = startIndex; srcIndex < vals.Length; srcIndex += samplesPerPixel)
             {
                 // Get the vals with any gain.

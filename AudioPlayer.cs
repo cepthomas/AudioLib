@@ -19,9 +19,6 @@ namespace AudioLib
         #region Fields
         /// <summary>Wave output play device.</summary>
         readonly WaveOut? _waveOut = null;
-
-        /// <summary>WaveOut doesn't like calling Init() more than once.</summary>
-        readonly SwappableSampleProvider _swapper = new();
         #endregion
 
         #region Events
@@ -36,7 +33,10 @@ namespace AudioLib
         /// <summary>Volume.</summary>
         public double Volume
         {
-            get { return _volume; }
+            get
+            {
+                return _volume;
+            }
             set 
             {
                 _volume = MathUtils.Constrain(value, AudioLibDefs.VOLUME_MIN, AudioLibDefs.VOLUME_MAX);
@@ -55,7 +55,8 @@ namespace AudioLib
         /// </summary>
         /// <param name="wavOutDevice">Device name.</param>
         /// <param name="latency">How slow.</param>
-        public AudioPlayer(string wavOutDevice, int latency)
+        /// <param name="smpl">Provider.</param>
+        public AudioPlayer(string wavOutDevice, int latency, ISampleProvider smpl)
         {
             // Create output device. –1 indicates the default output device, while 0 is the first output device.
             for (int i = -1; i < WaveOut.DeviceCount; i++)
@@ -70,7 +71,7 @@ namespace AudioLib
                         Volume = (float)Volume
                     };
                     _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
-                    _waveOut.Init(_swapper);
+                    _waveOut.Init(smpl);
                     break;
                 }
             }
@@ -87,24 +88,6 @@ namespace AudioLib
         #endregion
 
         #region Public functions
-        /// <summary>
-        /// Bind the source to output.
-        /// </summary>
-        /// <param name="smpl"></param>
-        /// <returns></returns>
-        public bool SetProvider(ISampleProvider smpl)
-        {
-            bool ok = false;
-            _swapper.SetInput(smpl);
-            if (_waveOut is not null)
-            {
-                _waveOut.Volume = (float)Volume;
-                ok = true;
-            }
-            Playing = false;
-            return ok;
-        }
-
         /// <summary>
         /// Start/stop everything.
         /// </summary>
@@ -135,7 +118,7 @@ namespace AudioLib
         /// </summary>
         public void Rewind()
         {
-            // Nothing to do - client owns the reader.
+            // Nothing to do - client owns the provider.
         }
         #endregion
 

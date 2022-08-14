@@ -33,9 +33,6 @@ namespace AudioLib
 
         /// <summary>Constant.</summary>
         static readonly int SMALL_CHANGE = 100;
-
-        /// <summary>For viewing purposes.</summary>
-        const string TS_FORMAT = @"mm\:ss\.fff";
         #endregion
 
         #region Properties
@@ -178,11 +175,11 @@ namespace AudioLib
 
             // Text.
             _format.Alignment = StringAlignment.Center;
-            pe.Graphics.DrawString(_current.ToString(TS_FORMAT), FontLarge, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_current.ToString(AudioLibDefs.TS_FORMAT), FontLarge, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Near;
-            pe.Graphics.DrawString(_start.ToString(TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_start.ToString(AudioLibDefs.TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Far;
-            pe.Graphics.DrawString(_end.ToString(TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_end.ToString(AudioLibDefs.TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
         }
         #endregion
 
@@ -252,7 +249,7 @@ namespace AudioLib
                 if (e.X != _lastXPos)
                 {
                     TimeSpan ts = GetTimeFromMouse(e.X);
-                    _toolTip.SetToolTip(this, ts.ToString(TS_FORMAT));
+                    _toolTip.SetToolTip(this, ts.ToString(AudioLibDefs.TS_FORMAT));
                     _lastXPos = e.X;
                 }
             }

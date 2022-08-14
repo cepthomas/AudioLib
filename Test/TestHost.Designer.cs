@@ -17,9 +17,10 @@
         {
             this.components = new System.ComponentModel.Container();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.txtInfo = new System.Windows.Forms.RichTextBox();
             this.timeBar = new AudioLib.TimeBar();
             this.waveViewer1 = new AudioLib.WaveViewer();
-            this.txtInfo = new System.Windows.Forms.RichTextBox();
+            this.waveViewer2 = new AudioLib.WaveViewer();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnRunBars = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -36,12 +37,26 @@
             this.btnPlayer = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.btnSwap = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnFileInfo = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // timer1
             // 
             this.timer1.Tick += new System.EventHandler(this.Timer1_Tick);
+            // 
+            // txtInfo
+            // 
+            this.txtInfo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.txtInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.txtInfo.Location = new System.Drawing.Point(10, 411);
+            this.txtInfo.Name = "txtInfo";
+            this.txtInfo.Size = new System.Drawing.Size(1157, 167);
+            this.txtInfo.TabIndex = 29;
+            this.txtInfo.Text = "";
             // 
             // timeBar
             // 
@@ -55,7 +70,7 @@
             this.timeBar.MarkerColor = System.Drawing.Color.Black;
             this.timeBar.Name = "timeBar";
             this.timeBar.ProgressColor = System.Drawing.Color.Orange;
-            this.timeBar.Size = new System.Drawing.Size(986, 64);
+            this.timeBar.Size = new System.Drawing.Size(1157, 64);
             this.timeBar.SnapMsec = 0;
             this.timeBar.TabIndex = 24;
             // 
@@ -69,19 +84,23 @@
             this.waveViewer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.waveViewer1.Marker = 0;
             this.waveViewer1.Name = "waveViewer1";
-            this.waveViewer1.Size = new System.Drawing.Size(986, 262);
+            this.waveViewer1.Size = new System.Drawing.Size(1157, 130);
             this.waveViewer1.TabIndex = 26;
+            this.waveViewer1.YGain = 0.8F;
             // 
-            // txtInfo
+            // waveViewer2
             // 
-            this.txtInfo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.waveViewer2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtInfo.Location = new System.Drawing.Point(10, 411);
-            this.txtInfo.Name = "txtInfo";
-            this.txtInfo.Size = new System.Drawing.Size(986, 167);
-            this.txtInfo.TabIndex = 29;
-            this.txtInfo.Text = "";
+            this.waveViewer2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.waveViewer2.DrawColor = System.Drawing.Color.Orange;
+            this.waveViewer2.Location = new System.Drawing.Point(10, 258);
+            this.waveViewer2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.waveViewer2.Marker = 0;
+            this.waveViewer2.Name = "waveViewer2";
+            this.waveViewer2.Size = new System.Drawing.Size(1157, 130);
+            this.waveViewer2.TabIndex = 32;
+            this.waveViewer2.YGain = 0.8F;
             // 
             // toolStrip1
             // 
@@ -95,10 +114,13 @@
             this.toolStripSeparator3,
             this.btnPlayer,
             this.toolStripSeparator4,
-            this.btnSwap});
+            this.btnSwap,
+            this.toolStripSeparator5,
+            this.btnFileInfo,
+            this.toolStripSeparator6});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
-            this.toolStrip1.Size = new System.Drawing.Size(1004, 27);
+            this.toolStrip1.Size = new System.Drawing.Size(1175, 27);
             this.toolStrip1.TabIndex = 31;
             this.toolStrip1.Text = "toolStrip1";
             // 
@@ -148,42 +170,42 @@
             // wavToolStripMenuItem
             // 
             this.wavToolStripMenuItem.Name = "wavToolStripMenuItem";
-            this.wavToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.wavToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
             this.wavToolStripMenuItem.Text = "wav";
             this.wavToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // mp3ToolStripMenuItem
             // 
             this.mp3ToolStripMenuItem.Name = "mp3ToolStripMenuItem";
-            this.mp3ToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.mp3ToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
             this.mp3ToolStripMenuItem.Text = "mp3";
             this.mp3ToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // flacToolStripMenuItem
             // 
             this.flacToolStripMenuItem.Name = "flacToolStripMenuItem";
-            this.flacToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.flacToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
             this.flacToolStripMenuItem.Text = "flac";
             this.flacToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // m4aToolStripMenuItem
             // 
             this.m4aToolStripMenuItem.Name = "m4aToolStripMenuItem";
-            this.m4aToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.m4aToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
             this.m4aToolStripMenuItem.Text = "m4a";
             this.m4aToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // txtToolStripMenuItem
             // 
             this.txtToolStripMenuItem.Name = "txtToolStripMenuItem";
-            this.txtToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.txtToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
             this.txtToolStripMenuItem.Text = "txt";
             this.txtToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // sinToolStripMenuItem
             // 
             this.sinToolStripMenuItem.Name = "sinToolStripMenuItem";
-            this.sinToolStripMenuItem.Size = new System.Drawing.Size(224, 26);
+            this.sinToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
             this.sinToolStripMenuItem.Text = "sin";
             this.sinToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
@@ -217,11 +239,31 @@
             this.btnSwap.Text = "swap";
             this.btnSwap.Click += new System.EventHandler(this.Swap_Click);
             // 
+            // toolStripSeparator5
+            // 
+            this.toolStripSeparator5.Name = "toolStripSeparator5";
+            this.toolStripSeparator5.Size = new System.Drawing.Size(6, 27);
+            // 
+            // btnFileInfo
+            // 
+            this.btnFileInfo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnFileInfo.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnFileInfo.Name = "btnFileInfo";
+            this.btnFileInfo.Size = new System.Drawing.Size(64, 24);
+            this.btnFileInfo.Text = "file info";
+            this.btnFileInfo.Click += new System.EventHandler(this.FileInfo_Click);
+            // 
+            // toolStripSeparator6
+            // 
+            this.toolStripSeparator6.Name = "toolStripSeparator6";
+            this.toolStripSeparator6.Size = new System.Drawing.Size(6, 27);
+            // 
             // TestHost
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1004, 597);
+            this.ClientSize = new System.Drawing.Size(1175, 597);
+            this.Controls.Add(this.waveViewer2);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.txtInfo);
             this.Controls.Add(this.waveViewer1);
@@ -240,6 +282,7 @@
         private System.Windows.Forms.Timer timer1;
         private TimeBar timeBar;
         private WaveViewer waveViewer1;
+        private WaveViewer waveViewer2;
         private System.Windows.Forms.RichTextBox txtInfo;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton btnRunBars;
@@ -257,5 +300,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripButton btnSwap;
         private System.Windows.Forms.ToolStripMenuItem m4aToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
+        private System.Windows.Forms.ToolStripButton btnFileInfo;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
     }
 }

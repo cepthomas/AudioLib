@@ -5,7 +5,11 @@ using NAudio.Wave;
 
 namespace AudioLib
 {
-    /// <summary>Supports hot swapping of input. Stereo or mono.</summary>
+    /// <summary>
+    /// Sample provider that supports hot swapping of input. Mainly used to supply input to
+    /// WaveOut which doesn't like having its input switched.
+    /// Takes stereo or mono input, output is always stereo.
+    /// </summary>
     public class SwappableSampleProvider : ISampleProvider
     {
         #region Fields
@@ -13,18 +17,22 @@ namespace AudioLib
         ISampleProvider? _currentInput;
 
         /// <summary>The current buffer.</summary>
-        float[] _sourceBuffer = Array.Empty<float>();
+        float[] _vals = Array.Empty<float>();
 
         /// <summary>The lock() target.</summary>
         readonly object _locker = new();
         #endregion
 
         #region Properties
-        /// <summary>The WaveFormat of this sample provider. It's stereo even for mono inputs. ISampleProvider implementation.</summary>
+        /// <summary>The fixed WaveFormat of this sample provider. ISampleProvider implementation.</summary>
         public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
 
-        // /// <summary>If true Read always returns the number of samples requested by padding.</summary>
-        // public bool ReadFully { get; set; }//TODO needed?
+        /// <summary>Position of the simulated stream as sample index.</summary>
+        public int Position
+        {
+            get { return _currentInput.GetPosition(); }
+            set { if(_currentInput is not null) _currentInput.SetPosition(value); }
+        }
         #endregion
 
         #region Public functions
@@ -37,7 +45,8 @@ namespace AudioLib
             lock (_locker)
             {
                 // Sanity checks.
-                AudioUtils.ValidateFormat(input.WaveFormat, false);
+                input.Validate(false);
+                input.SetPosition(0);
                 // Everything is good.
                 _currentInput = input;
             }
@@ -54,38 +63,40 @@ namespace AudioLib
         {
             if (_currentInput is null)
             {
-                throw new ArgumentException("Invalid source.");
+                //throw new ArgumentException("Invalid source.");
+                return 0;
             }
 
             lock (_locker)
             {
-                if (_sourceBuffer.Length < count)
+                if (_vals.Length < count)
                 {
-                    _sourceBuffer = new float[count];
+                    _vals = new float[count];
                 }
 
                 if (_currentInput.WaveFormat.Channels == 1)
                 {
-                    // Convert mono into stereo. from MonoToStereoSampleProvider:
-                    var sourceSamplesRequired = count / 2;
-                    var outIndex = offset;
-                    var sourceSamplesRead = _currentInput.Read(_sourceBuffer, 0, sourceSamplesRequired);
-                    for (var n = 0; n < sourceSamplesRead; n++)
+                    // Convert mono into stereo. Borrowed from MonoToStereoSampleProvider:
+                    var req = count / 2;
+                    var index = offset;
+                    var sread = _currentInput.Read(_vals, 0, req);
+                    for (var n = 0; n < sread; n++)
                     {
-                        buffer[outIndex++] = _sourceBuffer[n];
-                        buffer[outIndex++] = _sourceBuffer[n];
+                        buffer[index++] = _vals[n]; // L
+                        buffer[index++] = _vals[n]; // R
                     }
-                    return sourceSamplesRead * 2;
+                    return sread * 2;
                 }
-                else // stereo
+                else // Stereo - as is.
                 {
-                    var sourceSamplesRequired = count;
-                    int sourceSamplesRead = _currentInput.Read(_sourceBuffer, 0, count);
-                    for (int i = 0; i < sourceSamplesRead; i++)
+                    var req = count;
+                    var index = offset;
+                    int sread = _currentInput.Read(_vals, 0, req);
+                    for (int i = 0; i < sread; i++)
                     {
-                        buffer[offset + i] = _sourceBuffer[i];
+                        buffer[index++] = _vals[i];
                     }
-                    return sourceSamplesRead;
+                    return sread;
                 }
             }
         }

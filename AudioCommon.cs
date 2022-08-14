@@ -20,5 +20,14 @@ namespace AudioLib
 
         /// <summary>NAudio doesn't publish this for their API.</summary>
         public const double VOLUME_MAX = 1.0;
+
+        /// <summary>Internal buffer size.</summary>
+        public const int READ_BUFF_SIZE = 1000000;
+
+        /// <summary>For viewing purposes.</summary>
+        public const string TS_FORMAT = @"mm\:ss\.fff";
     }
+
+    /// <summary>How to handle stereo files.</summary>
+    public enum StereoCoercion { Left, Right, Mono }
 }
