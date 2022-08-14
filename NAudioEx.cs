@@ -159,6 +159,11 @@ namespace AudioLib
                 throw new ArgumentException($"Invalid sample rate {wf.SampleRate}. Must be 44100");
             }
 
+            if (wf.BitsPerSample != 32)
+            {
+                throw new ArgumentException($"Invalid bits per sample {wf.BitsPerSample}. Must be 32");
+            }
+
             if (mono && wf.Channels != 1)
             {
                 throw new ArgumentException("Only mono supported for this operation.");

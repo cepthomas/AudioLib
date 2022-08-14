@@ -94,6 +94,14 @@ namespace AudioLib
             FileName = fn;
             using var prov = new AudioFileReader(fn);
             ReadSource(prov, mode);
+
+            using (var reader = new AudioFileReader(fn))
+            {
+                var resampler = new WdlResamplingSampleProvider(reader, 44100);
+
+                //WaveFileWriter.CreateWaveFile16(outFile, resampler);
+            }
+
         }
         #endregion
 
