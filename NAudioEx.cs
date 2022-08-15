@@ -154,9 +154,9 @@ namespace AudioLib
                throw new ArgumentException($"Invalid encoding {wf.Encoding}. Must be IEEE float");
             }
 
-            if (wf.SampleRate != 44100)
+            if (wf.SampleRate != AudioLibDefs.SAMPLE_RATE)
             {
-                throw new ArgumentException($"Invalid sample rate {wf.SampleRate}. Must be 44100");
+                throw new ArgumentException($"Invalid sample rate {wf.SampleRate}. Must be {AudioLibDefs.SAMPLE_RATE}");
             }
 
             if (wf.BitsPerSample != 32)

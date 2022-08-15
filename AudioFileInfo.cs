@@ -24,28 +24,14 @@ namespace AudioLib
         /// <returns></returns>
         public static string GetFileInfo(string fileName, bool verbose)
         {
-            var sinfo = "Invalid";
             FileInfo fi = new(fileName);
-
-            switch(fi.Extension.ToLower())
+            string sinfo = fi.Extension.ToLower() switch
             {
-                case ".wav":
-                    sinfo = GetInfoWav(fileName, verbose);
-                    break;
-
-                case ".mp3":
-                    sinfo = GetInfoMp3(fileName, verbose);
-                    break;
-
-                case ".sf2":
-                    sinfo = GetInfoSf(fileName, verbose);
-                    break;
-
-                default:
-                    sinfo = GetInfoOther(fileName, verbose);
-                    break;
-            }
-
+                ".wav" => GetInfoWav(fileName, verbose),
+                ".mp3" => GetInfoMp3(fileName, verbose),
+                ".sf2" => GetInfoSf(fileName, verbose),
+                _ => GetInfoOther(fileName, verbose),
+            };
             return sinfo;
         }
 
@@ -57,8 +43,10 @@ namespace AudioLib
         /// <returns></returns>
         public static string GetInfoMp3(string fileName, bool verbose)
         {
-            var ls = new List<string>();
-            ls.Add($"======== mp3 =========== File:{fileName} =================");
+            var ls = new List<string>
+            {
+                $"======== mp3 =========== File:{fileName} ================="
+            };
 
             using (var rd = new Mp3FileReader(fileName))
             {
@@ -92,8 +80,10 @@ namespace AudioLib
         /// <returns></returns>
         public static string GetInfoWav(string fileName, bool verbose)
         {
-            var ls = new List<string>();
-            ls.Add($"======== wav =========== File:{fileName} =================");
+            var ls = new List<string>
+            {
+                $"======== wav =========== File:{fileName} ================="
+            };
 
             using (var rd = new WaveFileReader(fileName))
             {
@@ -126,49 +116,36 @@ namespace AudioLib
         /// <returns></returns>
         public static string GetInfoSf(string fileName, bool verbose)
         {
-            var ls = new List<string>();
-            ls.Add($"======== sf2 =========== File:{fileName} =================");
+            var ls = new List<string>
+            {
+                $"======== sf2 =========== File:{fileName} ================="
+            };
 
             SoundFont sf = new(fileName);
             ls.Add($"{sf.FileInfo}");
 
             if (verbose)
             {
-                //ls.Add("Presets");
-
                 foreach (Preset p in sf.Presets)
                 {
                     ls.Add($"Preset:{p}");
-                    //foreach(Zone z in p.Zones)
-                    //{
-                    //    ls.Add($"  {z}");
-                    //    foreach(Generator g in z.Generators)
-                    //    {
-                    //        ls.Add($"    {g}");
-                    //    }
-                    //    foreach(Modulator m in z.Modulators)
-                    //    {
-                    //        ls.Add($"    {m}");
-                    //    }
-                    //}
+                    p.Zones.ForEach(z => 
+                    {
+                        ls.Add($"  Zone:{z}");
+                        z.Generators.ForEach(g => ls.Add($"    Generator:{g}"));
+                        z.Modulators.ForEach(m => ls.Add($"    Modulator:{m}"));
+                    });
                 }
 
-                //ls.Add("Instruments");
                 foreach (Instrument i in sf.Instruments)
                 {
                     ls.Add($"Instrument:{i}");
-                    //foreach(Zone z in i.Zones)
-                    //{
-                    //    ls.Add($"  {z}");
-                    //    foreach (Generator g in z.Generators)
-                    //    {
-                    //        ls.Add($"    {g}");
-                    //    }
-                    //    foreach (Modulator m in z.Modulators)
-                    //    {
-                    //        ls.Add($"    {m}");
-                    //    }
-                    //}
+                    i.Zones.ForEach(z => 
+                    {
+                        ls.Add($"  Zone:{z}");
+                        z.Generators.ForEach(g => ls.Add($"    Generator:{g}"));
+                        z.Modulators.ForEach(m => ls.Add($"    Modulator:{m}"));
+                    });
                 }
             }
 
@@ -183,8 +160,10 @@ namespace AudioLib
         /// <returns></returns>
         public static string GetInfoOther(string fileName, bool verbose)
         {
-            var ls = new List<string>();
-            ls.Add($"======== mfr =========== File:{fileName} =================");
+            var ls = new List<string>
+            {
+                $"======== mfr =========== File:{fileName} ================="
+            };
 
             MediaFoundationReader mfr = new(fileName);
 
@@ -208,13 +187,14 @@ namespace AudioLib
         /// <returns></returns>
         static List<string> FormatWaveFormat(WaveFormat wf)
         {
-            var ls = new List<string>();
-            //ls.Add($"WaveFormat:{wf}");
-            ls.Add($"Encoding:{wf.Encoding}");
-            ls.Add($"SampleRate:{wf.SampleRate}");
-            ls.Add($"Channels:{wf.Channels}");
-            ls.Add($"BitsPerSample:{wf.BitsPerSample}");
-            ls.Add($"AverageBytesPerSecond:{wf.AverageBytesPerSecond}");
+            var ls = new List<string>
+            {
+                $"Encoding:{wf.Encoding}",
+                $"SampleRate:{wf.SampleRate}",
+                $"Channels:{wf.Channels}",
+                $"BitsPerSample:{wf.BitsPerSample}",
+                $"AverageBytesPerSecond:{wf.AverageBytesPerSecond}"
+            };
             return ls;
         }
     }

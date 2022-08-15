@@ -128,9 +128,10 @@ namespace AudioLib.Test
                     {
                         try
                         {
-                            // avTouch_sample.m4a
+                            // avTouch_sample.m4a -- has invalid sample rate
                             string fn = _filesDir + "avTouch_sample.m4a";
-                            var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            var prov = new AudioFileReader(fn);
                             _prov = prov;
                             ShowWave(prov, prov.Length);
                         }
@@ -265,16 +266,18 @@ namespace AudioLib.Test
             // avTouch_sample.m4a
 
             bool verbose = false;
+            string[] files = new[] {
+                "ambi_swoosh.flac", "avTouch_sample.m4a", "bass_woodsy_c.flac", "Cave Ceremony 01.wav", "Fat Box 01.wav",
+                "Horns 01.wav", "one-sec.mp3", "one-sec.wav", "Orchestra 03.wav", "ref-stereo.wav",
+                "sin-stereo-audible.wav", "sin.wav", "test.wav" };
 
-            string s = AudioFileInfo.GetFileInfo(_filesDir + "one-sec.mp3", verbose);
-            txtInfo.AppendText(s + Environment.NewLine);
-            s = AudioFileInfo.GetFileInfo(_filesDir + "Cave Ceremony 01.wav", verbose);
-            txtInfo.AppendText(s + Environment.NewLine);
-            s = AudioFileInfo.GetFileInfo(_filesDir + "ambi_swoosh.flac", verbose);
-            txtInfo.AppendText(s + Environment.NewLine);
-            s = AudioFileInfo.GetFileInfo(_filesDir + "avTouch_sample.m4a", verbose);
-            txtInfo.AppendText(s + Environment.NewLine);
-            s = AudioFileInfo.GetFileInfo(@"C:\Users\cepth\OneDrive\Audio\SoundFonts\FluidR3 GM.sf2", verbose);
+            files.ForEach(f =>
+            {
+                string s = AudioFileInfo.GetFileInfo(_filesDir + f, verbose);
+                txtInfo.AppendText(s + Environment.NewLine);
+            });
+
+            string s = AudioFileInfo.GetFileInfo(@"C:\Users\cepth\OneDrive\Audio\SoundFonts\FluidR3 GM.sf2", verbose);
             txtInfo.AppendText(s + Environment.NewLine);
         }
 

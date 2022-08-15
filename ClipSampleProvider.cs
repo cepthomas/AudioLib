@@ -11,7 +11,8 @@ using NBagOfTricks;
 namespace AudioLib
 {
     /// <summary>
-    /// Provider that encapsulates a client supplied audio data subset.
+    /// Provider that encapsulates a client supplied audio data subset. When constructed, it reads in the
+    /// entire file. Does sample rate conversion if needed.
     /// Mono output only - coerces stereo input per client call. Can be used for splitting stereo files.
     /// If you need stereo, use AudioFileReader.
     /// Supplies some basic editing:
@@ -39,7 +40,7 @@ namespace AudioLib
 
         #region Properties
         /// <summary>The WaveFormat of this sample provider. Fixed to mono. ISampleProvider implementation.</summary>
-        public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(44100, 1);
+        public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
 
         /// <summary>The associated file name. Empty if new.</summary>
         public string FileName { get; }
@@ -94,14 +95,6 @@ namespace AudioLib
             FileName = fn;
             using var prov = new AudioFileReader(fn);
             ReadSource(prov, mode);
-
-            using (var reader = new AudioFileReader(fn))
-            {
-                var resampler = new WdlResamplingSampleProvider(reader, 44100);
-
-                //WaveFileWriter.CreateWaveFile16(outFile, resampler);
-            }
-
         }
         #endregion
 
@@ -196,7 +189,7 @@ namespace AudioLib
                 };
             }
 
-            _vals = NAudioEx.ReadAll(source);
+            _vals = source.ReadAll();
         }
         #endregion
     }

@@ -26,6 +26,9 @@ namespace AudioLib
 
         /// <summary>For viewing purposes.</summary>
         public const string TS_FORMAT = @"mm\:ss\.fff";
+
+        /// <summary>Everything internal.</summary>
+        public const int SAMPLE_RATE = 44100;
     }
 
     /// <summary>How to handle stereo files.</summary>

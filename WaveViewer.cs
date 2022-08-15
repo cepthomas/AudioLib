@@ -34,7 +34,7 @@ namespace AudioLib
 
         #region Properties
         /// <summary>The provider from client. Mono only.</summary>
-        public ISampleProvider SampleProvider { set { _vals = NAudioEx.ReadAll(value); } }
+        public ISampleProvider SampleProvider { set { _vals = value.ReadAll(); Invalidate(); } }
 
         /// <summary>For styling.</summary>
         public Color DrawColor { get { return _pen.Color; } set { _pen.Color = value; Invalidate(); } }

@@ -25,7 +25,7 @@ namespace AudioLib
 
         #region Properties
         /// <summary>The fixed WaveFormat of this sample provider. ISampleProvider implementation.</summary>
-        public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(44100, 2);
+        public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 2);
 
         /// <summary>Position of the simulated stream as sample index.</summary>
         public int Position
