@@ -58,7 +58,7 @@ namespace AudioLib
         public int Position
         {
             get { return _currentIndex; }
-            set { lock (_locker) { _currentIndex = MathUtils.Constrain(value, 0, _vals.Length - 1); }  }
+            set { lock (_locker) { _currentIndex = MathUtils.Constrain(value, 0, _vals.Length - 1); } }
         }
         #endregion
 
@@ -79,9 +79,9 @@ namespace AudioLib
         /// </summary>
         /// <param name="vals">The data to use.</param>
         /// <param name="fn">Maybe associated filename.</param>
-        public ClipSampleProvider(float[] vals, string fn = "")
+        public ClipSampleProvider(float[] vals)
         {
-            FileName = fn;
+            FileName = "";
             _vals = vals;
         }
 
