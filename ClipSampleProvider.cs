@@ -25,17 +25,17 @@ namespace AudioLib
         /// <summary>The full buffer from client.</summary>
         float[] _vals = Array.Empty<float>();
 
-        /// <summary>Make this look like a streaam.</summary>
-        int _currentIndex = 0;
+        /// <summary>Make this class look like a streaam.</summary>
+        int _currentSample = 0;
 
         /// <summary>Gain while iterating samples.</summary>
-        readonly double _currentGain = 1.0f;
+        float _currentGain = 1.0f;
 
         /// <summary>The lock() target.</summary>
         readonly object _locker = new();
 
-        /// <summary>Piecewise gain envelope. Key is index, value is gain. TODO all</summary>
-        readonly Dictionary<int, double> _envelope = new();
+        /// <summary>Piecewise gain envelope. Key is index, value is gain.</summary>
+        readonly Dictionary<int, float> _envelope = new();
         #endregion
 
         #region Properties
@@ -46,7 +46,7 @@ namespace AudioLib
         public string FileName { get; }
 
         /// <summary>Overall gain applied to all samples.</summary>
-        public double MasterGain { get; set; } = 1.0f;
+        public float MasterGain { get; set; } = 1.0f;
 
         /// <summary>Length of the clip in samples.</summary>
         public int Length { get { return _vals.Length; } }
@@ -57,8 +57,8 @@ namespace AudioLib
         /// <summary>Position of the simulated stream as sample index.</summary>
         public int Position
         {
-            get { return _currentIndex; }
-            set { lock (_locker) { _currentIndex = MathUtils.Constrain(value, 0, _vals.Length - 1); } }
+            get { return _currentSample; }
+            set { lock (_locker) { _currentSample = MathUtils.Constrain(value, 0, _vals.Length - 1); GetEnvelopeGain(_currentSample); } }
         }
         #endregion
 
@@ -78,7 +78,6 @@ namespace AudioLib
         /// Constructor from a buffer. Mono only.
         /// </summary>
         /// <param name="vals">The data to use.</param>
-        /// <param name="fn">Maybe associated filename.</param>
         public ClipSampleProvider(float[] vals)
         {
             FileName = "";
@@ -114,7 +113,7 @@ namespace AudioLib
             // Get the source vals.
             lock (_locker)
             {
-                int numToRead = Math.Min(count, _vals.Length - _currentIndex);
+                int numToRead = Math.Min(count, _vals.Length - _currentSample);
 
                 if(_envelope.Count > 0)
                 {
@@ -147,8 +146,8 @@ namespace AudioLib
                     // Simply adjust for master gain.
                     for (int n = 0; n < numToRead; n++)
                     {
-                        buffer[n + offset] = (float)(_vals[_currentIndex] * MasterGain);
-                        _currentIndex++;
+                        buffer[n + offset] = (float)(_vals[_currentSample] * MasterGain);
+                        _currentSample++;
                         numRead++;
                     }
                 }
@@ -156,19 +155,31 @@ namespace AudioLib
 
             return numRead;
         }
+
+        /// <summary>
+        /// If in _envelope, update else add. If 0, remove.
+        /// </summary>
+        /// <param name="sampleIndex">Inflection.</param>
+        /// <param name="gain">Gain.</param>
+        public void SetGain(int sampleIndex, float gain)
+        {
+            if(_envelope.ContainsKey(sampleIndex))
+            {
+                if(gain == 0)
+                {
+                    _envelope.Remove(sampleIndex);
+                }
+                else
+                {
+                    _envelope[sampleIndex] = gain;
+                }
+            }
+            else
+            {
+                _envelope[sampleIndex] = gain;
+            }
+        }
         #endregion
-
-
-        public void AddGain(int sampleIndex, double gain)
-        {
-            // if in _envelope, update else add.
-        }
-
-        public void RemoveGain(int sampleIndex)
-        {
-            // if in _envelope, remove.
-        }
-
 
         #region Private
         /// <summary>
@@ -190,6 +201,42 @@ namespace AudioLib
             }
 
             _vals = source.ReadAll();
+        }
+
+        /// <summary>
+        /// Get the envelope in effect at the position.
+        /// </summary>
+        /// <param name="pos"></param>
+        /// <returns>The envelope gain at pos.</returns>
+        void GetEnvelopeGain(int pos)
+        {
+            _currentGain = 1.0f; // default
+
+            if (_envelope.Count > 0)
+            {
+                // Find where offset is currently.
+                //_envelope.OrderBy(e => e.Key)
+
+                // Make an ordered copy of the _envelope point locations.
+                List<int> envLocs = _envelope.Keys.ToList();
+                envLocs.Sort();
+
+                int tempEnv = 0;
+                for (int i = 0; i < envLocs.Count; i++)
+                {
+                    if (envLocs[i] > pos)
+                    {
+                        // Found the transition after.
+                        _currentGain = _envelope[tempEnv];
+                        break;
+                    }
+                    else
+                    {
+                        // Next.
+                        tempEnv = i;
+                    }
+                }
+            }
         }
         #endregion
     }

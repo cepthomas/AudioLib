@@ -171,6 +171,25 @@ namespace AudioLib
         }
 
         /// <summary>
+        /// Resample to a new reader compatible with this application.
+        /// </summary>
+        /// <param name="rdr"></param>
+        /// <returns>The new file reader.</returns>
+        public static AudioFileReader Resample(this AudioFileReader rdr) // TODO seems clumsy
+        {
+            string newfn;
+            string fn = rdr.FileName;
+            var ext = Path.GetExtension(fn);
+            newfn = fn.Replace(ext, "_resampled" + ext);
+            var resampler = new WdlResamplingSampleProvider(rdr, AudioLibDefs.SAMPLE_RATE);
+            WaveFileWriter.CreateWaveFile16(newfn, resampler);
+            var newrdr = new AudioFileReader(newfn);
+
+            return newrdr;
+        }
+
+
+        /// <summary>
         /// Export wave data to csv file.
         /// </summary>
         /// <param name="prov">Data source.</param>

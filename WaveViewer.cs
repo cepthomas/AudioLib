@@ -20,7 +20,7 @@ namespace AudioLib
         readonly Pen _pen = new(Color.Black, 1);
 
         /// <summary>For drawing.</summary>
-        readonly Pen _penMarker = new(Color.Black, 2);
+        readonly Pen _penMarker = new(Color.LightGray, 2);
 
         /// <summary>For drawing text.</summary>
         readonly Font _textFont = new("Cascadia", 12, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -46,6 +46,12 @@ namespace AudioLib
         /// <summary>Marker sample index.</summary>
         public int Marker { get { return _marker; } set { _marker = value; Invalidate(); } }
         int _marker = -1;
+
+        /// <summary>Maximum Y gain.</summary>
+        float _maxGain = 5.0f;
+
+        /// <summary>Grid resolution.</summary>
+        float _gridStep = 0.5f;
         #endregion
 
         #region Lifecycle
@@ -83,6 +89,43 @@ namespace AudioLib
         }
         #endregion
 
+        #region UI events
+        /// <summary>
+        /// Zoom Y.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnMouseWheel(MouseEventArgs e)
+        {
+            HandledMouseEventArgs hme = (HandledMouseEventArgs)e;
+            hme.Handled = true; // This prevents the mouse wheel event from getting back to the parent.
+
+            // If mouse is within control
+            if (hme.X <= Width && hme.Y <= Height)
+            {
+                _yGain += hme.Delta > 0 ? 0.1f : -0.1f;
+                _yGain = (float)MathUtils.Constrain(_yGain, 0.0f, _maxGain);
+                Invalidate();
+            }
+
+            base.OnMouseWheel(e);
+        }
+
+        /// <summary>
+        /// Handle reset.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if(e.KeyCode == Keys.Escape)
+            {
+                _yGain = 1.0f;
+                Invalidate();
+            }
+
+            base.OnKeyDown(e);
+        }
+        #endregion
+
         #region Drawing
         /// <summary>
         /// Paint the waveform.
@@ -101,6 +144,14 @@ namespace AudioLib
                 int samplesPerPixel = _vals.Length / Width;
                 var peaks = PeakProvider.GetPeaks(_vals, 0, samplesPerPixel, Width);
 
+                // grid lines
+                for (float l = -5 * _gridStep; l <= 5 * _gridStep; l += _gridStep)
+                {
+                    float yGrid = MathUtils.Map(l * _yGain, 1.0f, -1.0f, 0, Height);
+                    pe.Graphics.DrawLine(_penMarker, 0, yGrid, Width, yGrid);
+                }
+
+                // vals
                 for (int i = 0; i < peaks.Count; i++)
                 {
                     // +1 => 0  -1 => Height
@@ -112,12 +163,9 @@ namespace AudioLib
                     pe.Graphics.DrawLine(_pen, i, yMax, i, yMin);
                 }
 
-                // 0 line
-                pe.Graphics.DrawLine(_penMarker, 0, Height / 2, Width, Height / 2);
-
                 // marker
                 int xmarker = MathUtils.Map(_marker, 0, _vals.Length, 0, Width);
-                pe.Graphics.DrawLine(_penMarker, xmarker, 0, xmarker, Height);
+                pe.Graphics.DrawLine(_pen, xmarker, 0, xmarker, Height);
             }
         }
         #endregion

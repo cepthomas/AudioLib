@@ -22,7 +22,7 @@ namespace AudioLib.Test
 {
     public partial class TestHost : Form
     {
-        readonly string _filesDir = @"C:\Dev\repos\TestAudioFiles\";
+        readonly string _testFilesDir = @"C:\Dev\repos\TestAudioFiles\";
         ISampleProvider? _prov;
         readonly ISampleProvider _provSwap;
         readonly SwappableSampleProvider _waveOutSwapper;
@@ -51,7 +51,7 @@ namespace AudioLib.Test
                 this.InvokeIfRequired(_ => { btnPlayer.Checked = false; });
             };
 
-            _provSwap = new ClipSampleProvider(_filesDir + "test.wav", StereoCoercion.Mono);
+            _provSwap = new ClipSampleProvider(_testFilesDir + "test.wav", StereoCoercion.Mono);
 
             // Go-go-go.
             timer1.Enabled = true;
@@ -65,125 +65,100 @@ namespace AudioLib.Test
 
         private void Load_Click(object? sender, EventArgs args)
         {
+            // ambi_swoosh.flac SampleRate:44100 Channels:2 BitsPerSample:16  Length:176400 TotalTime:00:00:01  
+            // avTouch_sample.m4a SampleRate:22050 Channels:1 BitsPerSample:16 Length:450559 TotalTime:00:00:10.2167573  
+            // bass_woodsy_c.flac SampleRate:44100 Channels:2 BitsPerSample:16  Length:529200 TotalTime:00:00:03  
+            // Cave Ceremony 01.wav SampleRate:44100 Channels:2 BitsPerSample:16  Length:846720 TotalTime:00:00:04.8000000  
+            // Fat Box 01.wav SampleRate:44100 Channels:1 BitsPerSample:16 Length:211832 TotalTime:00:00:02.4017233  
+            // Horns 01.wav SampleRate:44100 Channels:2 BitsPerSample:24  Length:1306722 TotalTime:00:00:04.9384807
+            // _kidch.mp3 SampleRate:44100 Channels:1 BitsPerSample:0 Length:??? TotalTime:???   
+            // one-sec.mp3 SampleRate:44100 Channels:1 BitsPerSample:0 Length:92160 TotalTime:00:00:01.0448979  
+            // one-sec.wav SampleRate:44100 Channels:1 BitsPerSample:16 Length:88384 TotalTime:00:00:01.0020861  
+            // Orchestra 03.wav SampleRate:44100 Channels:1 BitsPerSample:24  Length:605331 TotalTime:00:00:04.5754421  
+            // ref-stereo.wav SampleRate:44100 Channels:2 BitsPerSample:16  Length:176400 TotalTime:00:00:01  
+            // sin-stereo-audible.wav SampleRate:44100 Channels:2 BitsPerSample:16  Length:176400 TotalTime:00:00:01  
+            // sin.wav SampleRate:44100 Channels:1 BitsPerSample:16 Length:88200 TotalTime:00:00:01  
+            // test.wav SampleRate:44100 Channels:1 BitsPerSample:16 Length:447488 TotalTime:00:00:05.0735600
+
             _player.Run(false);
             btnPlayer.Checked = false;
             btnSwap.Checked = false;
 
-            switch(sender!.ToString())
+            try
             {
-                case "wav":
-                    {
-                        try
+                // ClipSampleProvider is mono only. Use AudioFileReader for stereo.
+
+                switch (sender!.ToString())
+                {
+                    case "wav":
                         {
-                            // Cave Ceremony 01.wav   Fat Box 01.wav  Horns 01.wav  one-sec.wav
-                            // Orchestra 03.wav  ref-stereo.wav  sin-stereo-audible.wav  sin.wav  test.wav
-                            string fn = _filesDir + "ref-stereo.wav";
+                            string fn = _testFilesDir + "ref-stereo.wav";
+                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
                             var prov = new AudioFileReader(fn);
                             _prov = prov;
-                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
                             ShowWave(prov, prov.Length);
                         }
-                        catch (Exception e)
-                        {
-                            LogLine("!!! " + e.Message);
-                        }
-                    }
-                    break;
+                        break;
 
-                case "mp3":
-                    {
-                        try
+                    case "mp3":
                         {
-                            // kidch.mp3   one-sec.mp3
-                            string fn = _filesDir + "one-sec.mp3";
+                            string fn = _testFilesDir + "one-sec.mp3";
                             var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
                             _prov = prov;
                             ShowWave(prov, prov.Length);
                         }
-                        catch (Exception e)
-                        {
-                            LogLine("!!! " + e.Message);
-                        }
-                    }
-                    break;
+                        break;
 
-                case "flac":
-                    {
-                        try
+                    case "flac":
                         {
-                            // ambi_swoosh.flac  bass_woodsy_c.flac
-                            string fn = _filesDir + "ambi_swoosh.flac";
+                            string fn = _testFilesDir + "ambi_swoosh.flac";
                             var prov = new AudioFileReader(fn);
                             _prov = prov;
                             ShowWave(prov, prov.Length);
                         }
-                        catch (Exception e)
-                        {
-                            LogLine("!!! " + e.Message);
-                        }
-                    }
-                    break;
+                        break;
 
-                case "m4a":
-                    {
-                        try
+                    case "m4a":
                         {
-                            // avTouch_sample.m4a -- has invalid sample rate
-                            string fn = _filesDir + "avTouch_sample.m4a";
-                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            string fn = _testFilesDir + "avTouch_sample.m4a"; // other sample rate - breaks
                             var prov = new AudioFileReader(fn);
+                            if (prov.WaveFormat.SampleRate != AudioLibDefs.SAMPLE_RATE)
+                            {
+                                prov = prov.Resample();
+                            }
+                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono); // breaks
                             _prov = prov;
                             ShowWave(prov, prov.Length);
                         }
-                        catch (Exception e)
-                        {
-                            LogLine("!!! " + e.Message);
-                        }
-                    }
-                    break;
+                        break;
 
-                case "sin":
-                    {
-                        try
+                    case "sin":
                         {
-                            // Draw a sin wave. Store in ClipSampleProvider.
+                            // Draw a sin wave.
                             var data = new float[10000];
-                            for (int i = 0; i < data.Length; i++)
-                            {
-                                data[i] = (float)Math.Sin(Math.PI * i / 30.0);
-                            }
+                            for (int i = 0; i < data.Length; i++) { data[i] = (float)Math.Sin(Math.PI * i / 30.0); }
                             var prov = new ClipSampleProvider(data);
                             _prov = prov;
                             ShowWave(prov, prov.Length);
                         }
-                        catch (Exception e)
-                        {
-                            LogLine("!!! " + e.Message);
-                        }
-                    }
-                    break;
+                        break;
 
-                case "txt":
-                    {
-                        try
+                    case "txt":
                         {
-                            // Wave from csv file. Store in ClipSampleProvider.
-                            var sdata = File.ReadAllLines(_filesDir + "one-sec.txt");
+                            // Wave from csv file.
+                            var sdata = File.ReadAllLines(_testFilesDir + "one-sec.txt");
                             var data = new float[sdata.Length];
-                            for (int i = 0; i < sdata.Length; i++)
-                            {
-                                data[i] = float.Parse(sdata[i]);
-                            }
+                            for (int i = 0; i < sdata.Length; i++) { data[i] = float.Parse(sdata[i]); }
                             var prov = new ClipSampleProvider(data);
                             _prov = prov;
                             ShowWave(prov, prov.Length);
                         }
-                        catch (Exception e)
-                        {
-                            LogLine("!!! " + e.Message);
-                        }
-                    }
-                    break;
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                LogLine("!!! " + e.Message);
             }
         }
 
@@ -259,21 +234,16 @@ namespace AudioLib.Test
 
         void FileInfo_Click(object? sender, EventArgs args)
         {
-            // Cave Ceremony 01.wav   Fat Box 01.wav  Horns 01.wav  one-sec.wav
-            // Orchestra 03.wav  ref-stereo.wav  sin-stereo-audible.wav  sin.wav  test.wav
-            // kidch.mp3   one-sec.mp3
-            // ambi_swoosh.flac  bass_woodsy_c.flac
-            // avTouch_sample.m4a
-
+            // Dump all test files.
             bool verbose = false;
             string[] files = new[] {
                 "ambi_swoosh.flac", "avTouch_sample.m4a", "bass_woodsy_c.flac", "Cave Ceremony 01.wav", "Fat Box 01.wav",
-                "Horns 01.wav", "one-sec.mp3", "one-sec.wav", "Orchestra 03.wav", "ref-stereo.wav",
+                "Horns 01.wav", "one-sec.mp3", "_kidch.mp3", "one-sec.wav", "Orchestra 03.wav", "ref-stereo.wav",
                 "sin-stereo-audible.wav", "sin.wav", "test.wav" };
 
             files.ForEach(f =>
             {
-                string s = AudioFileInfo.GetFileInfo(_filesDir + f, verbose);
+                string s = AudioFileInfo.GetFileInfo(_testFilesDir + f, verbose);
                 txtInfo.AppendText(s + Environment.NewLine);
             });
 
