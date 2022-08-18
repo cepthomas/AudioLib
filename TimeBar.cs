@@ -48,13 +48,13 @@ namespace AudioLib
 
         /// <summary>One marker.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public TimeSpan Start { get { return _start; } set { _start = value; Invalidate(); } }
-        TimeSpan _start = new();
+        public TimeSpan Marker1 { get { return _marker1; } set { _marker1 = value; Invalidate(); } }
+        TimeSpan _marker1 = new();
 
         /// <summary>Other marker.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public TimeSpan End { get { return _end; } set { _end = value; Invalidate(); } }
-        TimeSpan _end = new();
+        public TimeSpan Marker2 { get { return _marker2; } set { _marker2 = value; Invalidate(); } }
+        TimeSpan _marker2 = new();
 
         /// <summary>Snap to this increment value.</summary>
         public int SnapMsec { get; set; } = 0;
@@ -126,9 +126,9 @@ namespace AudioLib
             {
                 _current = _length;
             }
-            else if (_end != TimeSpan.Zero && _current >= _end)
+            else if (_marker2 != TimeSpan.Zero && _current >= _marker2)
             {
-                _current = _end;
+                _current = _marker2;
             }
 
             Invalidate();
@@ -145,30 +145,30 @@ namespace AudioLib
             pe.Graphics.Clear(BackColor);
 
             // Validate times.
-            _start = Constrain(_start, TimeSpan.Zero, _length);
-            _start = Constrain(_start, TimeSpan.Zero, _end);
-            _end = Constrain(_end, TimeSpan.Zero, _length);
-            _end = Constrain(_end, _start, _length);
-            _current = Constrain(_current, _start, _end);
+            _marker1 = Constrain(_marker1, TimeSpan.Zero, _length);
+            _marker1 = Constrain(_marker1, TimeSpan.Zero, _marker2);
+            _marker2 = Constrain(_marker2, TimeSpan.Zero, _length);
+            _marker2 = Constrain(_marker2, _marker1, _length);
+            _current = Constrain(_current, _marker1, _marker2);
 
-            if (_end == TimeSpan.Zero && _length != TimeSpan.Zero)
+            if (_marker2 == TimeSpan.Zero && _length != TimeSpan.Zero)
             {
-                _end = _length;
+                _marker2 = _length;
             }
 
             // Draw the bar.
             if (_current < _length)
             {
-                int dstart = Scale(_start);
-                int dend = _current > _end ? Scale(_end) : Scale(_current);
+                int dstart = Scale(_marker1);
+                int dend = _current > _marker2 ? Scale(_marker2) : Scale(_current);
                 pe.Graphics.FillRectangle(_brush, dstart, 0, dend - dstart, Height);
             }
 
             // Draw start/end markers.
-            if (_start != TimeSpan.Zero || _end != _length)
+            if (_marker1 != TimeSpan.Zero || _marker2 != _length)
             {
-                int mstart = Scale(_start);
-                int mend = Scale(_end);
+                int mstart = Scale(_marker1);
+                int mend = Scale(_marker2);
                 pe.Graphics.DrawLine(_penMarker, mstart, 0, mstart, Height);
                 pe.Graphics.DrawLine(_penMarker, mend, 0, mend, Height);
             }
@@ -177,9 +177,9 @@ namespace AudioLib
             _format.Alignment = StringAlignment.Center;
             pe.Graphics.DrawString(_current.ToString(AudioLibDefs.TS_FORMAT), FontLarge, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Near;
-            pe.Graphics.DrawString(_start.ToString(AudioLibDefs.TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_marker1.ToString(AudioLibDefs.TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Far;
-            pe.Graphics.DrawString(_end.ToString(AudioLibDefs.TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_marker2.ToString(AudioLibDefs.TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
         }
         #endregion
 
@@ -206,8 +206,8 @@ namespace AudioLib
 
                 case Keys.Escape:
                     // Reset.
-                    _start = TimeSpan.Zero;
-                    _end = _length;
+                    _marker1 = TimeSpan.Zero;
+                    _marker2 = _length;
                     e.Handled = true;
                     Invalidate();
                     break;
@@ -265,11 +265,11 @@ namespace AudioLib
         {
             if (ModifierKeys.HasFlag(Keys.Control))
             {
-                _start = GetTimeFromMouse(e.X);
+                _marker1 = GetTimeFromMouse(e.X);
             }
             else if (ModifierKeys.HasFlag(Keys.Alt))
             {
-                _end = GetTimeFromMouse(e.X);
+                _marker2 = GetTimeFromMouse(e.X);
             }
             else
             {

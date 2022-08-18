@@ -45,6 +45,7 @@ namespace AudioLib
                         min = Math.Min(val, min);
                         max = Math.Max(val, max);
                     }
+
                     scaledVals.Add((max, min));
                 }
             }

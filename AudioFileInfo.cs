@@ -11,6 +11,7 @@ using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 using NAudio.SoundFont;
 
+
 namespace AudioLib
 {
     /// <summary>Borrowed from NAudio.</summary>
@@ -27,9 +28,11 @@ namespace AudioLib
             FileInfo fi = new(fileName);
             string sinfo = fi.Extension.ToLower() switch
             {
-                ".wav" => GetInfoWav(fileName, verbose),
-                ".mp3" => GetInfoMp3(fileName, verbose),
-                ".sf2" => GetInfoSf(fileName, verbose),
+                ".wav"  => GetInfoWav(fileName, verbose),
+                ".m4a"  => GetInfoWav(fileName, verbose),
+                ".flac" => GetInfoWav(fileName, verbose),
+                ".mp3"  => GetInfoMp3(fileName, verbose),
+                ".sf2"  => GetInfoSf(fileName, verbose),
                 _ => GetInfoOther(fileName, verbose),
             };
             return sinfo;

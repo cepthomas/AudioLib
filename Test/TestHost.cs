@@ -54,13 +54,26 @@ namespace AudioLib.Test
             _provSwap = new ClipSampleProvider(_testFilesDir + "test.wav", StereoCoercion.Mono);
 
             // Go-go-go.
+            timer1.Interval = 100;
             timer1.Enabled = true;
+
+            // Conversion tests.
+            int sample = 123456;
+            float msec = AudioLibUtils.SampleToMsec(sample);
+            int sampout1 = AudioLibUtils.MsecToSample(msec);
+            int diff1 = Math.Abs(sampout1 - sample);
+            float msec1 = AudioLibUtils.SampleToMsec(diff1);
+
+            TimeSpan ts = AudioLibUtils.SampleToTime(sample);
+            int sampout2 = AudioLibUtils.TimeToSample(ts);
+            int diff2 = Math.Abs(sampout2 - sample);
+            float msec2 = AudioLibUtils.SampleToMsec(diff2);
         }
 
         void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
-            //LogLine($"Current time:{timeBar.Current}");
-           // waveViewer1.Marker = (int)timeBar.Current.TotalMilliseconds;
+            LogLine($"Current time:{timeBar.Current}");
+            waveViewer1.Marker = (int)timeBar.Current.TotalMilliseconds;
         }
 
         private void Load_Click(object? sender, EventArgs args)
@@ -200,10 +213,10 @@ namespace AudioLib.Test
             prov.SetPosition(0);
             Text = NAudioEx.GetInfo(prov);
 
-            timeBar.Start = new TimeSpan();
-            timeBar.End = new TimeSpan();
-            //int days, int hours, int minutes, int seconds, int milliseconds
-            timeBar.Length = new(0, 0, 0, 0, 1000 * sclen / prov.WaveFormat.SampleRate); // msec;
+            int msec = 1000 * sclen / prov.WaveFormat.SampleRate;
+            timeBar.Marker1 = new TimeSpan(0, 0, 0, 0, msec / 3);
+            timeBar.Marker2 = new TimeSpan(0, 0, 0, 0, msec / 2);
+            timeBar.Length = new(0, 0, 0, 0, msec); // msec;
         }
 
         void Player_Click(object? sender, EventArgs args)
@@ -255,11 +268,11 @@ namespace AudioLib.Test
         {
             if (btnRunBars.Checked)
             {
-                // Update time bar.
-                timeBar.IncrementCurrent(timer1.Interval + 3); // not-real time for testing
-                if (timeBar.Current >= timeBar.End) // done/reset
+                // Update time bar. Ticks are 100 msec.
+                timeBar.IncrementCurrent(10); // not-real time for testing
+                if (timeBar.Current >= timeBar.Marker2) // done/reset
                 {
-                    timeBar.Current = timeBar.Start;
+                    timeBar.Current = timeBar.Marker1;
                 }
             }
         }

@@ -105,7 +105,9 @@ namespace AudioLib
         {
             List<string> ls = new();
 
+            // Simplify provider name.
             string s = prov.GetType().ToString().Replace("NAudio.Wave.", "");
+            s = s.Replace("AudioLib.", "");
             ls.Add($"Provider:{s}");
 
             string fn = "None";

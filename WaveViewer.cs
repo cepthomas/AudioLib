@@ -17,7 +17,7 @@ namespace AudioLib
     {
         #region Fields
         /// <summary>For drawing.</summary>
-        readonly Pen _pen = new(Color.Black, 1);
+        readonly Pen _penDraw = new(Color.Black, 1);
 
         /// <summary>For drawing.</summary>
         readonly Pen _penMarker = new(Color.LightGray, 2);
@@ -36,12 +36,12 @@ namespace AudioLib
         /// <summary>The provider from client. Mono only.</summary>
         public ISampleProvider SampleProvider { set { _vals = value.ReadAll(); Invalidate(); } }
 
-        /// <summary>For styling.</summary>
-        public Color DrawColor { get { return _pen.Color; } set { _pen.Color = value; Invalidate(); } }
+        /// <summary>The waveform color.</summary>
+        public Color DrawColor { get { return _penDraw.Color; } set { _penDraw.Color = value; Invalidate(); } }
 
         /// <summary>Y adjustment.</summary>
         public float YGain { get { return _yGain; } set { _yGain = value; Invalidate(); } }
-        float _yGain = 0.8f;
+        float _yGain = 1.0f;
 
         /// <summary>Marker sample index.</summary>
         public int Marker { get { return _marker; } set { _marker = value; Invalidate(); } }
@@ -51,7 +51,7 @@ namespace AudioLib
         float _maxGain = 5.0f;
 
         /// <summary>Grid resolution.</summary>
-        float _gridStep = 0.5f;
+        float _gridStep = 0.25f;
         #endregion
 
         #region Lifecycle
@@ -71,7 +71,7 @@ namespace AudioLib
         {
            if (disposing)
            {
-                _pen.Dispose();
+                _penDraw.Dispose();
                 _textFont.Dispose();
                 _format.Dispose();
            }
@@ -145,9 +145,9 @@ namespace AudioLib
                 var peaks = PeakProvider.GetPeaks(_vals, 0, samplesPerPixel, Width);
 
                 // grid lines
-                for (float l = -5 * _gridStep; l <= 5 * _gridStep; l += _gridStep)
+                for (float gs = -5 * _gridStep; gs <= 5 * _gridStep; gs += _gridStep)
                 {
-                    float yGrid = MathUtils.Map(l * _yGain, 1.0f, -1.0f, 0, Height);
+                    float yGrid = MathUtils.Map(gs, 1.0f, -1.0f, 0, Height);
                     pe.Graphics.DrawLine(_penMarker, 0, yGrid, Width, yGrid);
                 }
 
@@ -158,14 +158,22 @@ namespace AudioLib
                     //int border = 5;
                     //float yMax = MathUtils.Map(peaks[i].max, 1.0f, -1.0f, border, Height - border);
                     //float yMin = MathUtils.Map(peaks[i].min, 1.0f, -1.0f, border, Height - border);
-                    float yMax = MathUtils.Map(peaks[i].max * _yGain, 1.0f, -1.0f, 0, Height);
-                    float yMin = MathUtils.Map(peaks[i].min * _yGain, 1.0f, -1.0f, 0, Height);
-                    pe.Graphics.DrawLine(_pen, i, yMax, i, yMin);
+                    int yMax = (int)MathUtils.Map(peaks[i].max * _yGain, 1.0f, -1.0f, 0, Height);
+                    int yMin = (int)MathUtils.Map(peaks[i].min * _yGain, 1.0f, -1.0f, 0, Height);
+                    
+                    // Make sure there's at least one dot.
+                    if (yMax == yMin)
+                    {
+                        if(yMax > 0) { yMin--; }
+                        else { yMax++; }
+                    }
+
+                    pe.Graphics.DrawLine(_penDraw, i, yMax, i, yMin);
                 }
 
                 // marker
                 int xmarker = MathUtils.Map(_marker, 0, _vals.Length, 0, Width);
-                pe.Graphics.DrawLine(_pen, xmarker, 0, xmarker, Height);
+                pe.Graphics.DrawLine(_penDraw, xmarker, 0, xmarker, Height);
             }
         }
         #endregion
