@@ -82,7 +82,6 @@
             this.waveViewer1.DrawColor = System.Drawing.Color.Orange;
             this.waveViewer1.Location = new System.Drawing.Point(10, 129);
             this.waveViewer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.waveViewer1.Marker = 0;
             this.waveViewer1.Name = "waveViewer1";
             this.waveViewer1.Size = new System.Drawing.Size(1157, 130);
             this.waveViewer1.TabIndex = 26;
@@ -96,7 +95,6 @@
             this.waveViewer2.DrawColor = System.Drawing.Color.Orange;
             this.waveViewer2.Location = new System.Drawing.Point(10, 258);
             this.waveViewer2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.waveViewer2.Marker = 0;
             this.waveViewer2.Name = "waveViewer2";
             this.waveViewer2.Size = new System.Drawing.Size(1157, 130);
             this.waveViewer2.TabIndex = 32;

@@ -26,7 +26,7 @@ namespace AudioLib
         float[] _vals = Array.Empty<float>();
 
         /// <summary>Make this class look like a streaam.</summary>
-        int _currentSample = 0;
+        int _position = 0;
 
         /// <summary>Gain while iterating samples.</summary>
         float _currentGain = 1.0f;
@@ -57,8 +57,8 @@ namespace AudioLib
         /// <summary>Position of the simulated stream as sample index.</summary>
         public int Position
         {
-            get { return _currentSample; }
-            set { lock (_locker) { _currentSample = MathUtils.Constrain(value, 0, _vals.Length - 1); GetEnvelopeGain(_currentSample); } }
+            get { return _position; }
+            set { lock (_locker) { _position = MathUtils.Constrain(value, 0, _vals.Length - 1); GetEnvelopeGain(_position); } }
         }
         #endregion
 
@@ -113,7 +113,7 @@ namespace AudioLib
             // Get the source vals.
             lock (_locker)
             {
-                int numToRead = Math.Min(count, _vals.Length - _currentSample);
+                int numToRead = Math.Min(count, _vals.Length - _position);
 
                 if(_envelope.Count > 0)
                 {
@@ -146,8 +146,8 @@ namespace AudioLib
                     // Simply adjust for master gain.
                     for (int n = 0; n < numToRead; n++)
                     {
-                        buffer[n + offset] = (float)(_vals[_currentSample] * MasterGain);
-                        _currentSample++;
+                        buffer[n + offset] = (float)(_vals[_position] * MasterGain);
+                        _position++;
                         numRead++;
                     }
                 }

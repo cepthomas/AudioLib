@@ -492,6 +492,11 @@
             </summary>
             <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         </member>
+        <member name="M:NBagOfUis.Meter.InitializeComponent">
+            <summary>
+            Designer.
+            </summary>
+        </member>
         <member name="M:NBagOfUis.Meter.AddValue(System.Double)">
             <summary>
             Add a new data point. If Log, this will convert for you.
@@ -595,6 +600,11 @@
             Clean up any resources being used.
             </summary>
             <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:NBagOfUis.Pan.InitializeComponent">
+            <summary>
+            Designer.
+            </summary>
         </member>
         <member name="M:NBagOfUis.Pan.OnPaint(System.Windows.Forms.PaintEventArgs)">
             <summary>
@@ -749,6 +759,11 @@
             Clean up any resources being used.
             </summary>
             <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
+        </member>
+        <member name="M:NBagOfUis.Pot.InitializeComponent">
+            <summary>
+            Designer.
+            </summary>
         </member>
         <member name="M:NBagOfUis.Pot.Rescale">
             <summary>
@@ -920,6 +935,11 @@
             Clean up any resources being used.
             </summary>
         </member>
+        <member name="M:NBagOfUis.Slider.InitializeComponent">
+            <summary>
+            Designer.
+            </summary>
+        </member>
         <member name="M:NBagOfUis.Slider.Rescale">
             <summary>
             If min or max or resolution changed by client.
@@ -951,6 +971,12 @@
             Handle the nudge key.
             </summary>
             <param name="e"></param>
+        </member>
+        <member name="T:NBagOfUis.ToolStripSlider">
+            <summary>Simple toolstrip container for the slider.</summary>
+        </member>
+        <member name="P:NBagOfUis.ToolStripSlider.Slider">
+            <summary>Contained control exposed.</summary>
         </member>
         <member name="P:NBagOfUis.TextViewer.MatchColors">
             <summary>The colors to display when text is matched.</summary>

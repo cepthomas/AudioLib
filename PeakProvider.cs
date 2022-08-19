@@ -25,28 +25,39 @@ namespace AudioLib
         /// <returns></returns>
         public static List<(float max, float min)> GetPeaks(float[] vals, int startIndex, int samplesPerPixel, int totalPixels)
         {
-            List<(float max, float min)> scaledVals = new();
-
-            // Uses buckets with min/max. Could implement average, rms, max/min, ...
-            for (int srcIndex = startIndex; srcIndex < vals.Length; srcIndex += samplesPerPixel)
+            if (samplesPerPixel == 0)
             {
-                // Get the vals with any gain.
-                int numSamples = Math.Min(samplesPerPixel, vals.Length - srcIndex);
+                throw new ArgumentException($"samplesPerPixel must be > 0");
+            }
 
-                if (numSamples > 0)
+            List<(float max, float min)> scaledVals = new();
+            int pixelCount = 0;
+
+            if(samplesPerPixel > 0)
+            {
+                // Uses buckets with min/max. Could also implement average, rms, max/min, ...
+                for(int srcIndex = startIndex;
+                    srcIndex < vals.Length && pixelCount < totalPixels;
+                    srcIndex += samplesPerPixel, pixelCount++)
                 {
-                    float max = float.MinValue;
-                    float min = float.MaxValue;
+                    // Get the vals with any gain.
+                    int numSamples = Math.Min(samplesPerPixel, vals.Length - srcIndex);
 
-                    // Process the group.
-                    for (int i = 0; i < numSamples; i++)
+                    if (numSamples > 0)
                     {
-                        float val = vals[srcIndex + i];
-                        min = Math.Min(val, min);
-                        max = Math.Max(val, max);
-                    }
+                        float max = float.MinValue;
+                        float min = float.MaxValue;
 
-                    scaledVals.Add((max, min));
+                        // Process the group.
+                        for (int i = 0; i < numSamples; i++)
+                        {
+                            float val = vals[srcIndex + i];
+                            min = Math.Min(val, min);
+                            max = Math.Max(val, max);
+                        }
+
+                        scaledVals.Add((max, min));
+                    }
                 }
             }
 

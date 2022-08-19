@@ -73,7 +73,7 @@ namespace AudioLib.Test
         void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
             LogLine($"Current time:{timeBar.Current}");
-            waveViewer1.Marker = (int)timeBar.Current.TotalMilliseconds;
+            waveViewer1.Marker1 = (int)timeBar.Current.TotalMilliseconds;
         }
 
         private void Load_Click(object? sender, EventArgs args)
@@ -148,8 +148,8 @@ namespace AudioLib.Test
                     case "sin":
                         {
                             // Draw a sin wave.
-                            var data = new float[10000];
-                            for (int i = 0; i < data.Length; i++) { data[i] = (float)Math.Sin(Math.PI * i / 30.0); }
+                            var data = new float[500];
+                            for (int i = 0; i < data.Length; i++) { data[i] = (float)Math.Sin(i * 0.1); }
                             var prov = new ClipSampleProvider(data);
                             _prov = prov;
                             ShowWave(prov, prov.Length);
@@ -159,7 +159,7 @@ namespace AudioLib.Test
                     case "txt":
                         {
                             // Wave from csv file.
-                            var sdata = File.ReadAllLines(_testFilesDir + "one-sec.txt");
+                            var sdata = File.ReadAllLines(_testFilesDir + "tri-ref.txt");
                             var data = new float[sdata.Length];
                             for (int i = 0; i < sdata.Length; i++) { data[i] = float.Parse(sdata[i]); }
                             var prov = new ClipSampleProvider(data);
@@ -177,7 +177,7 @@ namespace AudioLib.Test
 
         void ShowWave(ISampleProvider prov, long length = 0)
         {
-            _waveOutSwapper.SetInput(prov);
+            _waveOutSwapper.SetInput(prov); // TODO this is hear not show
 
             int bytesPerSample = prov.WaveFormat.BitsPerSample / 8;
             int sclen = (int)(length / bytesPerSample);
@@ -189,29 +189,32 @@ namespace AudioLib.Test
             if (prov.WaveFormat.Channels == 2) // stereo
             {
                 prov.SetPosition(0);
+                waveViewer1.Init(new StereoToMonoSampleProvider(prov) { LeftVolume = 1.0f, RightVolume = 0.0f });
                 waveViewer1.Size = new(wd, ht / 2);
                 waveViewer1.DrawColor = Color.Red;
-                waveViewer1.Marker = sclen / 3;
-                waveViewer1.SampleProvider = new StereoToMonoSampleProvider(prov) { LeftVolume = 1.0f, RightVolume = 0.0f };
+                waveViewer1.Marker1 = sclen / 3;
+                waveViewer1.Marker2 = 2 * sclen / 3;
 
                 prov.SetPosition(0);
+                waveViewer2.Init(new StereoToMonoSampleProvider(prov) { LeftVolume = 0.0f, RightVolume = 1.0f });
                 waveViewer2.Visible = true;
                 waveViewer2.Size = new(wd, ht / 2);
                 waveViewer2.DrawColor = Color.Blue;
-                waveViewer2.Marker = sclen / 4;
-                waveViewer2.SampleProvider = new StereoToMonoSampleProvider(prov) { LeftVolume = 0.0f, RightVolume = 1.0f };
+                waveViewer2.Marker1 = sclen / 4;
+                waveViewer2.Marker2 = 3 * sclen / 4;
             }
             else // mono
             {
+                waveViewer1.Init(prov);
                 waveViewer2.Visible = false;
                 waveViewer1.Size = new(wd, ht);
-                waveViewer1.DrawColor = Color.Red;
-                waveViewer1.Marker = sclen / 2;
-                waveViewer1.SampleProvider = prov;
+                waveViewer1.DrawColor = Color.Green;
+                waveViewer1.Marker1 = sclen / 10;
+                waveViewer1.Marker2 = 9 * sclen / 10;
             }
 
             prov.SetPosition(0);
-            Text = NAudioEx.GetInfo(prov);
+            Text = prov.GetInfo();
 
             int msec = 1000 * sclen / prov.WaveFormat.SampleRate;
             timeBar.Marker1 = new TimeSpan(0, 0, 0, 0, msec / 3);
@@ -241,7 +244,7 @@ namespace AudioLib.Test
             {
                 var newProv = btnSwap.Checked ? _provSwap : _prov;
                 ShowWave(newProv);
-                Text = NAudioEx.GetInfo(newProv);
+                Text = newProv.GetInfo();
             }
         }
 
