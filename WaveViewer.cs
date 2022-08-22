@@ -78,7 +78,7 @@ namespace AudioLib
 
         #region Events
         /// <summary>WaveViewer has something to say or show.</summary>
-        public class StatusEventArgs : EventArgs
+        public class StatusEventArgs : EventArgs //TODO
         {
             /// <summary>0 -> 100</summary>
             public float Gain { get; set; } = 0.0f;
@@ -150,10 +150,11 @@ namespace AudioLib
                     Invalidate();
                 }
             }
-            else if (ModifierKeys == Keys.Shift) // y gain
+            else if (ModifierKeys == Keys.Shift) // gain
             {
                 _gain += hme.Delta > 0 ? 0.1f : -0.1f;
                 _gain = (float)MathUtils.Constrain(_gain, 0.0f, MAX_GAIN);
+                StatusEvent?.Invoke(this, new());
                 Invalidate();
             }
             else if (ModifierKeys == Keys.None) // no mods = x shift TODO
