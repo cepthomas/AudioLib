@@ -41,6 +41,7 @@
             this.btnFileInfo = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.sldGain = new NBagOfUis.Slider();
+            this.navBar = new System.Windows.Forms.HScrollBar();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -53,9 +54,9 @@
             this.txtInfo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtInfo.Location = new System.Drawing.Point(10, 411);
+            this.txtInfo.Location = new System.Drawing.Point(10, 482);
             this.txtInfo.Name = "txtInfo";
-            this.txtInfo.Size = new System.Drawing.Size(1157, 167);
+            this.txtInfo.Size = new System.Drawing.Size(1157, 96);
             this.txtInfo.TabIndex = 29;
             this.txtInfo.Text = "";
             // 
@@ -82,14 +83,17 @@
             this.waveViewer1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.waveViewer1.DrawColor = System.Drawing.Color.Orange;
             this.waveViewer1.Gain = 1F;
+            this.waveViewer1.GridColor = System.Drawing.Color.LightGray;
             this.waveViewer1.Location = new System.Drawing.Point(10, 129);
             this.waveViewer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.waveViewer1.Name = "waveViewer1";
+            this.waveViewer1.SelColor = System.Drawing.Color.White;
             this.waveViewer1.SelLength = 0;
             this.waveViewer1.SelStart = -1;
             this.waveViewer1.Size = new System.Drawing.Size(1157, 130);
             this.waveViewer1.SnapTODO = 0F;
             this.waveViewer1.TabIndex = 26;
+            this.waveViewer1.ViewCursor = -1;
             this.waveViewer1.VisLength = 0;
             this.waveViewer1.VisStart = 0;
             // 
@@ -100,14 +104,17 @@
             this.waveViewer2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.waveViewer2.DrawColor = System.Drawing.Color.Orange;
             this.waveViewer2.Gain = 1F;
+            this.waveViewer2.GridColor = System.Drawing.Color.LightGray;
             this.waveViewer2.Location = new System.Drawing.Point(10, 258);
             this.waveViewer2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.waveViewer2.Name = "waveViewer2";
+            this.waveViewer2.SelColor = System.Drawing.Color.White;
             this.waveViewer2.SelLength = 0;
             this.waveViewer2.SelStart = -1;
             this.waveViewer2.Size = new System.Drawing.Size(1157, 130);
             this.waveViewer2.SnapTODO = 0F;
             this.waveViewer2.TabIndex = 32;
+            this.waveViewer2.ViewCursor = -1;
             this.waveViewer2.VisLength = 0;
             this.waveViewer2.VisStart = 0;
             // 
@@ -282,11 +289,19 @@
             this.sldGain.TabIndex = 33;
             this.sldGain.Value = 1D;
             // 
+            // navBar
+            // 
+            this.navBar.Location = new System.Drawing.Point(10, 411);
+            this.navBar.Name = "navBar";
+            this.navBar.Size = new System.Drawing.Size(1157, 26);
+            this.navBar.TabIndex = 34;
+            // 
             // TestHost
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1175, 597);
+            this.Controls.Add(this.navBar);
             this.Controls.Add(this.sldGain);
             this.Controls.Add(this.waveViewer2);
             this.Controls.Add(this.toolStrip1);
@@ -329,5 +344,6 @@
         private System.Windows.Forms.ToolStripButton btnFileInfo;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private NBagOfUis.Slider sldGain;
+        private System.Windows.Forms.HScrollBar navBar;
     }
 }

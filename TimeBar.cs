@@ -10,7 +10,7 @@ using NBagOfTricks;
 namespace AudioLib
 {
     /// <summary>The control.</summary>
-    public partial class TimeBar : UserControl
+    public partial class TimeBar : UserControl // TODO only used by defunct ClipExplorer.
     {
         #region Fields
         /// <summary>For tracking mouse moves.</summary>

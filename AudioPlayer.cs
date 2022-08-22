@@ -6,6 +6,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.Diagnostics;
+using System.ComponentModel;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
@@ -32,6 +33,7 @@ namespace AudioLib
 
         #region Properties
         /// <summary>Are we ok?</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool Valid { get { return _waveOut is not null; } }
 
         /// <summary>Volume.</summary>
@@ -49,6 +51,7 @@ namespace AudioLib
         }
 
         /// <summary>State.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool Playing { get; private set; }
         #endregion
 

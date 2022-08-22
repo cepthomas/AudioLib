@@ -38,18 +38,33 @@ namespace AudioLib
     {
         // 44.1 sample/msec <-> 0.0226757369614512 msec/sample
 
+        /// <summary>
+        /// Conversion function.
+        /// </summary>
+        /// <param name="ts"></param>
+        /// <returns></returns>
         public static int TimeToSample(TimeSpan ts)
         {
             double sample = ts.TotalMilliseconds * AudioLibDefs.SAMPLE_RATE / 1000;
             return (int)sample;
         }
 
+        /// <summary>
+        /// Conversion function.
+        /// </summary>
+        /// <param name="msec"></param>
+        /// <returns></returns>
         public static int MsecToSample(float msec)
         {
             float sample = msec * AudioLibDefs.SAMPLE_RATE / 1000;
             return (int)sample;
         }
 
+        /// <summary>
+        /// Conversion function.
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
         public static TimeSpan SampleToTime(int sample)
         {
             float msec = 1000.0f * sample / AudioLibDefs.SAMPLE_RATE;
@@ -57,6 +72,11 @@ namespace AudioLib
             return ts;
         }
 
+        /// <summary>
+        /// Conversion function.
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
         public static float SampleToMsec(int sample)
         {
             float msec = 1000.0f * sample / AudioLibDefs.SAMPLE_RATE;

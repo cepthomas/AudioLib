@@ -22,13 +22,15 @@ namespace AudioLib
         /// </summary>
         /// <param name="prov">The provider.</param>
         /// <returns></returns>
-        public static float[] ReadAll(this ISampleProvider prov)
+        public static (float[] vals, float max, float min) ReadAll(this ISampleProvider prov)
         {
             prov.Validate(true);
 
             prov.SetPosition(0);
 
             List<float[]> parts = new();
+            float max = 0.0f;
+            float min = 0.0f;
 
             bool done = false;
             while (!done)
@@ -46,6 +48,9 @@ namespace AudioLib
                     done = true;
                 }
                 parts.Add(data);
+
+                // Get min/max.
+                data.ForEach(v => { max = Math.Max(max, v); min = Math.Min(min, v); });
             }
 
             // Count.
@@ -57,7 +62,7 @@ namespace AudioLib
             i = 0;
             parts.ForEach(p => { p.CopyTo(all, i); i += p.Length; } );
 
-            return all;
+            return (all, max, min);
         }
 
         /// <summary>
@@ -100,19 +105,37 @@ namespace AudioLib
         /// Get provider info. Mainly for window header.
         /// </summary>
         /// <param name="prov"></param>
-        /// <returns></returns>
-        public static string GetInfo(this ISampleProvider prov)
+        /// <returns>Info chunks.</returns>
+        public static string GetInfoString(this ISampleProvider prov)
         {
             List<string> ls = new();
+
+            GetInfo(prov).ForEach(i => ls.Add($"{i.name}:{i.val}"));
+
+            return string.Join("  ", ls);
+        }
+
+        /// <summary>
+        /// Get provider info. Mainly for window header.
+        /// </summary>
+        /// <param name="prov"></param>
+        /// <returns>Info chunks.</returns>
+        public static List<(string name, string val)> GetInfo(this ISampleProvider prov)
+        {
+            // List<string> ls = new();
+
+            //System.Collections.Generic.SortedDictionary<>
+
+            List<(string name, string val)> info = new();
 
             // Simplify provider name.
             string s = prov.GetType().ToString().Replace("NAudio.Wave.", "");
             s = s.Replace("AudioLib.", "");
-            ls.Add($"Provider:{s}");
+            info.Add(("Provider", s));
 
             string fn = "None";
             int numsamp = -1;
-            TimeSpan ttime = new(); 
+            TimeSpan ttime = new();
             if (prov is ClipSampleProvider csp)
             {
                 fn = csp.FileName == "" ? "None" : Path.GetFileName(csp.FileName);
@@ -126,21 +149,21 @@ namespace AudioLib
                 ttime = afr.TotalTime;
             }
 
-            ls.Add($"File:{fn}");
+            info.Add(("File", fn));
 
-            if(numsamp != -1)
+            if (numsamp != -1)
             {
-                ls.Add($"Length:{numsamp}");
-                ls.Add($"Time:{ttime.ToString(AudioLibDefs.TS_FORMAT)}");
+                info.Add(("Length", numsamp.ToString()));
+                info.Add(("Time", ttime.ToString(AudioLibDefs.TS_FORMAT)));
             }
 
             var wf = prov.WaveFormat;
-            ls.Add($"Encoding:{wf.Encoding}");
-            ls.Add($"Channels:{wf.Channels}");
-            ls.Add($"SampleRate:{wf.SampleRate}");
-            ls.Add($"BitsPerSample:{wf.BitsPerSample}");
+            info.Add(("Encoding", wf.Encoding.ToString()));
+            info.Add(("Channels", wf.Channels.ToString()));
+            info.Add(("SampleRate", wf.SampleRate.ToString()));
+            info.Add(("BitsPerSample", wf.BitsPerSample.ToString()));
 
-            return string.Join("   ", ls);
+            return info;
         }
 
         /// <summary>

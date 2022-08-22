@@ -203,12 +203,52 @@ namespace AudioLib.Test
             }
 
             prov.SetPosition(0);
-            Text = prov.GetInfo();
+            Text = prov.GetInfoString();
 
             int msec = 1000 * sclen / prov.WaveFormat.SampleRate;
             timeBar.Marker1 = new TimeSpan(0, 0, 0, 0, msec / 3);
             timeBar.Marker2 = new TimeSpan(0, 0, 0, 0, msec / 2);
             timeBar.Length = new(0, 0, 0, 0, msec); // msec;
+
+            // Navigation. TODO.
+            navBar.SmallChange = 1;
+            navBar.LargeChange = 100;
+
+
+            // //     Gets or sets a numeric value that represents the current position of the scroll box on the scroll bar control.
+            // public int Value { get; set; }
+            // //     Gets or sets the value to be added to or subtracted from the System.Windows.Forms.ScrollBar.Value property when the scroll box is moved a small distance.
+            // public int SmallChange { get; set; }
+            // //     Gets or sets the lower limit of values of the scrollable range.
+            // public int Minimum { get; set; }
+            // //     Gets or sets a value to be added to or subtracted from the System.Windows.Forms.ScrollBar.Value property when the scroll box is moved a large distance.
+            // public int LargeChange { get; set; }
+            // //     Gets or sets the foreground color of the scroll bar control.
+            // public override Color ForeColor { get; set; }
+            // //     Gets or sets the background image layout as defined in the System.Windows.Forms.ImageLayout enumeration.
+            // public override ImageLayout BackgroundImageLayout { get; set; }
+            // //     Gets or sets the background image displayed in the control.
+            // public override Image? BackgroundImage { get; set; }
+            // //     Gets or sets the upper limit of values of the scrollable range.
+            // public int Maximum { get; set; }
+            // //     Gets or sets a value indicating whether the System.Windows.Forms.ScrollBar is automatically resized to fit its contents.
+            // public override bool AutoSize { get; set; }
+            // //     Gets or sets the background color for the control.
+            // public override Color BackColor { get; set; }
+            
+            // // Events:
+            // public event MouseEventHandler? MouseClick;
+            // public event EventHandler? DoubleClick;
+            // public event MouseEventHandler? MouseDoubleClick;
+            // public event MouseEventHandler? MouseDown;
+            // public event MouseEventHandler? MouseUp;
+            // public event MouseEventHandler? MouseMove;
+            // public event ScrollEventHandler? Scroll;
+            // public event EventHandler? ValueChanged;
+            // protected override void OnMouseWheel(MouseEventArgs e);
+            // protected virtual void OnScroll(ScrollEventArgs se);
+            // protected virtual void OnValueChanged(EventArgs e);
+
         }
 
         void Player_Click(object? sender, EventArgs args)
@@ -233,7 +273,7 @@ namespace AudioLib.Test
             {
                 var newProv = btnSwap.Checked ? _provSwap : _prov;
                 ShowWave(newProv);
-                Text = newProv.GetInfo();
+                Text = newProv.GetInfoString();
             }
         }
 

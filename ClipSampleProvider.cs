@@ -200,7 +200,7 @@ namespace AudioLib
                 };
             }
 
-            _vals = source.ReadAll();
+            _vals = source.ReadAll().vals;
         }
 
         /// <summary>

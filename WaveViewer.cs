@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using System.IO;
+using System.ComponentModel;
 using NBagOfTricks;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
@@ -53,6 +54,7 @@ namespace AudioLib
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
         /// <summary>There isn't enough data to fill full width so disallow navigation.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool Frozen { get; private set; } = false;
 
         /// <summary>Selection snaps to this increment value.</summary>
@@ -70,7 +72,7 @@ namespace AudioLib
         /// <summary>Visible start sample.</summary>
         public int VisStart { get; set; } = 0;
 
-        /// <summary>Visible length. Always positive</summary>
+        /// <summary>Visible length. Always positive.</summary>
         public int VisLength { get; set; } = 0;
         #endregion
 
@@ -103,7 +105,7 @@ namespace AudioLib
         /// <param name="prov">Source</param>
         public void Init(ISampleProvider prov)
         {
-            _vals = prov.ReadAll();
+            _vals = prov.ReadAll().vals;
 
             _gain = 1.0f;
             SelStart = -1;
@@ -194,7 +196,32 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// 
+        /// Handle mouse move.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            // if (e.Button == MouseButtons.Left)
+            // {
+            //     _current = GetTimeFromMouse(e.X);
+            //     CurrentTimeChanged?.Invoke(this, new EventArgs());
+            // }
+            // else
+            // {
+            //     if (e.X != _lastXPos)
+            //     {
+            //         TimeSpan ts = GetTimeFromMouse(e.X);
+            //         _toolTip.SetToolTip(this, ts.ToString(AudioLibDefs.TS_FORMAT));
+            //         _lastXPos = e.X;
+            //     }
+            // }
+
+            // Invalidate();
+            base.OnMouseMove(e);
+        }
+
+        /// <summary>
+        /// Key press.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
@@ -203,13 +230,11 @@ namespace AudioLib
             {
                 //case Keys.Escape:
                 case Keys.G:
-                    //_firstPaint = true;
                     _gain = 1.0f;
                     Invalidate();
                     break;
 
                 case Keys.H:
-                    //_firstPaint = true;
                     VisStart = 0;
                     VisLength = _vals.Length;
                     Invalidate();
@@ -218,12 +243,11 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// 
+        /// Resize.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnResize(EventArgs e)
         {
-            //_firstPaint = true; // Need to recalc the grid too.
             Invalidate();
         }
         #endregion
@@ -343,24 +367,6 @@ namespace AudioLib
             return sample;
         }
 
-        ///// <summary>
-        ///// Convert x pos to TimeSpan.
-        ///// </summary>
-        ///// <param name="x"></param>
-        //TimeSpan GetTimeFromMouse(int x)
-        //{
-        //    int msec = 0;
-
-        //    if (_current.TotalMilliseconds < _length.TotalMilliseconds)
-        //    {
-        //        msec = x * (int)_length.TotalMilliseconds / Width;
-        //        msec = MathUtils.Constrain(msec, 0, (int)_length.TotalMilliseconds);
-        //        msec = DoSnap(msec);
-        //    }
-
-        //    return new TimeSpan(0, 0, 0, 0, msec);
-        //}
-
         /// <summary>
         /// Snap to user preference.
         /// </summary>
@@ -381,29 +387,6 @@ namespace AudioLib
 
             return sample;
         }
-
-        ///// <summary>
-        ///// Utility helper function.
-        ///// </summary>
-        ///// <param name="val"></param>
-        ///// <param name="lower"></param>
-        ///// <param name="upper"></param>
-        ///// <returns></returns>
-        //TimeSpan Constrain(TimeSpan val, TimeSpan lower, TimeSpan upper)
-        //{
-        //    return TimeSpan.FromMilliseconds(MathUtils.Constrain(val.TotalMilliseconds, lower.TotalMilliseconds, upper.TotalMilliseconds));
-        //}
-
-        ///// <summary>
-        ///// Map from time to UI pixels.
-        ///// </summary>
-        ///// <param name="val"></param>
-        ///// <returns></returns>
-        //int Scale(TimeSpan val)
-        //{
-        //    return (int)(val.TotalMilliseconds * Width / _length.TotalMilliseconds);
-        //}
-
         #endregion
     }
 }
