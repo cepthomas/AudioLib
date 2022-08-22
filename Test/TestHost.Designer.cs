@@ -40,6 +40,7 @@
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.btnFileInfo = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
+            this.sldGain = new NBagOfUis.Slider();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -70,7 +71,7 @@
             this.timeBar.MarkerColor = System.Drawing.Color.Black;
             this.timeBar.Name = "timeBar";
             this.timeBar.ProgressColor = System.Drawing.Color.Orange;
-            this.timeBar.Size = new System.Drawing.Size(1157, 64);
+            this.timeBar.Size = new System.Drawing.Size(555, 64);
             this.timeBar.SnapMsec = 0;
             this.timeBar.TabIndex = 24;
             // 
@@ -80,12 +81,17 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.waveViewer1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.waveViewer1.DrawColor = System.Drawing.Color.Orange;
+            this.waveViewer1.Gain = 1F;
             this.waveViewer1.Location = new System.Drawing.Point(10, 129);
             this.waveViewer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.waveViewer1.Name = "waveViewer1";
+            this.waveViewer1.SelLength = 0;
+            this.waveViewer1.SelStart = -1;
             this.waveViewer1.Size = new System.Drawing.Size(1157, 130);
+            this.waveViewer1.SnapTODO = 0F;
             this.waveViewer1.TabIndex = 26;
-            this.waveViewer1.YGain = 0.8F;
+            this.waveViewer1.VisLength = 0;
+            this.waveViewer1.VisStart = 0;
             // 
             // waveViewer2
             // 
@@ -93,12 +99,17 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.waveViewer2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.waveViewer2.DrawColor = System.Drawing.Color.Orange;
+            this.waveViewer2.Gain = 1F;
             this.waveViewer2.Location = new System.Drawing.Point(10, 258);
             this.waveViewer2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.waveViewer2.Name = "waveViewer2";
+            this.waveViewer2.SelLength = 0;
+            this.waveViewer2.SelStart = -1;
             this.waveViewer2.Size = new System.Drawing.Size(1157, 130);
+            this.waveViewer2.SnapTODO = 0F;
             this.waveViewer2.TabIndex = 32;
-            this.waveViewer2.YGain = 0.8F;
+            this.waveViewer2.VisLength = 0;
+            this.waveViewer2.VisStart = 0;
             // 
             // toolStrip1
             // 
@@ -256,11 +267,27 @@
             this.toolStripSeparator6.Name = "toolStripSeparator6";
             this.toolStripSeparator6.Size = new System.Drawing.Size(6, 27);
             // 
+            // sldGain
+            // 
+            this.sldGain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.sldGain.DrawColor = System.Drawing.Color.CornflowerBlue;
+            this.sldGain.Label = "gain";
+            this.sldGain.Location = new System.Drawing.Point(593, 44);
+            this.sldGain.Maximum = 3D;
+            this.sldGain.Minimum = 0D;
+            this.sldGain.Name = "sldGain";
+            this.sldGain.Orientation = System.Windows.Forms.Orientation.Horizontal;
+            this.sldGain.Resolution = 0.05D;
+            this.sldGain.Size = new System.Drawing.Size(188, 64);
+            this.sldGain.TabIndex = 33;
+            this.sldGain.Value = 1D;
+            // 
             // TestHost
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1175, 597);
+            this.Controls.Add(this.sldGain);
             this.Controls.Add(this.waveViewer2);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.txtInfo);
@@ -301,5 +328,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripButton btnFileInfo;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
+        private NBagOfUis.Slider sldGain;
     }
 }

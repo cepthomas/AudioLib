@@ -975,8 +975,32 @@
         <member name="T:NBagOfUis.ToolStripSlider">
             <summary>Simple toolstrip container for the slider.</summary>
         </member>
-        <member name="P:NBagOfUis.ToolStripSlider.Slider">
-            <summary>Contained control exposed.</summary>
+        <member name="F:NBagOfUis.ToolStripSlider._slider">
+            <summary>Contained control.</summary>
+        </member>
+        <member name="P:NBagOfUis.ToolStripSlider.Label">
+            <summary>Optional label.</summary>
+        </member>
+        <member name="P:NBagOfUis.ToolStripSlider.DrawColor">
+            <summary>For styling.</summary>
+        </member>
+        <member name="P:NBagOfUis.ToolStripSlider.Orientation">
+            <summary>Fader orientation</summary>
+        </member>
+        <member name="P:NBagOfUis.ToolStripSlider.Resolution">
+            <summary>Per step resolution of this slider.</summary>
+        </member>
+        <member name="P:NBagOfUis.ToolStripSlider.Minimum">
+            <summary>Minimum Value of the slider.</summary>
+        </member>
+        <member name="P:NBagOfUis.ToolStripSlider.Maximum">
+            <summary>Maximum Value of the slider.</summary>
+        </member>
+        <member name="P:NBagOfUis.ToolStripSlider.Value">
+            <summary>The current value of the slider.</summary>
+        </member>
+        <member name="E:NBagOfUis.ToolStripSlider.ValueChanged">
+            <summary>Slider value changed event.</summary>
         </member>
         <member name="P:NBagOfUis.TextViewer.MatchColors">
             <summary>The colors to display when text is matched.</summary>

@@ -10,8 +10,6 @@ using System.IO;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Drawing.Design;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text.Json.Serialization;
 using NBagOfTricks;
 using AudioLib;
 using NAudio.Wave;
@@ -37,12 +35,17 @@ namespace AudioLib.Test
 
             Location = new(20, 20);
 
-            ///// Time bar.
+            // Time bar.
             timeBar.SnapMsec = 10;
             timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
             timeBar.ProgressColor = Color.CornflowerBlue;
             timeBar.BackColor = Color.Salmon;
 
+            // Controls.
+            waveViewer1.StatusEvent += (_, __) => { };
+            sldGain.ValueChanged += (_, __) => { waveViewer1.Gain = (float)sldGain.Value; waveViewer1.Invalidate(); };
+
+            // Player.
             _waveOutSwapper = new();
             _player = new("Microsoft Sound Mapper", 200, _waveOutSwapper) { Volume = 0.5 };
             _player.PlaybackStopped += (_, __) =>
@@ -50,33 +53,14 @@ namespace AudioLib.Test
                 LogLine("player finished");
                 this.InvokeIfRequired(_ => { btnPlayer.Checked = false; });
             };
-
             _provSwap = new ClipSampleProvider(_testFilesDir + "test.wav", StereoCoercion.Mono);
 
             // Go-go-go.
             timer1.Interval = 100;
             timer1.Enabled = true;
-
-            // Conversion tests.
-            int sample = 123456;
-            float msec = AudioLibUtils.SampleToMsec(sample);
-            int sampout1 = AudioLibUtils.MsecToSample(msec);
-            int diff1 = Math.Abs(sampout1 - sample);
-            float msec1 = AudioLibUtils.SampleToMsec(diff1);
-
-            TimeSpan ts = AudioLibUtils.SampleToTime(sample);
-            int sampout2 = AudioLibUtils.TimeToSample(ts);
-            int diff2 = Math.Abs(sampout2 - sample);
-            float msec2 = AudioLibUtils.SampleToMsec(diff2);
         }
 
-        void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
-        {
-            LogLine($"Current time:{timeBar.Current}");
-            waveViewer1.Marker1 = (int)timeBar.Current.TotalMilliseconds;
-        }
-
-        private void Load_Click(object? sender, EventArgs args)
+        void Load_Click(object? sender, EventArgs args)
         {
             // ambi_swoosh.flac SampleRate:44100 Channels:2 BitsPerSample:16  Length:176400 TotalTime:00:00:01  
             // avTouch_sample.m4a SampleRate:22050 Channels:1 BitsPerSample:16 Length:450559 TotalTime:00:00:10.2167573  
@@ -107,7 +91,7 @@ namespace AudioLib.Test
                         {
                             string fn = _testFilesDir + "ref-stereo.wav";
                             //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            var prov = new AudioFileReader(fn);
+                            var prov = new AudioFileReader(fn); // TODO these need to be disposed.
                             _prov = prov;
                             ShowWave(prov, prov.Length);
                         }
@@ -192,16 +176,20 @@ namespace AudioLib.Test
                 waveViewer1.Init(new StereoToMonoSampleProvider(prov) { LeftVolume = 1.0f, RightVolume = 0.0f });
                 waveViewer1.Size = new(wd, ht / 2);
                 waveViewer1.DrawColor = Color.Red;
-                waveViewer1.Marker1 = sclen / 3;
-                waveViewer1.Marker2 = 2 * sclen / 3;
+                waveViewer1.BackColor = Color.Cyan;
+                waveViewer1.SelStart = sclen / 3;
+                waveViewer1.SelLength = sclen / 4;
+                waveViewer1.ViewCursor = 2 * sclen / 3;
 
                 prov.SetPosition(0);
                 waveViewer2.Init(new StereoToMonoSampleProvider(prov) { LeftVolume = 0.0f, RightVolume = 1.0f });
                 waveViewer2.Visible = true;
                 waveViewer2.Size = new(wd, ht / 2);
                 waveViewer2.DrawColor = Color.Blue;
-                waveViewer2.Marker1 = sclen / 4;
-                waveViewer2.Marker2 = 3 * sclen / 4;
+                waveViewer2.BackColor = Color.LightYellow;
+                waveViewer2.SelStart = sclen / 4;
+                waveViewer1.SelLength = sclen / 4;
+                waveViewer2.ViewCursor = 3 * sclen / 4;
             }
             else // mono
             {
@@ -209,8 +197,9 @@ namespace AudioLib.Test
                 waveViewer2.Visible = false;
                 waveViewer1.Size = new(wd, ht);
                 waveViewer1.DrawColor = Color.Green;
-                waveViewer1.Marker1 = sclen / 10;
-                waveViewer1.Marker2 = 9 * sclen / 10;
+                waveViewer1.SelStart = sclen / 10;
+                waveViewer1.SelLength = sclen / 4;
+                waveViewer1.ViewCursor = 9 * sclen / 10;
             }
 
             prov.SetPosition(0);
@@ -267,6 +256,12 @@ namespace AudioLib.Test
             txtInfo.AppendText(s + Environment.NewLine);
         }
 
+        void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
+        {
+            LogLine($"Current time:{timeBar.Current}");
+            waveViewer1.ViewCursor = (int)timeBar.Current.TotalMilliseconds;
+        }
+
         void Timer1_Tick(object? sender, EventArgs args)
         {
             if (btnRunBars.Checked)
@@ -290,6 +285,21 @@ namespace AudioLib.Test
         void LogLine(string s)
         {
             this.InvokeIfRequired(_ => { txtInfo.AppendText(s + Environment.NewLine); });
+        }
+
+        void OtherStuff()
+        {
+            // Conversion tests.
+            int sample = 123456;
+            float msec = AudioLibUtils.SampleToMsec(sample);
+            int sampout1 = AudioLibUtils.MsecToSample(msec);
+            int diff1 = Math.Abs(sampout1 - sample);
+            float msec1 = AudioLibUtils.SampleToMsec(diff1);
+
+            TimeSpan ts = AudioLibUtils.SampleToTime(sample);
+            int sampout2 = AudioLibUtils.TimeToSample(ts);
+            int diff2 = Math.Abs(sampout2 - sample);
+            float msec2 = AudioLibUtils.SampleToMsec(diff2);
         }
 
         protected override void Dispose(bool disposing)

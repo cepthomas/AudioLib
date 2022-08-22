@@ -19,12 +19,6 @@ namespace AudioLib
         /// <summary>Tooltip for mousing.</summary>
         readonly ToolTip _toolTip = new();
 
-        /// <summary>The brush.</summary>
-        readonly SolidBrush _brush = new(Color.White);
-
-        /// <summary>The pen.</summary>
-        readonly Pen _penMarker = new(Color.Black, 1);
-
         /// <summary>For drawing text.</summary>
         readonly StringFormat _format = new() { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
 
@@ -35,32 +29,37 @@ namespace AudioLib
         static readonly int SMALL_CHANGE = 100;
         #endregion
 
+        #region Backing fields
+        readonly SolidBrush _brushProgress = new(Color.White);
+        readonly Pen _penMarker = new(Color.Black, 1);
+        TimeSpan _current = new();
+        TimeSpan _length = new();
+        TimeSpan _marker1 = new();
+        TimeSpan _marker2 = new();
+        #endregion
+
         #region Properties
         /// <summary>Where we be now.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public TimeSpan Current { get { return _current; } set { _current = value; Invalidate(); } }
-        TimeSpan _current = new();
 
         /// <summary>Total length.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public TimeSpan Length { get { return _length; } set { _length = value; Invalidate(); } }
-        TimeSpan _length = new();
 
         /// <summary>One marker.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public TimeSpan Marker1 { get { return _marker1; } set { _marker1 = value; Invalidate(); } }
-        TimeSpan _marker1 = new();
 
         /// <summary>Other marker.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public TimeSpan Marker2 { get { return _marker2; } set { _marker2 = value; Invalidate(); } }
-        TimeSpan _marker2 = new();
 
         /// <summary>Snap to this increment value.</summary>
         public int SnapMsec { get; set; } = 0;
 
         /// <summary>For styling.</summary>
-        public Color ProgressColor { get { return _brush.Color; } set { _brush.Color = value; } }
+        public Color ProgressColor { get { return _brushProgress.Color; } set { _brushProgress.Color = value; } }
 
         /// <summary>For styling.</summary>
         public Color MarkerColor { get { return _penMarker.Color; } set { _penMarker.Color = value; } }
@@ -96,7 +95,7 @@ namespace AudioLib
             {
                 _toolTip.Dispose();
                 _penMarker.Dispose();
-                _brush.Dispose();
+                _brushProgress.Dispose();
                 _format.Dispose();
             }
             base.Dispose(disposing);
@@ -161,7 +160,7 @@ namespace AudioLib
             {
                 int dstart = Scale(_marker1);
                 int dend = _current > _marker2 ? Scale(_marker2) : Scale(_current);
-                pe.Graphics.FillRectangle(_brush, dstart, 0, dend - dstart, Height);
+                pe.Graphics.FillRectangle(_brushProgress, dstart, 0, dend - dstart, Height);
             }
 
             // Draw start/end markers.

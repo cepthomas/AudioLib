@@ -21,6 +21,10 @@ namespace AudioLib
         readonly WaveOut? _waveOut = null;
         #endregion
 
+        #region Backing fields
+        double _volume = AudioLibDefs.VOLUME_MAX * 0.7;
+        #endregion
+
         #region Events
         /// <summary>Wave playing done.</summary>
         public event EventHandler<StoppedEventArgs>? PlaybackStopped;
@@ -43,7 +47,6 @@ namespace AudioLib
                 if (_waveOut is not null) { _waveOut.Volume = (float)_volume; }
             }
         }
-        double _volume = AudioLibDefs.VOLUME_MAX * 0.7;
 
         /// <summary>State.</summary>
         public bool Playing { get; private set; }
