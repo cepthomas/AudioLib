@@ -91,7 +91,6 @@
             this.waveViewer1.SelLength = 0;
             this.waveViewer1.SelStart = -1;
             this.waveViewer1.Size = new System.Drawing.Size(1157, 130);
-            this.waveViewer1.SnapTODO = 0F;
             this.waveViewer1.TabIndex = 26;
             this.waveViewer1.ViewCursor = -1;
             this.waveViewer1.VisLength = 0;
@@ -112,7 +111,6 @@
             this.waveViewer2.SelLength = 0;
             this.waveViewer2.SelStart = -1;
             this.waveViewer2.Size = new System.Drawing.Size(1157, 130);
-            this.waveViewer2.SnapTODO = 0F;
             this.waveViewer2.TabIndex = 32;
             this.waveViewer2.ViewCursor = -1;
             this.waveViewer2.VisLength = 0;

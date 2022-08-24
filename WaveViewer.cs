@@ -13,18 +13,23 @@ using NAudio.Wave.SampleProviders;
 
 namespace AudioLib
 {
-    /// <summary>Simple mono wave display.</summary>
-    public partial class WaveViewer : UserControl
+    /// <summary>
+    /// Simple mono wave display.
+    /// </summary>
+    public partial class WaveViewer : UserControl, ISampleProvider
     {
         #region Fields
         /// <summary>For drawing text.</summary>
-        readonly Font _textFont = new("Cascadia", 12, FontStyle.Regular, GraphicsUnit.Point, 0);
+        readonly Font _textFont = new("Cascadia", 9, FontStyle.Bold, GraphicsUnit.Point, 0);
 
         /// <summary>For drawing text.</summary>
         readonly StringFormat _format = new() { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
 
         /// <summary>The data buffer.</summary>
         float[] _vals = Array.Empty<float>();
+
+        /// <summary>Make this class look like a streaam.</summary>
+        int _position = 0;
 
         /// <summary>Maximum gain.</summary>
         const float MAX_GAIN = 5.0f;
@@ -41,6 +46,9 @@ namespace AudioLib
         #endregion
 
         #region Properties
+        /// <summary>Gets the WaveFormat of this Sample Provider. ISampleProvider implementation.</summary>
+        public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
+
         /// <summary>The waveform color.</summary>
         public Color DrawColor { get { return _penDraw.Color; } set { _penDraw.Color = value; Invalidate(); } }
 
@@ -50,18 +58,15 @@ namespace AudioLib
         /// <summary>For styling.</summary>
         public Color SelColor { get { return _brushSel.Color; } set { _brushSel.Color = value; } }
 
-        /// <summary>Amplitude adjustment.</summary>
+        /// <summary>Overall amplitude adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
         /// <summary>There isn't enough data to fill full width so disallow navigation.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool Frozen { get; private set; } = false;
 
-        /// <summary>Selection snaps to this increment value.</summary>
-        public float SnapTODO { get; set; } = 0;
-
         /// <summary>Selection start.</summary>
-        public int SelStart { get; set; } = -1;
+        public int SelStart { get; set; } = 0;
 
         /// <summary>Selection length. Could be negative.</summary>
         public int SelLength { get; set; } = 0;
@@ -100,14 +105,13 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Set everything from data source. Do this before setting properties by client.
+        /// Set everything from data source. Do this before setting properties as some are overwritten.
         /// </summary>
         /// <param name="prov">Source</param>
         public void Init(ISampleProvider prov)
         {
             _vals = prov.ReadAll().vals;
 
-            _gain = 1.0f;
             SelStart = -1;
             SelLength = 0;
             ViewCursor = -1;
@@ -130,6 +134,38 @@ namespace AudioLib
                 _format.Dispose();
            }
            base.Dispose(disposing);
+        }
+        #endregion
+
+        #region Public functions
+        /// <summary>Put back to area of interest.</summary>
+        public void Reset()
+        {
+            _position = SelStart;
+        }
+
+        /// <summary>
+        /// Fill the buffer with selected data. ISampleProvider implementation.
+        /// </summary>
+        /// <param name="buffer">The buffer to fill with samples.</param>
+        /// <param name="offset">Offset into buffer.</param>
+        /// <param name="count">The number of samples to read.</param>
+        /// <returns>the number of samples written to the buffer.</returns>
+        public int Read(float[] buffer, int offset, int count)
+        {
+            int numRead = 0;
+
+            int numToRead = Math.Min(count, SelLength - _position);
+            if (numToRead > 0)
+            {
+                for (int n = 0; n < numToRead; n++)
+                {
+                    buffer[n + offset] = _vals[_position];
+                    _position++;
+                    numRead++;
+                }
+            }
+            return numRead;
         }
         #endregion
 
@@ -266,7 +302,7 @@ namespace AudioLib
 
             if (_vals is null || _vals.Length == 0)
             {
-                pe.Graphics.DrawString("No data", _textFont, Brushes.Gray, ClientRectangle, _format);
+                pe.Graphics.DrawString("No data", _textFont, Brushes.DarkGray, ClientRectangle, _format);
             }
             else
             {
@@ -279,13 +315,17 @@ namespace AudioLib
 
                     }
                 }
-
-                // Then the grid lines.
+                
+                // Then the grid lines and legend.
                 _penGrid.Width = 1;
+
+
+
                 for (float gs = -5 * GRID_STEP; gs <= 5 * GRID_STEP; gs += GRID_STEP)
                 {
                     float yGrid = MathUtils.Map(gs, 1.0f, -1.0f, 0, Height);
                     pe.Graphics.DrawLine(_penGrid, 0, yGrid, Width, yGrid);
+                    pe.Graphics.DrawString(gs.ToString(), _textFont, _penGrid.Brush, 5, yGrid, _format);
                 }
 
                 // Y zero is a bit thicker.
@@ -341,7 +381,7 @@ namespace AudioLib
         /// </summary>
         void ValidateProperties()
         {
-            SelStart = MathUtils.Constrain(SelStart, -1, _vals.Length);
+            SelStart = MathUtils.Constrain(SelStart, 0, _vals.Length);
             SelLength = MathUtils.Constrain(SelLength, -_vals.Length, _vals.Length);
 
             ViewCursor = MathUtils.Constrain(ViewCursor, -1, _vals.Length);

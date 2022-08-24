@@ -36,8 +36,6 @@ namespace AudioLib
 
     public static class AudioLibUtils
     {
-        // 44.1 sample/msec <-> 0.0226757369614512 msec/sample
-
         /// <summary>
         /// Conversion function.
         /// </summary>

@@ -26,7 +26,7 @@ namespace AudioLib
         {
             prov.Validate(true);
 
-            prov.SetPosition(0);
+            prov.Reset();
 
             List<float[]> parts = new();
             float max = 0.0f;
@@ -65,41 +65,61 @@ namespace AudioLib
             return (all, max, min);
         }
 
-        /// <summary>
-        /// Agnostic position getter.
-        /// </summary>
-        /// <param name="prov"></param>
-        /// <returns></returns>
-        public static int GetPosition(this ISampleProvider? prov)
-        {
-            int pos = 0;
-            if (prov is ClipSampleProvider csp)
-            {
-                pos = csp.Position;
-            }
-            else if (prov is AudioFileReader afr)
-            {
-                pos = (int)afr.Position;
-            }
-            return pos;
-        }
+        ///// <summary>
+        ///// Agnostic position getter.
+        ///// </summary>
+        ///// <param name="prov"></param>
+        ///// <returns></returns>
+        //public static int GetPosition(this ISampleProvider? prov) //TODO these are a bit klunky.
+        //{
+        //    int pos = 0;
+        //    if (prov is ClipSampleProvider csp)
+        //    {
+        //        pos = csp.Position;
+        //    }
+        //    else if (prov is AudioFileReader afr)
+        //    {
+        //        pos = (int)afr.Position;
+        //    }
+        //    return pos;
+        //}
 
         /// <summary>
         /// Agnostic position setter.
         /// </summary>
         /// <param name="prov"></param>
-        /// <param name="pos"></param>
-        public static void SetPosition(this ISampleProvider prov, int pos)
+        public static void Reset(this ISampleProvider prov)
         {
             if (prov is ClipSampleProvider csp)
             {
-                csp.Position = pos;
+                csp.Reset();
+            }
+            else if (prov is WaveViewer wv)
+            {
+                wv.Reset();
             }
             else if (prov is AudioFileReader afr)
             {
-                afr.Position = pos;
+                afr.Position = 0;
             }
         }
+
+        ///// <summary>
+        ///// Agnostic position setter.
+        ///// </summary>
+        ///// <param name="prov"></param>
+        ///// <param name="pos"></param>
+        //public static void SetPosition(this ISampleProvider prov, int pos)
+        //{
+        //    if (prov is ClipSampleProvider csp)
+        //    {
+        //        csp.Position = pos;
+        //    }
+        //    else if (prov is AudioFileReader afr)
+        //    {
+        //        afr.Position = pos;
+        //    }
+        //}
 
         /// <summary>
         /// Get provider info. Mainly for window header.
@@ -129,8 +149,7 @@ namespace AudioLib
             List<(string name, string val)> info = new();
 
             // Simplify provider name.
-            string s = prov.GetType().ToString().Replace("NAudio.Wave.", "");
-            s = s.Replace("AudioLib.", "");
+            string s = prov.GetType().ToString().Replace("NAudio.Wave.", "").Replace("AudioLib.", "");
             info.Add(("Provider", s));
 
             string fn = "None";
@@ -147,6 +166,10 @@ namespace AudioLib
                 fn = afr.FileName == "" ? "None" : Path.GetFileName(afr.FileName);
                 numsamp = (int)(afr.Length * 4 / afr.WaveFormat.BitsPerSample);
                 ttime = afr.TotalTime;
+            }
+            else if (prov is WaveViewer wv)
+            {
+                // ?????
             }
 
             info.Add(("File", fn));
@@ -222,7 +245,7 @@ namespace AudioLib
         public static void Export(this ISampleProvider prov, string exportFileName)
         {
             List<string> ls = new();
-            prov.SetPosition(0); // rewind
+            prov.Reset();
             var vals = new float[AudioLibDefs.READ_BUFF_SIZE];
             bool done = false;
             int index = 0;

@@ -172,7 +172,7 @@ namespace AudioLib.Test
             // If it's stereo split into two monos, one viewer per.
             if (prov.WaveFormat.Channels == 2) // stereo
             {
-                prov.SetPosition(0);
+                prov.Reset();
                 waveViewer1.Init(new StereoToMonoSampleProvider(prov) { LeftVolume = 1.0f, RightVolume = 0.0f });
                 waveViewer1.Size = new(wd, ht / 2);
                 waveViewer1.DrawColor = Color.Red;
@@ -181,7 +181,7 @@ namespace AudioLib.Test
                 waveViewer1.SelLength = sclen / 4;
                 waveViewer1.ViewCursor = 2 * sclen / 3;
 
-                prov.SetPosition(0);
+                prov.Reset();
                 waveViewer2.Init(new StereoToMonoSampleProvider(prov) { LeftVolume = 0.0f, RightVolume = 1.0f });
                 waveViewer2.Visible = true;
                 waveViewer2.Size = new(wd, ht / 2);
@@ -202,7 +202,7 @@ namespace AudioLib.Test
                 waveViewer1.ViewCursor = 9 * sclen / 10;
             }
 
-            prov.SetPosition(0);
+            prov.Reset();
             Text = prov.GetInfoString();
 
             int msec = 1000 * sclen / prov.WaveFormat.SampleRate;

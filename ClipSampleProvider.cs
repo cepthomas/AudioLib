@@ -15,7 +15,7 @@ namespace AudioLib
     /// entire file. Does sample rate conversion if needed.
     /// Mono output only - coerces stereo input per client call. Can be used for splitting stereo files.
     /// If you need stereo, use AudioFileReader.
-    /// Supplies some basic editing:
+    /// Supplies some basic editing: TODO put in WaveViewer? WaveEditor?
     ///   - Gain envelope.
     ///   - Gain overall.
     /// </summary>
@@ -25,14 +25,11 @@ namespace AudioLib
         /// <summary>The full buffer from client.</summary>
         float[] _vals = Array.Empty<float>();
 
-        /// <summary>Make this class look like a streaam.</summary>
+        /// <summary>Make this class look like a stream.</summary>
         int _position = 0;
 
         /// <summary>Gain while iterating samples.</summary>
         float _currentGain = 1.0f;
-
-        /// <summary>The lock() target.</summary>
-        readonly object _locker = new();
 
         /// <summary>Piecewise gain envelope. Key is index, value is gain.</summary>
         readonly Dictionary<int, float> _envelope = new();
@@ -54,12 +51,12 @@ namespace AudioLib
         /// <summary>Length of the clip in seconds.</summary>
         public TimeSpan TotalTime { get { return TimeSpan.FromSeconds((double)Length / WaveFormat.SampleRate); } }
 
-        /// <summary>Position of the simulated stream as sample index.</summary>
-        public int Position
-        {
-            get { return _position; }
-            set { lock (_locker) { _position = MathUtils.Constrain(value, 0, _vals.Length - 1); GetEnvelopeGain(_position); } }
-        }
+        ///// <summary>Position of the simulated stream as sample index.</summary>
+        //public int Position
+        //{
+        //    get { return _position; }
+        //    set { lock (_locker) { _position = MathUtils.Constrain(value, 0, _vals.Length - 1); GetEnvelopeGain(_position); } }
+        //}
         #endregion
 
         #region Constructors
@@ -109,47 +106,42 @@ namespace AudioLib
         public int Read(float[] buffer, int offset, int count)
         {
             int numRead = 0;
+            int numToRead = Math.Min(count, _vals.Length - _position);
 
-            // Get the source vals.
-            lock (_locker)
+            if (_envelope.Count > 0)
             {
-                int numToRead = Math.Min(count, _vals.Length - _position);
+                // Make an ordered copy of the _envelope point locations.
+                List<int> envLocs = _envelope.Keys.ToList();
+                envLocs.Sort();
 
-                if(_envelope.Count > 0)
+                // Find where offset is currently.
+                var loc = envLocs.Where(l => l > offset).FirstOrDefault();
+
+                if (loc != 0)
                 {
-                    // Make an ordered copy of the _envelope point locations.
-                    List<int> envLocs = _envelope.Keys.ToList();
-                    envLocs.Sort();
-
-                    // Find where offset is currently.
-                    var loc = envLocs.Where(l => l > offset).FirstOrDefault();
-
-                    if(loc != 0)
-                    {
-                        loc -= 1;
-                    }
-
-                    double envGain = _envelope[envLocs[loc]]; // default;
-
-                    for (int n = 0; n < numToRead; n++)
-                    {
-                        if(_envelope.ContainsKey(n))
-                        {
-                            // Update env gain.
-                            envGain = _envelope[n];
-                        }
-                        buffer[n + offset] = (float)(_vals[n] * envGain * MasterGain);
-                    }
+                    loc -= 1;
                 }
-                else
+
+                double envGain = _envelope[envLocs[loc]]; // default;
+
+                for (int n = 0; n < numToRead; n++)
                 {
-                    // Simply adjust for master gain.
-                    for (int n = 0; n < numToRead; n++)
+                    if (_envelope.ContainsKey(n))
                     {
-                        buffer[n + offset] = (float)(_vals[_position] * MasterGain);
-                        _position++;
-                        numRead++;
+                        // Update env gain.
+                        envGain = _envelope[n];
                     }
+                    buffer[n + offset] = (float)(_vals[n] * envGain * MasterGain);
+                }
+            }
+            else
+            {
+                // Simply adjust for master gain.
+                for (int n = 0; n < numToRead; n++)
+                {
+                    buffer[n + offset] = (float)(_vals[_position] * MasterGain);
+                    _position++;
+                    numRead++;
                 }
             }
 
@@ -179,6 +171,15 @@ namespace AudioLib
                 _envelope[sampleIndex] = gain;
             }
         }
+
+        /// <summary>
+        /// Go back to the beginning.
+        /// </summary>
+        public void Reset()
+        {
+            _position = 0;
+            _currentGain = 1.0f;
+        }
         #endregion
 
         #region Private
@@ -203,41 +204,41 @@ namespace AudioLib
             _vals = source.ReadAll().vals;
         }
 
-        /// <summary>
-        /// Get the envelope in effect at the position.
-        /// </summary>
-        /// <param name="pos"></param>
-        /// <returns>The envelope gain at pos.</returns>
-        void GetEnvelopeGain(int pos)
-        {
-            _currentGain = 1.0f; // default
+        ///// <summary>
+        ///// Get the envelope in effect at the position.
+        ///// </summary>
+        ///// <param name="pos"></param>
+        ///// <returns>The envelope gain at pos.</returns>
+        //void GetEnvelopeGain(int pos)
+        //{
+        //    _currentGain = 1.0f; // default
 
-            if (_envelope.Count > 0)
-            {
-                // Find where offset is currently.
-                //_envelope.OrderBy(e => e.Key)
+        //    if (_envelope.Count > 0)
+        //    {
+        //        // Find where offset is currently.
+        //        //_envelope.OrderBy(e => e.Key)
 
-                // Make an ordered copy of the _envelope point locations.
-                List<int> envLocs = _envelope.Keys.ToList();
-                envLocs.Sort();
+        //        // Make an ordered copy of the _envelope point locations.
+        //        List<int> envLocs = _envelope.Keys.ToList();
+        //        envLocs.Sort();
 
-                int tempEnv = 0;
-                for (int i = 0; i < envLocs.Count; i++)
-                {
-                    if (envLocs[i] > pos)
-                    {
-                        // Found the transition after.
-                        _currentGain = _envelope[tempEnv];
-                        break;
-                    }
-                    else
-                    {
-                        // Next.
-                        tempEnv = i;
-                    }
-                }
-            }
-        }
+        //        int tempEnv = 0;
+        //        for (int i = 0; i < envLocs.Count; i++)
+        //        {
+        //            if (envLocs[i] > pos)
+        //            {
+        //                // Found the transition after.
+        //                _currentGain = _envelope[tempEnv];
+        //                break;
+        //            }
+        //            else
+        //            {
+        //                // Next.
+        //                tempEnv = i;
+        //            }
+        //        }
+        //    }
+        //}
         #endregion
     }
 }
