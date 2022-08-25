@@ -28,11 +28,8 @@ namespace AudioLib
         /// <summary>The data buffer.</summary>
         float[] _vals = Array.Empty<float>();
 
-        /// <summary>Make this class look like a streaam.</summary>
+        /// <summary>Make this look like a stream.</summary>
         int _position = 0;
-
-        /// <summary>Maximum gain.</summary>
-        const float MAX_GAIN = 5.0f;
 
         /// <summary>Grid Y resolution. Assumes +-1.0f range.</summary>
         const float GRID_STEP = 0.25f;
@@ -58,7 +55,7 @@ namespace AudioLib
         /// <summary>For styling.</summary>
         public Color SelColor { get { return _brushSel.Color; } set { _brushSel.Color = value; } }
 
-        /// <summary>Overall amplitude adjustment.</summary>
+        /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
         /// <summary>There isn't enough data to fill full width so disallow navigation.</summary>
@@ -71,7 +68,7 @@ namespace AudioLib
         /// <summary>Selection length. Could be negative.</summary>
         public int SelLength { get; set; } = 0;
 
-        /// <summary>Current cursor.</summary>
+        /// <summary>Current cursor location.</summary>
         public int ViewCursor { get; set; } = -1;
 
         /// <summary>Visible start sample.</summary>
@@ -82,22 +79,13 @@ namespace AudioLib
         #endregion
 
         #region Events
-        /// <summary>WaveViewer has something to say or show.</summary>
-        public class StatusEventArgs : EventArgs //TODO
-        {
-            /// <summary>0 -> 100</summary>
-            public float Gain { get; set; } = 0.0f;
-
-            /// <summary>Some information.</summary>
-            public string Message { get; set; } = "";
-        }
-
-        public event EventHandler<StatusEventArgs>? StatusEvent;
+        /// <summary>Value changed by user.</summary>
+        public event EventHandler? GainChangedEvent;
         #endregion
 
         #region Lifecycle
         /// <summary>
-        /// Default constructor.
+        /// Default constructor. Mainly for designer.
         /// </summary>
         public WaveViewer()
         {
@@ -189,8 +177,8 @@ namespace AudioLib
             else if (ModifierKeys == Keys.Shift) // gain
             {
                 _gain += hme.Delta > 0 ? 0.1f : -0.1f;
-                _gain = (float)MathUtils.Constrain(_gain, 0.0f, MAX_GAIN);
-                StatusEvent?.Invoke(this, new());
+                _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
+                GainChangedEvent?.Invoke(this, EventArgs.Empty);
                 Invalidate();
             }
             else if (ModifierKeys == Keys.None) // no mods = x shift TODO
@@ -232,30 +220,30 @@ namespace AudioLib
             }
         }
 
-        /// <summary>
-        /// Handle mouse move.
-        /// </summary>
-        /// <param name="e"></param>
-        protected override void OnMouseMove(MouseEventArgs e)
-        {
-            // if (e.Button == MouseButtons.Left)
-            // {
-            //     _current = GetTimeFromMouse(e.X);
-            //     CurrentTimeChanged?.Invoke(this, new EventArgs());
-            // }
-            // else
-            // {
-            //     if (e.X != _lastXPos)
-            //     {
-            //         TimeSpan ts = GetTimeFromMouse(e.X);
-            //         _toolTip.SetToolTip(this, ts.ToString(AudioLibDefs.TS_FORMAT));
-            //         _lastXPos = e.X;
-            //     }
-            // }
+        // /// <summary>
+        // /// Handle mouse move.
+        // /// </summary>
+        // /// <param name="e"></param>
+        // protected override void OnMouseMove(MouseEventArgs e)
+        // {
+        //     if (e.Button == MouseButtons.Left)
+        //     {
+        //         _current = GetTimeFromMouse(e.X);
+        //         CurrentTimeChanged?.Invoke(this, new EventArgs());
+        //     }
+        //     else
+        //     {
+        //         if (e.X != _lastXPos)
+        //         {
+        //             TimeSpan ts = GetTimeFromMouse(e.X);
+        //             _toolTip.SetToolTip(this, ts.ToString(AudioLibDefs.TS_FORMAT));
+        //             _lastXPos = e.X;
+        //         }
+        //     }
 
-            // Invalidate();
-            base.OnMouseMove(e);
-        }
+        //     // Invalidate();
+        //     base.OnMouseMove(e);
+        // }
 
         /// <summary>
         /// Key press.
@@ -318,14 +306,11 @@ namespace AudioLib
                 
                 // Then the grid lines and legend.
                 _penGrid.Width = 1;
-
-
-
                 for (float gs = -5 * GRID_STEP; gs <= 5 * GRID_STEP; gs += GRID_STEP)
                 {
                     float yGrid = MathUtils.Map(gs, 1.0f, -1.0f, 0, Height);
                     pe.Graphics.DrawLine(_penGrid, 0, yGrid, Width, yGrid);
-                    pe.Graphics.DrawString(gs.ToString(), _textFont, _penGrid.Brush, 5, yGrid, _format);
+                    pe.Graphics.DrawString(gs.ToString(), _textFont, _penGrid.Brush, 25, yGrid, _format);
                 }
 
                 // Y zero is a bit thicker.

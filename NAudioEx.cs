@@ -25,8 +25,7 @@ namespace AudioLib
         public static (float[] vals, float max, float min) ReadAll(this ISampleProvider prov)
         {
             prov.Validate(true);
-
-            prov.Reset();
+            prov.Rewind();
 
             List<float[]> parts = new();
             float max = 0.0f;
@@ -54,13 +53,18 @@ namespace AudioLib
             }
 
             // Count.
-            int i = 0;
-            parts.ForEach(p => i += p.Length);
-            var all = new float[i];
+            long totalRead = 0;
+            parts.ForEach(p => totalRead += p.Length);
+            // max for an int as we use internally
+            if(totalRead > 0x7FFFFFF)
+            {
+                throw new InvalidOperationException($"File too large");
+            }
+            var all = new float[totalRead];
 
             // Copy.
-            i = 0;
-            parts.ForEach(p => { p.CopyTo(all, i); i += p.Length; } );
+            totalRead = 0;
+            parts.ForEach(p => { p.CopyTo(all, totalRead); totalRead += p.Length; } );
 
             return (all, max, min);
         }
@@ -88,11 +92,11 @@ namespace AudioLib
         /// Agnostic position setter.
         /// </summary>
         /// <param name="prov"></param>
-        public static void Reset(this ISampleProvider prov)
+        public static void Rewind(this ISampleProvider prov)
         {
             if (prov is ClipSampleProvider csp)
             {
-                csp.Reset();
+                csp.Position = 0;
             }
             else if (prov is WaveViewer wv)
             {
@@ -129,9 +133,7 @@ namespace AudioLib
         public static string GetInfoString(this ISampleProvider prov)
         {
             List<string> ls = new();
-
             GetInfo(prov).ForEach(i => ls.Add($"{i.name}:{i.val}"));
-
             return string.Join("  ", ls);
         }
 
@@ -142,10 +144,6 @@ namespace AudioLib
         /// <returns>Info chunks.</returns>
         public static List<(string name, string val)> GetInfo(this ISampleProvider prov)
         {
-            // List<string> ls = new();
-
-            //System.Collections.Generic.SortedDictionary<>
-
             List<(string name, string val)> info = new();
 
             // Simplify provider name.
@@ -155,6 +153,7 @@ namespace AudioLib
             string fn = "None";
             int numsamp = -1;
             TimeSpan ttime = new();
+
             if (prov is ClipSampleProvider csp)
             {
                 fn = csp.FileName == "" ? "None" : Path.GetFileName(csp.FileName);
@@ -236,7 +235,6 @@ namespace AudioLib
             return newrdr;
         }
 
-
         /// <summary>
         /// Export wave data to csv file.
         /// </summary>
@@ -245,7 +243,7 @@ namespace AudioLib
         public static void Export(this ISampleProvider prov, string exportFileName)
         {
             List<string> ls = new();
-            prov.Reset();
+            prov.Rewind();
             var vals = new float[AudioLibDefs.READ_BUFF_SIZE];
             bool done = false;
             int index = 0;

@@ -15,9 +15,6 @@ namespace AudioLib
     /// entire file. Does sample rate conversion if needed.
     /// Mono output only - coerces stereo input per client call. Can be used for splitting stereo files.
     /// If you need stereo, use AudioFileReader.
-    /// Supplies some basic editing: TODO put in WaveViewer? WaveEditor?
-    ///   - Gain envelope.
-    ///   - Gain overall.
     /// </summary>
     public class ClipSampleProvider : ISampleProvider
     {
@@ -27,12 +24,6 @@ namespace AudioLib
 
         /// <summary>Make this class look like a stream.</summary>
         int _position = 0;
-
-        /// <summary>Gain while iterating samples.</summary>
-        float _currentGain = 1.0f;
-
-        /// <summary>Piecewise gain envelope. Key is index, value is gain.</summary>
-        readonly Dictionary<int, float> _envelope = new();
         #endregion
 
         #region Properties
@@ -43,7 +34,7 @@ namespace AudioLib
         public string FileName { get; }
 
         /// <summary>Overall gain applied to all samples.</summary>
-        public float MasterGain { get; set; } = 1.0f;
+        public float Gain { get; set; } = 1.0f;
 
         /// <summary>Length of the clip in samples.</summary>
         public int Length { get { return _vals.Length; } }
@@ -51,12 +42,12 @@ namespace AudioLib
         /// <summary>Length of the clip in seconds.</summary>
         public TimeSpan TotalTime { get { return TimeSpan.FromSeconds((double)Length / WaveFormat.SampleRate); } }
 
-        ///// <summary>Position of the simulated stream as sample index.</summary>
-        //public int Position
-        //{
-        //    get { return _position; }
-        //    set { lock (_locker) { _position = MathUtils.Constrain(value, 0, _vals.Length - 1); GetEnvelopeGain(_position); } }
-        //}
+        /// <summary>Position of the simulated stream as sample index.</summary>
+        public int Position
+        {
+           get { return _position; }
+           set { _position = MathUtils.Constrain(value, 0, _vals.Length - 1); }
+        }
         #endregion
 
         #region Constructors
@@ -96,8 +87,7 @@ namespace AudioLib
 
         #region Public functions
         /// <summary>
-        /// Reads samples from this sample provider with adjustments for envelope and overall gain.
-        /// ISampleProvider implementation.
+        /// Reads samples from this sample provider with adjustments for gain. ISampleProvider implementation.
         /// </summary>
         /// <param name="buffer">Sample buffer.</param>
         /// <param name="offset">Offset into buffer.</param>
@@ -107,69 +97,14 @@ namespace AudioLib
         {
             int numRead = 0;
             int numToRead = Math.Min(count, _vals.Length - _position);
-
-            if (_envelope.Count > 0)
+            for (int n = 0; n < numToRead; n++)
             {
-                // Make an ordered copy of the _envelope point locations.
-                List<int> envLocs = _envelope.Keys.ToList();
-                envLocs.Sort();
-
-                // Find where offset is currently.
-                var loc = envLocs.Where(l => l > offset).FirstOrDefault();
-
-                if (loc != 0)
-                {
-                    loc -= 1;
-                }
-
-                double envGain = _envelope[envLocs[loc]]; // default;
-
-                for (int n = 0; n < numToRead; n++)
-                {
-                    if (_envelope.ContainsKey(n))
-                    {
-                        // Update env gain.
-                        envGain = _envelope[n];
-                    }
-                    buffer[n + offset] = (float)(_vals[n] * envGain * MasterGain);
-                }
-            }
-            else
-            {
-                // Simply adjust for master gain.
-                for (int n = 0; n < numToRead; n++)
-                {
-                    buffer[n + offset] = (float)(_vals[_position] * MasterGain);
-                    _position++;
-                    numRead++;
-                }
+                buffer[n + offset] = (float)(_vals[_position] * Gain);
+                _position++;
+                numRead++;
             }
 
             return numRead;
-        }
-
-        /// <summary>
-        /// If in _envelope, update else add. If 0, remove.
-        /// </summary>
-        /// <param name="sampleIndex">Inflection.</param>
-        /// <param name="gain">Gain.</param>
-        public void SetGain(int sampleIndex, float gain)
-        {
-            if(_envelope.ContainsKey(sampleIndex))
-            {
-                if(gain == 0)
-                {
-                    _envelope.Remove(sampleIndex);
-                }
-                else
-                {
-                    _envelope[sampleIndex] = gain;
-                }
-            }
-            else
-            {
-                _envelope[sampleIndex] = gain;
-            }
         }
 
         /// <summary>
@@ -178,7 +113,6 @@ namespace AudioLib
         public void Reset()
         {
             _position = 0;
-            _currentGain = 1.0f;
         }
         #endregion
 

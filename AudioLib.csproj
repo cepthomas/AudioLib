@@ -23,10 +23,13 @@
     <ItemGroup>
         <Compile Remove="lib\**" />
         <Compile Remove="Test\**" />
+        <Compile Remove="todo\**" />
         <EmbeddedResource Remove="lib\**" />
         <EmbeddedResource Remove="Test\**" />
+        <EmbeddedResource Remove="todo\**" />
         <None Remove="lib\**" />
         <None Remove="Test\**" />
+        <None Remove="todo\**" />
     </ItemGroup>
 
     <ItemGroup>

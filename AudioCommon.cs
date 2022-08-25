@@ -21,6 +21,9 @@ namespace AudioLib
         /// <summary>NAudio doesn't publish this for their API.</summary>
         public const double VOLUME_MAX = 1.0;
 
+        /// <summary>Maximum gain.</summary>
+        public const float MAX_GAIN = 5.0f;
+
         /// <summary>Internal buffer size.</summary>
         public const int READ_BUFF_SIZE = 1000000;
 

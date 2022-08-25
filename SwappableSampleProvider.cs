@@ -16,11 +16,8 @@ namespace AudioLib
         /// <summary>The current input.</summary>
         ISampleProvider? _currentInput;
 
-        /// <summary>The current buffer.</summary>
-        float[] _vals = Array.Empty<float>();
-
-        /// <summary>The lock() target.</summary>
-        readonly object _locker = new();
+        /// <summary>The source read buffer.</summary>
+        float[] _readBuffer = Array.Empty<float>();
         #endregion
 
         #region Properties
@@ -42,14 +39,19 @@ namespace AudioLib
         /// <param name="input">New input.</param>
         public void SetInput(ISampleProvider input)
         {
-            lock (_locker)
-            {
-                // Sanity checks.
-                input.Validate(false);
-                input.Reset();
-                // Everything is good.
-                _currentInput = input;
-            }
+            // Sanity checks.
+            input.Validate(false);
+            input.Rewind();
+            // Everything is good.
+            _currentInput = input;
+        }
+
+        /// <summary>
+        /// Rewind.
+        /// </summary>
+        public void Rewind()
+        {
+            _currentInput?.Rewind();
         }
 
         /// <summary>
@@ -67,37 +69,34 @@ namespace AudioLib
                 return 0;
             }
 
-            lock (_locker)
+            if (_readBuffer.Length < count)
             {
-                if (_vals.Length < count)
-                {
-                    _vals = new float[count];
-                }
+                _readBuffer = new float[count];
+            }
 
-                if (_currentInput.WaveFormat.Channels == 1)
+            if (_currentInput.WaveFormat.Channels == 1)
+            {
+                // Convert mono into stereo. Borrowed from MonoToStereoSampleProvider:
+                var req = count / 2;
+                var index = offset;
+                var sread = _currentInput.Read(_readBuffer, 0, req);
+                for (var n = 0; n < sread; n++)
                 {
-                    // Convert mono into stereo. Borrowed from MonoToStereoSampleProvider:
-                    var req = count / 2;
-                    var index = offset;
-                    var sread = _currentInput.Read(_vals, 0, req);
-                    for (var n = 0; n < sread; n++)
-                    {
-                        buffer[index++] = _vals[n]; // L
-                        buffer[index++] = _vals[n]; // R
-                    }
-                    return sread * 2;
+                    buffer[index++] = _readBuffer[n]; // L
+                    buffer[index++] = _readBuffer[n]; // R
                 }
-                else // Stereo - as is.
+                return sread * 2;
+            }
+            else // Stereo - as is.
+            {
+                var req = count;
+                var index = offset;
+                int sread = _currentInput.Read(_readBuffer, 0, req);
+                for (int i = 0; i < sread; i++)
                 {
-                    var req = count;
-                    var index = offset;
-                    int sread = _currentInput.Read(_vals, 0, req);
-                    for (int i = 0; i < sread; i++)
-                    {
-                        buffer[index++] = _vals[i];
-                    }
-                    return sread;
+                    buffer[index++] = _readBuffer[i];
                 }
+                return sread;
             }
         }
     }

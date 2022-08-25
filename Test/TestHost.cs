@@ -42,7 +42,7 @@ namespace AudioLib.Test
             timeBar.BackColor = Color.Salmon;
 
             // Controls.
-            waveViewer1.StatusEvent += (_, __) => { };
+            waveViewer1.GainChangedEvent += (_, __) => { sldGain.Value = waveViewer1.Gain; };
             sldGain.ValueChanged += (_, __) => { waveViewer1.Gain = (float)sldGain.Value; waveViewer1.Invalidate(); };
 
             // Player.
@@ -52,6 +52,7 @@ namespace AudioLib.Test
             {
                 LogLine("player finished");
                 this.InvokeIfRequired(_ => { btnPlayer.Checked = false; });
+                _prov?.Reset();
             };
             _provSwap = new ClipSampleProvider(_testFilesDir + "test.wav", StereoCoercion.Mono);
 

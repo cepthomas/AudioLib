@@ -118,14 +118,6 @@ namespace AudioLib
                 Playing = false;
             }
         }
-
-        /// <summary>
-        /// Go back jack.
-        /// </summary>
-        public void Rewind()
-        {
-            // Nothing to do - client owns the provider.
-        }
         #endregion
 
         #region Private functions
