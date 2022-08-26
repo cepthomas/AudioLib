@@ -13,7 +13,7 @@ using NBagOfTricks;
 namespace AudioLib
 {
     /// <summary>
-    /// Extensions to enhance or extend core NAudio.
+    /// Extensions to enhance core NAudio for this application.
     /// </summary>
     public static class NAudioEx
     {
@@ -30,6 +30,8 @@ namespace AudioLib
             List<float[]> parts = new();
             float max = 0.0f;
             float min = 0.0f;
+            int totalRead = 0;
+            int maxSamples = AudioSettings.LibSettings.MaxClipSize * AudioLibDefs.SAMPLE_RATE * 60;
 
             bool done = false;
             while (!done)
@@ -39,6 +41,13 @@ namespace AudioLib
                 var data = new float[toRead];
 
                 int numRead = prov.Read(data, 0, toRead);
+
+                // Test for max size.
+                totalRead += numRead;
+                if(totalRead > maxSamples)
+                {
+                    throw new InvalidOperationException($"Provider/file too large");
+                }
 
                 if(numRead != toRead)
                 {
@@ -52,19 +61,11 @@ namespace AudioLib
                 data.ForEach(v => { max = Math.Max(max, v); min = Math.Min(min, v); });
             }
 
-            // Count.
-            long totalRead = 0;
-            parts.ForEach(p => totalRead += p.Length);
-            // max for an int as we use internally
-            if(totalRead > 0x7FFFFFF)
-            {
-                throw new InvalidOperationException($"File too large");
-            }
             var all = new float[totalRead];
 
             // Copy.
-            totalRead = 0;
-            parts.ForEach(p => { p.CopyTo(all, totalRead); totalRead += p.Length; } );
+            int destIndex = 0;
+            parts.ForEach(p => { p.CopyTo(all, destIndex); destIndex += p.Length; } );
 
             return (all, max, min);
         }
@@ -92,21 +93,55 @@ namespace AudioLib
         /// Agnostic position setter.
         /// </summary>
         /// <param name="prov"></param>
-        public static void Rewind(this ISampleProvider prov)
+        public static void Rewind(this ISampleProvider prov)// TODO1 klunky
         {
-            if (prov is ClipSampleProvider csp)
+            switch(prov)
             {
-                csp.Position = 0;
-            }
-            else if (prov is WaveViewer wv)
-            {
-                wv.Reset();
-            }
-            else if (prov is AudioFileReader afr)
-            {
-                afr.Position = 0;
+                case ClipSampleProvider csp:
+                    csp.Position = 0;
+                    break;
+
+                case WaveViewer wv:
+                    wv.Reset();
+                    break;
+
+                case AudioFileReader afr:
+                    afr.Position = 0;
+                    break;
+
+                case SwappableSampleProvider ssp:
+                    ssp.Rewind();
+                    break;
+
+                default:
+                    // Don't care
+                    break;
             }
         }
+
+
+        //public static void Rewind(this ClipSampleProvider prov)
+        //{
+        //    prov.Position = 0;
+        //}
+
+        //public static void Rewind(this WaveViewer prov)
+        //{
+        //    prov.Reset();
+        //}
+
+        //public static void Rewind(this AudioFileReader prov)
+        //{
+        //    prov.Position = 0;
+        //}
+
+        //public static void Rewind(this SwappableSampleProvider prov)
+        //{
+        //    prov.Rewind();
+        //}
+
+
+
 
         ///// <summary>
         ///// Agnostic position setter.
@@ -125,6 +160,8 @@ namespace AudioLib
         //    }
         //}
 
+
+
         /// <summary>
         /// Get provider info. Mainly for window header.
         /// </summary>
@@ -138,14 +175,15 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Get provider info. Mainly for window header.
+        /// Get provider info generically.
         /// </summary>
         /// <param name="prov"></param>
-        /// <returns>Info chunks.</returns>
+        /// <returns>Info as tuple.</returns>
         public static List<(string name, string val)> GetInfo(this ISampleProvider prov)
         {
             List<(string name, string val)> info = new();
 
+            // Common stuff.
             // Simplify provider name.
             string s = prov.GetType().ToString().Replace("NAudio.Wave.", "").Replace("AudioLib.", "");
             info.Add(("Provider", s));
@@ -154,23 +192,35 @@ namespace AudioLib
             int numsamp = -1;
             TimeSpan ttime = new();
 
-            if (prov is ClipSampleProvider csp)
+            // Type specific stuff. TODO1 klunky
+            switch (prov)
             {
-                fn = csp.FileName == "" ? "None" : Path.GetFileName(csp.FileName);
-                numsamp = csp.Length * 4 / csp.WaveFormat.BitsPerSample;
-                ttime = csp.TotalTime;
-            }
-            else if (prov is AudioFileReader afr)
-            {
-                fn = afr.FileName == "" ? "None" : Path.GetFileName(afr.FileName);
-                numsamp = (int)(afr.Length * 4 / afr.WaveFormat.BitsPerSample);
-                ttime = afr.TotalTime;
-            }
-            else if (prov is WaveViewer wv)
-            {
-                // ?????
+                case ClipSampleProvider csp:
+                    fn = csp.FileName == "" ? "None" : Path.GetFileName(csp.FileName);
+                    numsamp = csp.Length;
+                    ttime = csp.TotalTime;
+                    break;
+
+                case WaveViewer wv:
+                    numsamp = (int)wv.Length;
+                    ttime = wv.TotalTime;
+                    break;
+
+                case AudioFileReader afr:
+                    fn = afr.FileName == "" ? "None" : Path.GetFileName(afr.FileName);
+                    numsamp = (int)afr.Length;
+                    ttime = afr.TotalTime;
+                    break;
+
+                case SwappableSampleProvider ssp://TODO anything useful?
+                    break;
+
+                default:
+                    // Don't care
+                    break;
             }
 
+            // More common stuff.
             info.Add(("File", fn));
 
             if (numsamp != -1)
@@ -222,7 +272,7 @@ namespace AudioLib
         /// </summary>
         /// <param name="rdr"></param>
         /// <returns>The new file reader.</returns>
-        public static AudioFileReader Resample(this AudioFileReader rdr) // TODO seems clumsy
+        public static AudioFileReader Resample(this AudioFileReader rdr) // TODO klunky?
         {
             string newfn;
             string fn = rdr.FileName;

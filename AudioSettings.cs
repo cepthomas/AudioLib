@@ -36,6 +36,11 @@ namespace AudioLib
         [Browsable(true)]
         [TypeConverter(typeof(FixedListTypeConverter))]
         public string Latency { get; set; } = "200";
+
+        [DisplayName("Max Clip Size")]
+        [Description("Limit clips to this many minutes.")]
+        [Browsable(true)]
+        public int MaxClipSize { get; set; } = 10;
         #endregion
     }
 

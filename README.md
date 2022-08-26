@@ -9,7 +9,7 @@ WinForms library of various audio components and controls.
 
 Contents:
 - AudioPlayer: Fairly thin wrapper around the basic NAudio wave player. Devices are limited to the ones available on your box.
-- TimeBar: Elapsed time control.
+- TimeBar: Elapsed time control. Now only used by the defunct ClipExplorer application.
 - WaveViewer: Display and navigate a wave.
 - AudioFileInfo: Dumps contents of supported audio files.
 - NAudioEx: NAudio compatible extension methods for the providers implemented here.

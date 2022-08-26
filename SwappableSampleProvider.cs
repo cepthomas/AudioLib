@@ -15,9 +15,6 @@ namespace AudioLib
         #region Fields
         /// <summary>The current input.</summary>
         ISampleProvider? _currentInput;
-
-        /// <summary>The source read buffer.</summary>
-        float[] _readBuffer = Array.Empty<float>();
         #endregion
 
         #region Properties
@@ -36,14 +33,14 @@ namespace AudioLib
         /// <summary>
         /// Sets the input source.
         /// </summary>
-        /// <param name="input">New input.</param>
-        public void SetInput(ISampleProvider input)
+        /// <param name="input">New input or null to disable.</param>
+        public void SetInput(ISampleProvider? input)
         {
             // Sanity checks.
-            input.Validate(false);
-            input.Rewind();
+            input?.Validate(false);
             // Everything is good.
             _currentInput = input;
+            Rewind();
         }
 
         /// <summary>
@@ -69,21 +66,18 @@ namespace AudioLib
                 return 0;
             }
 
-            if (_readBuffer.Length < count)
-            {
-                _readBuffer = new float[count];
-            }
+            var readBuffer = new float[count];
 
             if (_currentInput.WaveFormat.Channels == 1)
             {
                 // Convert mono into stereo. Borrowed from MonoToStereoSampleProvider:
                 var req = count / 2;
                 var index = offset;
-                var sread = _currentInput.Read(_readBuffer, 0, req);
+                var sread = _currentInput.Read(readBuffer, 0, req);
                 for (var n = 0; n < sread; n++)
                 {
-                    buffer[index++] = _readBuffer[n]; // L
-                    buffer[index++] = _readBuffer[n]; // R
+                    buffer[index++] = readBuffer[n]; // L
+                    buffer[index++] = readBuffer[n]; // R
                 }
                 return sread * 2;
             }
@@ -91,10 +85,10 @@ namespace AudioLib
             {
                 var req = count;
                 var index = offset;
-                int sread = _currentInput.Read(_readBuffer, 0, req);
+                int sread = _currentInput.Read(readBuffer, 0, req);
                 for (int i = 0; i < sread; i++)
                 {
-                    buffer[index++] = _readBuffer[i];
+                    buffer[index++] = readBuffer[i];
                 }
                 return sread;
             }

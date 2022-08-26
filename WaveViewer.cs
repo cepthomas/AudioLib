@@ -62,6 +62,12 @@ namespace AudioLib
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public bool Frozen { get; private set; } = false;
 
+        /// <summary>Length of the clip in samples.</summary>
+        public int Length { get { return _vals.Length; } }
+
+        /// <summary>Length of the clip in seconds.</summary>
+        public TimeSpan TotalTime { get { return TimeSpan.FromSeconds((double)Length / WaveFormat.SampleRate); } }
+
         /// <summary>Selection start.</summary>
         public int SelStart { get; set; } = 0;
 
@@ -167,7 +173,7 @@ namespace AudioLib
             HandledMouseEventArgs hme = (HandledMouseEventArgs)e;
             hme.Handled = true; // This prevents the mouse wheel event from getting back to the parent.
 
-            if (ModifierKeys == Keys.Control) // x zoom TODO
+            if (ModifierKeys == Keys.Control) // x zoom TODO1
             {
                 if(!Frozen)
                 {
@@ -181,7 +187,7 @@ namespace AudioLib
                 GainChangedEvent?.Invoke(this, EventArgs.Empty);
                 Invalidate();
             }
-            else if (ModifierKeys == Keys.None) // no mods = x shift TODO
+            else if (ModifierKeys == Keys.None) // no mods = x shift TODO1
             {
                 if (!Frozen)
                 {
@@ -398,7 +404,7 @@ namespace AudioLib
         /// </summary>
         /// <param name="sample"></param>
         /// <returns></returns>
-        int DoSnap(int sample) // TODO
+        int DoSnap(int sample) // TODO1
         {
             //int smsec = 0;
 

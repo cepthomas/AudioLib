@@ -24,7 +24,7 @@ namespace AudioLib
         /// <summary>Maximum gain.</summary>
         public const float MAX_GAIN = 5.0f;
 
-        /// <summary>Internal buffer size.</summary>
+        /// <summary>Stream buffer size.</summary>
         public const int READ_BUFF_SIZE = 1000000;
 
         /// <summary>For viewing purposes.</summary>
