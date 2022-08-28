@@ -93,7 +93,7 @@ namespace AudioLib
         /// Agnostic position setter.
         /// </summary>
         /// <param name="prov"></param>
-        public static void Rewind(this ISampleProvider prov)// TODO1 klunky
+        public static void Rewind(this ISampleProvider prov)// TODO klunky
         {
             switch(prov)
             {
@@ -119,6 +119,31 @@ namespace AudioLib
             }
         }
 
+        public static int Length(this ISampleProvider prov)// TODO klunky
+        {
+            int len = 0; // default means unknown.
+
+            switch (prov)
+            {
+                case ClipSampleProvider csp:
+                    len = csp.Length;
+                    break;
+
+                case WaveViewer wv:
+                    len = wv.Length;
+                    break;
+
+                case AudioFileReader afr:
+                    len = (int)afr.Length;
+                    break;
+
+                default:
+                    // Don't care
+                    break;
+            }
+
+            return len;
+        }
 
         //public static void Rewind(this ClipSampleProvider prov)
         //{
@@ -192,7 +217,7 @@ namespace AudioLib
             int numsamp = -1;
             TimeSpan ttime = new();
 
-            // Type specific stuff. TODO1 klunky
+            // Type specific stuff. TODO klunky
             switch (prov)
             {
                 case ClipSampleProvider csp:
@@ -268,21 +293,15 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Resample to a new reader compatible with this application.
+        /// Resample to a new file compatible with this application.
         /// </summary>
-        /// <param name="rdr"></param>
-        /// <returns>The new file reader.</returns>
-        public static AudioFileReader Resample(this AudioFileReader rdr) // TODO klunky?
+        /// <param name="fn">The current filename</param>
+        /// <param name="newfn">The new filename</param>
+        public static void Resample(string fn, string newfn)
         {
-            string newfn;
-            string fn = rdr.FileName;
-            var ext = Path.GetExtension(fn);
-            newfn = fn.Replace(ext, "_resampled" + ext);
+            using var rdr = new AudioFileReader(fn);
             var resampler = new WdlResamplingSampleProvider(rdr, AudioLibDefs.SAMPLE_RATE);
             WaveFileWriter.CreateWaveFile16(newfn, resampler);
-            var newrdr = new AudioFileReader(newfn);
-
-            return newrdr;
         }
 
         /// <summary>

@@ -14,6 +14,7 @@ using NBagOfTricks;
 using AudioLib;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
+using System.Runtime.Intrinsics.Arm;
 
 
 namespace AudioLib.Test
@@ -22,7 +23,7 @@ namespace AudioLib.Test
     {
         readonly string _testFilesDir = @"C:\Dev\repos\TestAudioFiles\";
         ISampleProvider? _prov;
-        readonly ISampleProvider _provSwap;
+        readonly ClipSampleProvider _provSwap;
         readonly SwappableSampleProvider _waveOutSwapper;
         readonly AudioPlayer _player;
 
@@ -52,7 +53,7 @@ namespace AudioLib.Test
             {
                 LogLine("player finished");
                 this.InvokeIfRequired(_ => { btnPlayer.Checked = false; });
-                _prov?.Reset();
+                _prov?.Rewind();
             };
             _provSwap = new ClipSampleProvider(_testFilesDir + "test.wav", StereoCoercion.Mono);
 
@@ -91,10 +92,9 @@ namespace AudioLib.Test
                     case "wav":
                         {
                             string fn = _testFilesDir + "ref-stereo.wav";
-                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            var prov = new AudioFileReader(fn); // TODO these need to be disposed.
-                            _prov = prov;
-                            ShowWave(prov, prov.Length);
+                            var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            //var prov = new AudioFileReader(fn);
+                            SetProvider(prov);
                         }
                         break;
 
@@ -102,31 +102,25 @@ namespace AudioLib.Test
                         {
                             string fn = _testFilesDir + "one-sec.mp3";
                             var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            _prov = prov;
-                            ShowWave(prov, prov.Length);
+                            SetProvider(prov);
                         }
                         break;
 
                     case "flac":
                         {
                             string fn = _testFilesDir + "ambi_swoosh.flac";
-                            var prov = new AudioFileReader(fn);
-                            _prov = prov;
-                            ShowWave(prov, prov.Length);
+                            var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            //var prov = new AudioFileReader(fn);
+                            SetProvider(prov);
                         }
                         break;
 
                     case "m4a":
                         {
                             string fn = _testFilesDir + "avTouch_sample.m4a"; // other sample rate - breaks
-                            var prov = new AudioFileReader(fn);
-                            if (prov.WaveFormat.SampleRate != AudioLibDefs.SAMPLE_RATE)
-                            {
-                                prov = prov.Resample();
-                            }
-                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono); // breaks
-                            _prov = prov;
-                            ShowWave(prov, prov.Length);
+                            var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            //var prov = new AudioFileReader(fn);
+                            SetProvider(prov);
                         }
                         break;
 
@@ -136,8 +130,7 @@ namespace AudioLib.Test
                             var data = new float[500];
                             for (int i = 0; i < data.Length; i++) { data[i] = (float)Math.Sin(i * 0.1); }
                             var prov = new ClipSampleProvider(data);
-                            _prov = prov;
-                            ShowWave(prov, prov.Length);
+                            SetProvider(prov);
                         }
                         break;
 
@@ -148,8 +141,18 @@ namespace AudioLib.Test
                             var data = new float[sdata.Length];
                             for (int i = 0; i < sdata.Length; i++) { data[i] = float.Parse(sdata[i]); }
                             var prov = new ClipSampleProvider(data);
-                            _prov = prov;
-                            ShowWave(prov, prov.Length);
+                            SetProvider(prov);
+                        }
+                        break;
+
+                    case "short":
+                        {
+                            // Short wave from csv file.
+                            var sdata = File.ReadAllLines(_testFilesDir + "500_samples.txt");
+                            var data = new float[sdata.Length];
+                            for (int i = 0; i < sdata.Length; i++) { data[i] = float.Parse(sdata[i]); }
+                            var prov = new ClipSampleProvider(data);
+                            SetProvider(prov);
                         }
                         break;
                 }
@@ -160,12 +163,30 @@ namespace AudioLib.Test
             }
         }
 
-        void ShowWave(ISampleProvider prov, long length = 0)
+        // Helper to manage resources.
+        void SetProvider(ISampleProvider? prov)
         {
-            _waveOutSwapper.SetInput(prov); // TODO this is hear not show
+            if (_prov is AudioFileReader)
+            {
+                (_prov as AudioFileReader)!.Dispose();
+            }
+            _prov = prov;
+
+            ShowWave(prov);
+        }
+
+        // Boilerplate helper.
+        void ShowWave(ISampleProvider? prov)
+        {
+            _waveOutSwapper.SetInput(prov); // This is actually hear not show.
+
+            if(prov is null)
+            {
+                return;
+            }
 
             int bytesPerSample = prov.WaveFormat.BitsPerSample / 8;
-            int sclen = (int)(length / bytesPerSample);
+            int sclen = prov.Length() / bytesPerSample;
 
             int ht = waveViewer2.Bottom - waveViewer1.Top;
             int wd = waveViewer1.Width;
@@ -173,16 +194,16 @@ namespace AudioLib.Test
             // If it's stereo split into two monos, one viewer per.
             if (prov.WaveFormat.Channels == 2) // stereo
             {
-                prov.Reset();
+                prov.Rewind();
                 waveViewer1.Init(new StereoToMonoSampleProvider(prov) { LeftVolume = 1.0f, RightVolume = 0.0f });
                 waveViewer1.Size = new(wd, ht / 2);
                 waveViewer1.DrawColor = Color.Red;
                 waveViewer1.BackColor = Color.Cyan;
                 waveViewer1.SelStart = sclen / 3;
                 waveViewer1.SelLength = sclen / 4;
-                waveViewer1.ViewCursor = 2 * sclen / 3;
+                waveViewer1.ViewerCursor = 2 * sclen / 3;
 
-                prov.Reset();
+                prov.Rewind();
                 waveViewer2.Init(new StereoToMonoSampleProvider(prov) { LeftVolume = 0.0f, RightVolume = 1.0f });
                 waveViewer2.Visible = true;
                 waveViewer2.Size = new(wd, ht / 2);
@@ -190,7 +211,7 @@ namespace AudioLib.Test
                 waveViewer2.BackColor = Color.LightYellow;
                 waveViewer2.SelStart = sclen / 4;
                 waveViewer1.SelLength = sclen / 4;
-                waveViewer2.ViewCursor = 3 * sclen / 4;
+                waveViewer2.ViewerCursor = 3 * sclen / 4;
             }
             else // mono
             {
@@ -200,56 +221,16 @@ namespace AudioLib.Test
                 waveViewer1.DrawColor = Color.Green;
                 waveViewer1.SelStart = sclen / 10;
                 waveViewer1.SelLength = sclen / 4;
-                waveViewer1.ViewCursor = 9 * sclen / 10;
+                waveViewer1.ViewerCursor = 9 * sclen / 10;
             }
 
-            prov.Reset();
-            Text = prov.GetInfoString();
+            prov.Rewind();
+            lblInfo.Text = prov.GetInfoString();
 
             int msec = 1000 * sclen / prov.WaveFormat.SampleRate;
             timeBar.Marker1 = new TimeSpan(0, 0, 0, 0, msec / 3);
             timeBar.Marker2 = new TimeSpan(0, 0, 0, 0, msec / 2);
             timeBar.Length = new(0, 0, 0, 0, msec); // msec;
-
-            // Navigation. TODO.
-            navBar.SmallChange = 1;
-            navBar.LargeChange = 100;
-
-
-            // //     Gets or sets a numeric value that represents the current position of the scroll box on the scroll bar control.
-            // public int Value { get; set; }
-            // //     Gets or sets the value to be added to or subtracted from the System.Windows.Forms.ScrollBar.Value property when the scroll box is moved a small distance.
-            // public int SmallChange { get; set; }
-            // //     Gets or sets the lower limit of values of the scrollable range.
-            // public int Minimum { get; set; }
-            // //     Gets or sets a value to be added to or subtracted from the System.Windows.Forms.ScrollBar.Value property when the scroll box is moved a large distance.
-            // public int LargeChange { get; set; }
-            // //     Gets or sets the foreground color of the scroll bar control.
-            // public override Color ForeColor { get; set; }
-            // //     Gets or sets the background image layout as defined in the System.Windows.Forms.ImageLayout enumeration.
-            // public override ImageLayout BackgroundImageLayout { get; set; }
-            // //     Gets or sets the background image displayed in the control.
-            // public override Image? BackgroundImage { get; set; }
-            // //     Gets or sets the upper limit of values of the scrollable range.
-            // public int Maximum { get; set; }
-            // //     Gets or sets a value indicating whether the System.Windows.Forms.ScrollBar is automatically resized to fit its contents.
-            // public override bool AutoSize { get; set; }
-            // //     Gets or sets the background color for the control.
-            // public override Color BackColor { get; set; }
-            
-            // // Events:
-            // public event MouseEventHandler? MouseClick;
-            // public event EventHandler? DoubleClick;
-            // public event MouseEventHandler? MouseDoubleClick;
-            // public event MouseEventHandler? MouseDown;
-            // public event MouseEventHandler? MouseUp;
-            // public event MouseEventHandler? MouseMove;
-            // public event ScrollEventHandler? Scroll;
-            // public event EventHandler? ValueChanged;
-            // protected override void OnMouseWheel(MouseEventArgs e);
-            // protected virtual void OnScroll(ScrollEventArgs se);
-            // protected virtual void OnValueChanged(EventArgs e);
-
         }
 
         void Player_Click(object? sender, EventArgs args)
@@ -264,6 +245,14 @@ namespace AudioLib.Test
             }
         }
 
+        void Resample_Click(object? sender, EventArgs e)
+        {
+            string fn = _testFilesDir + "avTouch_sample.m4a"; // other sample rate - breaks
+            string newfn = _testFilesDir + "_resampled.wav";
+
+            NAudioEx.Resample(fn, newfn);
+        }
+
         void Swap_Click(object? sender, EventArgs args)
         {
             if (_prov is null)
@@ -274,7 +263,7 @@ namespace AudioLib.Test
             {
                 var newProv = btnSwap.Checked ? _provSwap : _prov;
                 ShowWave(newProv);
-                Text = newProv.GetInfoString();
+                lblInfo.Text = newProv.GetInfoString();
             }
         }
 
@@ -300,7 +289,7 @@ namespace AudioLib.Test
         void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
             LogLine($"Current time:{timeBar.Current}");
-            waveViewer1.ViewCursor = (int)timeBar.Current.TotalMilliseconds;
+            waveViewer1.ViewerCursor = (int)timeBar.Current.TotalMilliseconds;
         }
 
         void Timer1_Tick(object? sender, EventArgs args)
@@ -349,6 +338,9 @@ namespace AudioLib.Test
             {
                 components.Dispose();
             }
+
+            SetProvider(null);
+
             _player?.Dispose();
 
             base.Dispose(disposing);

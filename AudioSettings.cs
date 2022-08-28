@@ -38,7 +38,7 @@ namespace AudioLib
         public string Latency { get; set; } = "200";
 
         [DisplayName("Max Clip Size")]
-        [Description("Limit clips to this many minutes.")]
+        [Description("Limit clips to this many minutes. Has a direct effect on memory usage.")]
         [Browsable(true)]
         public int MaxClipSize { get; set; } = 10;
         #endregion

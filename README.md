@@ -10,12 +10,12 @@ WinForms library of various audio components and controls.
 Contents:
 - AudioPlayer: Fairly thin wrapper around the basic NAudio wave player. Devices are limited to the ones available on your box.
 - TimeBar: Elapsed time control. Now only used by the defunct ClipExplorer application.
-- WaveViewer: Display and navigate a wave.
+- WaveViewer: Display and navigate a wave. Adjust gain, extract selection.
 - AudioFileInfo: Dumps contents of supported audio files.
-- NAudioEx: NAudio compatible extension methods for the providers implemented here.
-- ClipSampleProvider: Provider that encapsulates a client supplied audio dataset.
+- ClipSampleProvider: Sample provider that encapsulates a client supplied piece of audio.
 - SwappableSampleProvider: Sample provider that supports hot swapping of input.
 - PeakProvider: Customized version of NAudio's IPeakProvider family for displayiing waveforms.
+- NAudioEx: NAudio compatible extension methods for the providers implemented here.
 
 # External Components
 

@@ -33,6 +33,7 @@
             this.m4aToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.sinToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.shortToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.btnPlayer = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
@@ -42,7 +43,12 @@
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.sldGain = new NBagOfUis.Slider();
             this.navBar = new System.Windows.Forms.HScrollBar();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.lblInfo = new System.Windows.Forms.ToolStripStatusLabel();
+            this.btnResample = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStrip1.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // timer1
@@ -83,18 +89,17 @@
             this.waveViewer1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.waveViewer1.DrawColor = System.Drawing.Color.Orange;
             this.waveViewer1.Gain = 1F;
+            this.waveViewer1.GainIncrement = 0.05F;
             this.waveViewer1.GridColor = System.Drawing.Color.LightGray;
             this.waveViewer1.Location = new System.Drawing.Point(10, 129);
             this.waveViewer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.waveViewer1.MarkColor = System.Drawing.Color.Red;
             this.waveViewer1.Name = "waveViewer1";
-            this.waveViewer1.SelColor = System.Drawing.Color.White;
-            this.waveViewer1.SelLength = 0;
-            this.waveViewer1.SelStart = -1;
+            this.waveViewer1.PanFactor = 10;
             this.waveViewer1.Size = new System.Drawing.Size(1157, 130);
             this.waveViewer1.TabIndex = 26;
-            this.waveViewer1.ViewCursor = -1;
-            this.waveViewer1.VisLength = 0;
-            this.waveViewer1.VisStart = 0;
+            this.waveViewer1.WheelResolution = 8;
+            this.waveViewer1.ZoomFactor = 20;
             // 
             // waveViewer2
             // 
@@ -103,18 +108,17 @@
             this.waveViewer2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.waveViewer2.DrawColor = System.Drawing.Color.Orange;
             this.waveViewer2.Gain = 1F;
+            this.waveViewer2.GainIncrement = 0.05F;
             this.waveViewer2.GridColor = System.Drawing.Color.LightGray;
             this.waveViewer2.Location = new System.Drawing.Point(10, 258);
             this.waveViewer2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.waveViewer2.MarkColor = System.Drawing.Color.Red;
             this.waveViewer2.Name = "waveViewer2";
-            this.waveViewer2.SelColor = System.Drawing.Color.White;
-            this.waveViewer2.SelLength = 0;
-            this.waveViewer2.SelStart = -1;
+            this.waveViewer2.PanFactor = 10;
             this.waveViewer2.Size = new System.Drawing.Size(1157, 130);
             this.waveViewer2.TabIndex = 32;
-            this.waveViewer2.ViewCursor = -1;
-            this.waveViewer2.VisLength = 0;
-            this.waveViewer2.VisStart = 0;
+            this.waveViewer2.WheelResolution = 8;
+            this.waveViewer2.ZoomFactor = 20;
             // 
             // toolStrip1
             // 
@@ -131,7 +135,9 @@
             this.btnSwap,
             this.toolStripSeparator5,
             this.btnFileInfo,
-            this.toolStripSeparator6});
+            this.toolStripSeparator6,
+            this.btnResample,
+            this.toolStripSeparator7});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(1175, 27);
@@ -175,7 +181,8 @@
             this.flacToolStripMenuItem,
             this.m4aToolStripMenuItem,
             this.txtToolStripMenuItem,
-            this.sinToolStripMenuItem});
+            this.sinToolStripMenuItem,
+            this.shortToolStripMenuItem});
             this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
             this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
             this.toolStripDropDownButton1.Size = new System.Drawing.Size(53, 24);
@@ -184,44 +191,51 @@
             // wavToolStripMenuItem
             // 
             this.wavToolStripMenuItem.Name = "wavToolStripMenuItem";
-            this.wavToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
+            this.wavToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
             this.wavToolStripMenuItem.Text = "wav";
             this.wavToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // mp3ToolStripMenuItem
             // 
             this.mp3ToolStripMenuItem.Name = "mp3ToolStripMenuItem";
-            this.mp3ToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
+            this.mp3ToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
             this.mp3ToolStripMenuItem.Text = "mp3";
             this.mp3ToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // flacToolStripMenuItem
             // 
             this.flacToolStripMenuItem.Name = "flacToolStripMenuItem";
-            this.flacToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
+            this.flacToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
             this.flacToolStripMenuItem.Text = "flac";
             this.flacToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // m4aToolStripMenuItem
             // 
             this.m4aToolStripMenuItem.Name = "m4aToolStripMenuItem";
-            this.m4aToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
+            this.m4aToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
             this.m4aToolStripMenuItem.Text = "m4a";
             this.m4aToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // txtToolStripMenuItem
             // 
             this.txtToolStripMenuItem.Name = "txtToolStripMenuItem";
-            this.txtToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
+            this.txtToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
             this.txtToolStripMenuItem.Text = "txt";
             this.txtToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // sinToolStripMenuItem
             // 
             this.sinToolStripMenuItem.Name = "sinToolStripMenuItem";
-            this.sinToolStripMenuItem.Size = new System.Drawing.Size(122, 26);
+            this.sinToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
             this.sinToolStripMenuItem.Text = "sin";
             this.sinToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
+            // 
+            // shortToolStripMenuItem
+            // 
+            this.shortToolStripMenuItem.Name = "shortToolStripMenuItem";
+            this.shortToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
+            this.shortToolStripMenuItem.Text = "short";
+            this.shortToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
             // 
             // toolStripSeparator3
             // 
@@ -294,11 +308,43 @@
             this.navBar.Size = new System.Drawing.Size(1157, 26);
             this.navBar.TabIndex = 34;
             // 
+            // statusStrip1
+            // 
+            this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.lblInfo});
+            this.statusStrip1.Location = new System.Drawing.Point(0, 571);
+            this.statusStrip1.Name = "statusStrip1";
+            this.statusStrip1.Size = new System.Drawing.Size(1175, 26);
+            this.statusStrip1.TabIndex = 35;
+            this.statusStrip1.Text = "statusStrip1";
+            // 
+            // lblInfo
+            // 
+            this.lblInfo.Name = "lblInfo";
+            this.lblInfo.Size = new System.Drawing.Size(151, 20);
+            this.lblInfo.Text = "toolStripStatusLabel1";
+            // 
+            // btnResample
+            // 
+            this.btnResample.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnResample.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnResample.Name = "btnResample";
+            this.btnResample.Size = new System.Drawing.Size(74, 24);
+            this.btnResample.Text = "resample";
+            this.btnResample.Click += new System.EventHandler(this.Resample_Click);
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 27);
+            // 
             // TestHost
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1175, 597);
+            this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.navBar);
             this.Controls.Add(this.sldGain);
             this.Controls.Add(this.waveViewer2);
@@ -311,6 +357,8 @@
             this.Text = "TestHost";
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
+            this.statusStrip1.ResumeLayout(false);
+            this.statusStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -343,5 +391,10 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private NBagOfUis.Slider sldGain;
         private System.Windows.Forms.HScrollBar navBar;
+        private System.Windows.Forms.ToolStripMenuItem shortToolStripMenuItem;
+        private System.Windows.Forms.StatusStrip statusStrip1;
+        private System.Windows.Forms.ToolStripStatusLabel lblInfo;
+        private System.Windows.Forms.ToolStripButton btnResample;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
     }
 }
