@@ -201,7 +201,7 @@ namespace AudioLib.Test
                 waveViewer1.BackColor = Color.Cyan;
                 waveViewer1.SelStart = sclen / 3;
                 waveViewer1.SelLength = sclen / 4;
-                waveViewer1.ViewerCursor = 2 * sclen / 3;
+                waveViewer1.Marker = 2 * sclen / 3;
 
                 prov.Rewind();
                 waveViewer2.Init(new StereoToMonoSampleProvider(prov) { LeftVolume = 0.0f, RightVolume = 1.0f });
@@ -211,7 +211,7 @@ namespace AudioLib.Test
                 waveViewer2.BackColor = Color.LightYellow;
                 waveViewer2.SelStart = sclen / 4;
                 waveViewer1.SelLength = sclen / 4;
-                waveViewer2.ViewerCursor = 3 * sclen / 4;
+                waveViewer2.Marker = 3 * sclen / 4;
             }
             else // mono
             {
@@ -221,7 +221,7 @@ namespace AudioLib.Test
                 waveViewer1.DrawColor = Color.Green;
                 waveViewer1.SelStart = sclen / 10;
                 waveViewer1.SelLength = sclen / 4;
-                waveViewer1.ViewerCursor = 9 * sclen / 10;
+                waveViewer1.Marker = 9 * sclen / 10;
             }
 
             prov.Rewind();
@@ -289,7 +289,7 @@ namespace AudioLib.Test
         void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
             LogLine($"Current time:{timeBar.Current}");
-            waveViewer1.ViewerCursor = (int)timeBar.Current.TotalMilliseconds;
+            waveViewer1.Marker = (int)timeBar.Current.TotalMilliseconds;
         }
 
         void Timer1_Tick(object? sender, EventArgs args)

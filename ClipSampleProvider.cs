@@ -110,7 +110,7 @@ namespace AudioLib
         /// <summary>
         /// Go back to the beginning.
         /// </summary>
-        public void Reset()
+        public void Rewind()
         {
             _position = 0;
         }

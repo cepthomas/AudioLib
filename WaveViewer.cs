@@ -10,9 +10,10 @@ using NBagOfTricks;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using System.Runtime;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
-// TODO make mouse etc commands configurable. Does client need to know about these ops.
+// TODO make mouse etc commands configurable.
 
 
 namespace AudioLib
@@ -43,64 +44,23 @@ namespace AudioLib
 
         /// <summary>Grid Y resolution. Assumes +-1.0f range.</summary>
         const float GRID_STEP = 0.25f;
-        #endregion
-
-
-        // Navigation.
-        // navBar.SmallChange = 1;
-        // navBar.LargeChange = 100;
-        //
-        // //     Gets or sets a numeric value that represents the current position of the scroll box on the scroll bar control.
-        // public int Value { get; set; }
-        // //     Gets or sets the value to be added to or subtracted from the System.Windows.Forms.ScrollBar.Value property when the scroll box is moved a small distance.
-        // public int SmallChange { get; set; }
-        // //     Gets or sets the lower limit of values of the scrollable range.
-        // public int Minimum { get; set; }
-        // //     Gets or sets a value to be added to or subtracted from the System.Windows.Forms.ScrollBar.Value property when the scroll box is moved a large distance.
-        // public int LargeChange { get; set; }
-        // //     Gets or sets the foreground color of the scroll bar control.
-        // public override Color ForeColor { get; set; }
-        // //     Gets or sets the background image layout as defined in the System.Windows.Forms.ImageLayout enumeration.
-        // public override ImageLayout BackgroundImageLayout { get; set; }
-        // //     Gets or sets the background image displayed in the control.
-        // public override Image? BackgroundImage { get; set; }
-        // //     Gets or sets the upper limit of values of the scrollable range.
-        // public int Maximum { get; set; }
-        // //     Gets or sets a value indicating whether the System.Windows.Forms.ScrollBar is automatically resized to fit its contents.
-        // public override bool AutoSize { get; set; }
-        // //     Gets or sets the background color for the control.
-        // public override Color BackColor { get; set; }
-
-        // // Events:
-        // public event MouseEventHandler? MouseClick;
-        // public event EventHandler? DoubleClick;
-        // public event MouseEventHandler? MouseDoubleClick;
-        // public event MouseEventHandler? MouseDown;
-        // public event MouseEventHandler? MouseUp;
-        // public event MouseEventHandler? MouseMove;
-        // public event ScrollEventHandler? Scroll;
-        // public event EventHandler? ValueChanged;
-        // protected override void OnMouseWheel(MouseEventArgs e);
-        // protected virtual void OnScroll(ScrollEventArgs se);
-        // protected virtual void OnValueChanged(EventArgs e);
-
-
 
         /// <summary>For painting. Essentially the zoom factor.</summary>
         int _samplesPerPixel = 0;
 
         /// <summary>Means fully zoomed out.</summary>
         int _samplesPerPixelMax = 0;
-
-
-
+        #endregion
 
         #region Backing fields
         float _gain = 1.0f;
-  //      readonly SolidBrush _brushSel = new(Color.White);
+        int _selStart = -1;
+        int _selLength = 0;
+        int _marker = -1;
         readonly Pen _penDraw = new(Color.Black, 1);
         readonly Pen _penGrid = new(Color.LightGray, 1);
         readonly Pen _penMark = new(Color.Red, 1);
+        readonly SolidBrush _brushMark = new(Color.White);
         #endregion
 
         #region Properties
@@ -115,8 +75,7 @@ namespace AudioLib
         public Color GridColor { get { return _penGrid.Color; } set { _penGrid.Color = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
-        public Color MarkColor { get { return _penMark.Color; } set { _penMark.Color = value; Invalidate(); } }
-        //public Color SelColor { get { return _brushSel.Color; } set { _brushSel.Color = value; Invalidate(); } }
+        public Color MarkColor { get { return _penMark.Color; } set { _penMark.Color = value; _brushMark.Color = value; Invalidate(); } }
 
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
@@ -124,9 +83,14 @@ namespace AudioLib
         /// <summary>UI gain adjustment.</summary>
         public float GainIncrement { get; set; } = 0.05f;
 
-        ///// <summary>There isn't enough data to fill full width so disallow navigation.</summary>
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        //public bool Frozen { get; private set; } = false;
+        /// <summary>How fast the mouse wheel goes.</summary>
+        public int WheelResolution { get; set; } = 8;
+
+        /// <summary>Zoom increment.</summary>
+        public int ZoomFactor { get; set; } = 20;
+
+        /// <summary>Pan increment.</summary>
+        public int PanFactor { get; set; } = 10;
 
         /// <summary>Length of the clip in samples.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -138,23 +102,23 @@ namespace AudioLib
 
         /// <summary>Selection start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int SelStart { get; set; } = 0; //TODO1 should I invalidate or client?
+        public int SelStart { get { return _selStart; } set { _selStart = value; Invalidate(); } }
 
         /// <summary>Selection length in samples. Could be negative.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int SelLength { get; set; } = 0;
+        public int SelLength { get { return _selLength; } set { _selLength = value; Invalidate(); } }
 
         /// <summary>Current cursor location.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int ViewerCursor { get; set; } = -1;
+        public int Marker { get { return _marker; } set { _marker = value; Invalidate(); } }
 
         /// <summary>Visible start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int VisStart { get; set; } = 0;
+        public int VisStart { get; private set; } = 0;
 
         /// <summary>Visible length in samples. Always positive.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int VisLength { get; set; } = 0;
+        public int VisLength { get; private set; } = 0;
         #endregion
 
         #region Events
@@ -172,7 +136,7 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Set everything from data source. Do this before setting properties as some are overwritten.
+        /// Set everything from data source. Client must do this before setting properties as some are overwritten.
         /// </summary>
         /// <param name="prov">Source</param>
         public void Init(ISampleProvider prov)
@@ -182,11 +146,14 @@ namespace AudioLib
             _min = all.min;
             _max = all.max;
 
-            SelStart = -1;
-            SelLength = 0;
-            ViewerCursor = -1;
+            _selStart = -1;
+            _selLength = 0;
+            Marker = -1;
             VisStart = 0;
             VisLength = _vals.Length;
+
+            _samplesPerPixel = 0;
+            _samplesPerPixelMax = 0;
 
             ValidateProperties();
 
@@ -201,19 +168,24 @@ namespace AudioLib
         {
            if (disposing)
            {
+                _brushMark.Dispose();
                 _penDraw.Dispose();
-                _textFont.Dispose();
+                _penGrid.Dispose();
+                _penMark.Dispose();
                 _format.Dispose();
+                _textFont.Dispose();
            }
            base.Dispose(disposing);
         }
         #endregion
 
         #region Public functions
-        /// <summary>Put back to area of interest.</summary>
-        public void Reset()
+        /// <summary>
+        /// Put back to area of interest.
+        /// </summary>
+        public void Rewind()
         {
-            _position = SelStart;
+            _position = _selStart;
         }
 
         /// <summary>
@@ -227,15 +199,12 @@ namespace AudioLib
         {
             int numRead = 0;
 
-            int numToRead = Math.Min(count, SelLength - _position);
-            if (numToRead > 0)
+            int numToRead = Math.Min(count, _selLength - _position);
+            for (int n = 0; n < numToRead; n++)
             {
-                for (int n = 0; n < numToRead; n++)
-                {
-                    buffer[n + offset] = _vals[_position];
-                    _position++;
-                    numRead++;
-                }
+                buffer[n + offset] = _vals[_position];
+                _position++;
+                numRead++;
             }
             return numRead;
         }
@@ -250,17 +219,6 @@ namespace AudioLib
         }
         #endregion
 
-
-
-        /// <summary>How fast the mouse wheel goes.</summary>
-        public int WheelResolution { get; set; } = 8;
-
-        public int ZoomFactor { get; set; } = 20;
-
-        public int PanFactor { get; set; } = 10;
-
-
-
         #region UI handlers
         /// <summary>
         /// Handle mouse wheel.
@@ -271,29 +229,36 @@ namespace AudioLib
             HandledMouseEventArgs hme = (HandledMouseEventArgs)e;
             hme.Handled = true; // This prevents the mouse wheel event from getting back to the parent.
 
-            if (ModifierKeys == Keys.Control) // x zoom TODO1
+            // Number of detents the mouse wheel has rotated, multiplied by the WHEEL_DELTA constant.
+            int delta = WheelResolution * e.Delta / SystemInformation.MouseWheelScrollDelta;
+
+            if (ModifierKeys == Keys.Control) // x zoom
             {
-                // Number of detents the mouse wheel has rotated, multiplied by the WHEEL_DELTA constant.
-                int delta = WheelResolution * e.Delta / SystemInformation.MouseWheelScrollDelta;
                 int incr = _samplesPerPixelMax / ZoomFactor; // zoom factor
 
                 if (delta > 0) // zoom in
                 {
                     _samplesPerPixel -= incr;
-                    _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 1, _samplesPerPixelMax);
-                    Invalidate();
                 }
                 else if (delta < 0) // zoom out
                 {
                     _samplesPerPixel += incr;
-                    _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 1, _samplesPerPixelMax);
-                    Invalidate();
                 }
-                // else ignore
+
+                _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 1, _samplesPerPixelMax);
+
+                // Update visible. Note these calcs will be checked in ValidateProperties().
+                // Zooming is around the mouse position or marker if provided.
+                int center = Marker > 0 ? Marker : VisStart + VisLength / 2;
+                int visSamples = Width * _samplesPerPixel;
+
+                VisStart = center - visSamples / 2;
+                VisLength = visSamples;
+
+                Invalidate();
             }
-            else if (ModifierKeys == Keys.None) // no mods = x shift TODO1
+            else if (ModifierKeys == Keys.None) // no mods = x shift TODO1 not quite right
             {
-                int delta = WheelResolution * e.Delta / SystemInformation.MouseWheelScrollDelta;
                 int incr = _samplesPerPixel * PanFactor;
 
                 if (delta > 0) // pan right
@@ -312,7 +277,7 @@ namespace AudioLib
             }
             else if (ModifierKeys == Keys.Shift) // gain
             {
-                _gain += hme.Delta > 0 ? 0.01f : -0.01f;
+                _gain += delta > 0 ? GainIncrement : -GainIncrement;
                 _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
                 GainChangedEvent?.Invoke(this, EventArgs.Empty);
                 Invalidate();
@@ -331,48 +296,49 @@ namespace AudioLib
 
                     if (ModifierKeys == Keys.None)
                     {
-                        ViewerCursor = PixelToSample();
+                        Marker = PixelToSample();
                         Invalidate();
                     }
                     else if (ModifierKeys == Keys.Control)
                     {
-                        SelStart = PixelToSample();
+                        _selStart = PixelToSample();
                         Invalidate();
                     }
-                    else if (ModifierKeys == Keys.Shift && SelStart != -1)
+                    else if (ModifierKeys == Keys.Shift && _selStart != -1)
                     {
                         var sel = PixelToSample();
-                        SelLength = sel - SelStart;
+                        _selLength = sel - _selStart;
                         Invalidate();
                     }
                     break;
             }
         }
 
-        // /// <summary>
-        // /// Handle mouse move.
-        // /// </summary>
-        // /// <param name="e"></param>
-        // protected override void OnMouseMove(MouseEventArgs e)
-        // {
-        //     if (e.Button == MouseButtons.Left)
-        //     {
-        //         _current = GetTimeFromMouse(e.X);
-        //         CurrentTimeChanged?.Invoke(this, new EventArgs());
-        //     }
-        //     else
-        //     {
-        //         if (e.X != _lastXPos)
-        //         {
-        //             TimeSpan ts = GetTimeFromMouse(e.X);
-        //             _toolTip.SetToolTip(this, ts.ToString(AudioLibDefs.TS_FORMAT));
-        //             _lastXPos = e.X;
-        //         }
-        //     }
+        /// <summary>
+        /// Handle mouse move.
+        /// </summary>
+        /// <param name="e"></param>
+        protected override void OnMouseMove(MouseEventArgs e)
+        {
+            // if (e.Button == MouseButtons.Left)
+            // {
+            //     _current = GetTimeFromMouse(e.X);
+            //     CurrentTimeChanged?.Invoke(this, new EventArgs());
+            // }
+            // else
+            // {
+            //     if (e.X != _lastXPos)
+            //     {
+            //         TimeSpan ts = GetTimeFromMouse(e.X);
+            //         _toolTip.SetToolTip(this, ts.ToString(AudioLibDefs.TS_FORMAT));
+            //         _lastXPos = e.X;
+            //     }
+            // }
+            //
+            // Invalidate();
 
-        //     // Invalidate();
-        //     base.OnMouseMove(e);
-        // }
+            base.OnMouseMove(e);
+        }
 
         /// <summary>
         /// Key press.
@@ -382,22 +348,23 @@ namespace AudioLib
         {
             switch (e.KeyCode)
             {
-                //case Keys.Escape:
                 case Keys.G: // reset gain
                     _gain = 1.0f;
                     Invalidate();
+                    e.Handled = true;
                     break;
 
                 case Keys.H: // reset to initial view
                     VisStart = 0;
                     VisLength = _vals.Length;
                     Invalidate();
+                    e.Handled = true;
                     break;
             }
         }
 
         /// <summary>
-        /// Resize.
+        /// Resize handler.
         /// </summary>
         /// <param name="e"></param>
         protected override void OnResize(EventArgs e)
@@ -423,29 +390,15 @@ namespace AudioLib
             }
             else
             {
+                // Draw everything from bottom up.
 
-                /////// First selection area.
-                //if (!Frozen)
-                //{
-                //    if (SelStart != -1 && SelLength > 0)
-                //    {
-                //        for (int i = 0; i < SelLength; i++)
-                //        {
-
-                //        }
-                //    }
-                //}
-                //else
-                //{
-
-                //}
-                
-                ///// Grid.
-                // Y grid lines
+                // Y grid lines.
                 _penGrid.Width = 1;
-                for (float gs = -5 * GRID_STEP; gs <= 5 * GRID_STEP; gs += GRID_STEP)
+                float yMin = -5 * GRID_STEP;
+                float yMax = 5 * GRID_STEP;
+                for (float gs = yMin; gs <= yMax; gs += GRID_STEP)
                 {
-                    float yGrid = MathUtils.Map(gs, GainIncrement, -GainIncrement, 0, Height);
+                    float yGrid = MathUtils.Map(gs, yMin, yMax, 0, Height);
                     pe.Graphics.DrawLine(_penGrid, 0, yGrid, Width, yGrid);
                     pe.Graphics.DrawString($"{gs:0.00}", _textFont, _penGrid.Brush, 25, yGrid, _format);
                 }
@@ -466,17 +419,17 @@ namespace AudioLib
                     for (int i = 0; i < peaks.Count; i++)
                     {
                         // +1 => 0  -1 => Height
-                        int yMax = (int)MathUtils.Map(peaks[i].max * _gain, 1.0f, -1.0f, 0, Height);
-                        int yMin = (int)MathUtils.Map(peaks[i].min * _gain, 1.0f, -1.0f, 0, Height);
+                        int max = (int)MathUtils.Map(peaks[i].max * _gain, 1.0f, -1.0f, 0, Height);
+                        int min = (int)MathUtils.Map(peaks[i].min * _gain, 1.0f, -1.0f, 0, Height);
 
                         // Make sure there's always at least one dot.
-                        if (yMax == yMin)
+                        if (max == min)
                         {
-                            if (yMax > 0) { yMin--; }
-                            else { yMax++; }
+                            if (max > 0) { min--; }
+                            else { max++; }
                         }
 
-                        pe.Graphics.DrawLine(_penDraw, i, yMax, i, yMin);
+                        pe.Graphics.DrawLine(_penDraw, i, max, i, min);
                     }
                 }
                 else
@@ -491,9 +444,9 @@ namespace AudioLib
                 }
 
                 // Selection markers and cursor.
-                if (SelStart != -1)
+                if (_selStart != -1)
                 {
-                    int x = SampleToPixel(SelStart);
+                    int x = SampleToPixel(_selStart);
                     if (x >= 0)
                     {
                         pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
@@ -501,9 +454,9 @@ namespace AudioLib
                     }
                 }
 
-                if (SelLength > 0)
+                if (_selLength > 0)
                 {
-                    int x = SampleToPixel(SelStart + SelLength);
+                    int x = SampleToPixel(_selStart + _selLength);
                     if (x >= 0)
                     {
                         pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
@@ -511,9 +464,9 @@ namespace AudioLib
                     }
                 }
 
-                if (ViewerCursor != -1)
+                if (Marker != -1)
                 {
-                    int x = SampleToPixel(ViewerCursor);
+                    int x = SampleToPixel(Marker);
                     if (x >= 0)
                     {
                         pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
@@ -529,10 +482,10 @@ namespace AudioLib
         /// </summary>
         void ValidateProperties()
         {
-            SelStart = MathUtils.Constrain(SelStart, 0, _vals.Length);
-            SelLength = MathUtils.Constrain(SelLength, -_vals.Length, _vals.Length);
+            _selStart = MathUtils.Constrain(_selStart, -1, _vals.Length);
+            _selLength = MathUtils.Constrain(_selLength, -_vals.Length, _vals.Length);
 
-            ViewerCursor = MathUtils.Constrain(ViewerCursor, -1, _vals.Length);
+            Marker = MathUtils.Constrain(Marker, -1, _vals.Length);
 
             VisStart = MathUtils.Constrain(VisStart, 0, _vals.Length);
 
@@ -553,9 +506,10 @@ namespace AudioLib
         /// <param name="pixel">UI loc or -1 if get current mouse.</param>
         int PixelToSample(int pixel = -1)
         {
-            if(pixel < 0)
+            if (pixel < 0)
             {
-                pixel = PointToClient(Cursor.Position).X;
+                pixel = PointToClient(MousePosition).X;
+                //pixel = Cursor.Position.X;
             }
             int sample = MathUtils.Map(pixel, 0, Width, VisStart, VisStart + VisLength);
             return sample;

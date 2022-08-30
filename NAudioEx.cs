@@ -31,13 +31,13 @@ namespace AudioLib
             float max = 0.0f;
             float min = 0.0f;
             int totalRead = 0;
-            int maxSamples = AudioSettings.LibSettings.MaxClipSize * AudioLibDefs.SAMPLE_RATE * 60;
+            int maxSamples = AudioSettings.LibSettings.MaxClipSize * AudioLibDefs.SAMPLE_RATE * 60; //26,460,000
 
             bool done = false;
             while (!done)
             {
                 // Get a chunk.
-                int toRead = AudioLibDefs.READ_BUFF_SIZE;
+                int toRead = AudioLibDefs.READ_BUFF_SIZE;//1.000,000
                 var data = new float[toRead];
 
                 int numRead = prov.Read(data, 0, toRead);
@@ -61,7 +61,7 @@ namespace AudioLib
                 data.ForEach(v => { max = Math.Max(max, v); min = Math.Min(min, v); });
             }
 
-            var all = new float[totalRead];
+            var all = new float[totalRead]; // TODO1 doubles memory use! be smarter.
 
             // Copy.
             int destIndex = 0;
@@ -102,7 +102,7 @@ namespace AudioLib
                     break;
 
                 case WaveViewer wv:
-                    wv.Reset();
+                    wv.Rewind();
                     break;
 
                 case AudioFileReader afr:
@@ -119,9 +119,14 @@ namespace AudioLib
             }
         }
 
+        /// <summary>
+        /// Agnostic property.
+        /// </summary>
+        /// <param name="prov"></param>
+        /// <returns>The length or 0 if unknown.</returns>
         public static int Length(this ISampleProvider prov)// TODO klunky
         {
-            int len = 0; // default means unknown.
+            int len = 0; // default
 
             switch (prov)
             {
@@ -152,7 +157,7 @@ namespace AudioLib
 
         //public static void Rewind(this WaveViewer prov)
         //{
-        //    prov.Reset();
+        //    prov.Rewind();
         //}
 
         //public static void Rewind(this AudioFileReader prov)
@@ -164,9 +169,6 @@ namespace AudioLib
         //{
         //    prov.Rewind();
         //}
-
-
-
 
         ///// <summary>
         ///// Agnostic position setter.
@@ -184,8 +186,6 @@ namespace AudioLib
         //        afr.Position = pos;
         //    }
         //}
-
-
 
         /// <summary>
         /// Get provider info. Mainly for window header.
@@ -273,17 +273,17 @@ namespace AudioLib
             var wf = prov.WaveFormat;
             if (wf.Encoding != WaveFormatEncoding.IeeeFloat)
             {
-               throw new ArgumentException($"Invalid encoding {wf.Encoding}. Must be IEEE float");
+               throw new ArgumentException($"Invalid encoding {wf.Encoding}. Must be IEEE float.");
             }
 
             if (wf.SampleRate != AudioLibDefs.SAMPLE_RATE)
             {
-                throw new ArgumentException($"Invalid sample rate {wf.SampleRate}. Must be {AudioLibDefs.SAMPLE_RATE}");
+                throw new ArgumentException($"Invalid sample rate {wf.SampleRate}. Must be {AudioLibDefs.SAMPLE_RATE}.");
             }
 
             if (wf.BitsPerSample != 32)
             {
-                throw new ArgumentException($"Invalid bits per sample {wf.BitsPerSample}. Must be 32");
+                throw new ArgumentException($"Invalid bits per sample {wf.BitsPerSample}. Must be 32.");
             }
 
             if (mono && wf.Channels != 1)
