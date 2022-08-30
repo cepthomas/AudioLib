@@ -148,7 +148,7 @@ namespace AudioLib
 
             _selStart = -1;
             _selLength = 0;
-            Marker = -1;
+            _marker = -1;
             VisStart = 0;
             VisLength = _vals.Length;
 
@@ -234,7 +234,7 @@ namespace AudioLib
 
             if (ModifierKeys == Keys.Control) // x zoom
             {
-                int incr = _samplesPerPixelMax / ZoomFactor; // zoom factor
+                int incr = _samplesPerPixelMax / ZoomFactor; // zoom factor TODO1 too fast for zoom in.
 
                 if (delta > 0) // zoom in
                 {
@@ -249,7 +249,7 @@ namespace AudioLib
 
                 // Update visible. Note these calcs will be checked in ValidateProperties().
                 // Zooming is around the mouse position or marker if provided.
-                int center = Marker > 0 ? Marker : VisStart + VisLength / 2;
+                int center = _marker > 0 ? _marker : VisStart + VisLength / 2;
                 int visSamples = Width * _samplesPerPixel;
 
                 VisStart = center - visSamples / 2;
@@ -293,18 +293,27 @@ namespace AudioLib
             switch (e.Button)
             {
                 case MouseButtons.Left:
+                    if (ModifierKeys == Keys.None) // marker
+                    {
+                        _marker = PixelToSample();
+                        Invalidate();
+                    }
+                    else if (ModifierKeys == Keys.Control) // sel start
+                    {
+                        if(_selLength > 0)
+                        {
+                            var ends = _selStart + _selLength;
+                            _selStart = PixelToSample();
+                            _selLength = ends - _selStart;
+                        }
+                        else
+                        {
+                            _selStart = PixelToSample();
+                        }
 
-                    if (ModifierKeys == Keys.None)
-                    {
-                        Marker = PixelToSample();
                         Invalidate();
                     }
-                    else if (ModifierKeys == Keys.Control)
-                    {
-                        _selStart = PixelToSample();
-                        Invalidate();
-                    }
-                    else if (ModifierKeys == Keys.Shift && _selStart != -1)
+                    else if (ModifierKeys == Keys.Shift && _selStart != -1) // sel end
                     {
                         var sel = PixelToSample();
                         _selLength = sel - _selStart;
@@ -399,23 +408,24 @@ namespace AudioLib
                 for (float gs = yMin; gs <= yMax; gs += GRID_STEP)
                 {
                     float yGrid = MathUtils.Map(gs, yMin, yMax, 0, Height);
-                    pe.Graphics.DrawLine(_penGrid, 0, yGrid, Width, yGrid);
-                    pe.Graphics.DrawString($"{gs:0.00}", _textFont, _penGrid.Brush, 25, yGrid, _format);
+                    pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
+                    pe.Graphics.DrawString($"{-gs:0.00}", _textFont, _penGrid.Brush, 25, yGrid, _format);
                 }
 
                 // Y zero is a bit thicker.
-                _penGrid.Width = 3;
+                _penGrid.Width = 5;
                 float yZero = MathUtils.Map(0.0f, 1.0f, -1.0f, 0, Height);
                 pe.Graphics.DrawLine(_penGrid, 0, yZero, Width, yZero);
 
                 // Info.
-                pe.Graphics.DrawString($"Gain:{_gain:0.00}", _textFont, _penGrid.Brush, 100, 10, _format);
-
+                //pe.Graphics.DrawString($"Gain:{_gain:0.00}", _textFont, _penGrid.Brush, 50, 10);
+                pe.Graphics.DrawString($"Gain:{_gain:0.00} VST:{VisStart} VLN:{VisLength} MRK:{Marker}", _textFont, Brushes.Black, 50, 10);
 
                 // Then the data.
                 if (_samplesPerPixel > 1)
                 {
                     var peaks = PeakProvider.GetPeaks(_vals, VisStart, _samplesPerPixel, Width);
+
                     for (int i = 0; i < peaks.Count; i++)
                     {
                         // +1 => 0  -1 => Height
@@ -464,9 +474,9 @@ namespace AudioLib
                     }
                 }
 
-                if (Marker != -1)
+                if (_marker != -1)
                 {
-                    int x = SampleToPixel(Marker);
+                    int x = SampleToPixel(_marker);
                     if (x >= 0)
                     {
                         pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
@@ -485,7 +495,7 @@ namespace AudioLib
             _selStart = MathUtils.Constrain(_selStart, -1, _vals.Length);
             _selLength = MathUtils.Constrain(_selLength, -_vals.Length, _vals.Length);
 
-            Marker = MathUtils.Constrain(Marker, -1, _vals.Length);
+            _marker = MathUtils.Constrain(_marker, -1, _vals.Length);
 
             VisStart = MathUtils.Constrain(VisStart, 0, _vals.Length);
 
@@ -509,7 +519,6 @@ namespace AudioLib
             if (pixel < 0)
             {
                 pixel = PointToClient(MousePosition).X;
-                //pixel = Cursor.Position.X;
             }
             int sample = MathUtils.Map(pixel, 0, Width, VisStart, VisStart + VisLength);
             return sample;
@@ -524,9 +533,13 @@ namespace AudioLib
         {
             int pixel = -1;
 
-            if(sample > VisStart && sample < VisStart + VisLength)
+            if (sample > VisStart && sample < VisStart + VisLength)
             {
-                pixel = MathUtils.Map(sample, VisStart, VisStart + VisLength, 0, Width);
+                int offset = sample - VisStart;
+                pixel = offset / _samplesPerPixel;
+
+
+                //pixel = MathUtils.Map(sample, VisStart, VisStart + VisLength, 0, Width);
             }
             return pixel;
         }
