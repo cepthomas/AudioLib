@@ -43,8 +43,12 @@ namespace AudioLib.Test
             timeBar.BackColor = Color.Salmon;
 
             // Controls.
-            waveViewer1.GainChangedEvent += (_, __) => { sldGain.Value = waveViewer1.Gain; };
-            sldGain.ValueChanged += (_, __) => { waveViewer1.Gain = (float)sldGain.Value; waveViewer1.Invalidate(); };
+            waveViewer1.GainChangedEvent += (_, __) => sldGain.Value = waveViewer1.Gain;
+            sldGain.ValueChanged += (_, __) =>
+            {
+                waveViewer1.Gain = (float)sldGain.Value;
+                waveViewer1.Invalidate();
+            };
 
             // Player.
             _waveOutSwapper = new();
@@ -52,7 +56,7 @@ namespace AudioLib.Test
             _player.PlaybackStopped += (_, __) =>
             {
                 LogLine("player finished");
-                this.InvokeIfRequired(_ => { btnPlayer.Checked = false; });
+                this.InvokeIfRequired(_ => btnPlayer.Checked = false);
                 _prov?.Rewind();
             };
             _provSwap = new ClipSampleProvider(_testFilesDir + "test.wav", StereoCoercion.Mono);
@@ -64,21 +68,6 @@ namespace AudioLib.Test
 
         void Load_Click(object? sender, EventArgs args)
         {
-            // ambi_swoosh.flac SampleRate:44100 Channels:2 BitsPerSample:16  Length:176400 TotalTime:00:00:01  
-            // avTouch_sample.m4a SampleRate:22050 Channels:1 BitsPerSample:16 Length:450559 TotalTime:00:00:10.2167573  
-            // bass_woodsy_c.flac SampleRate:44100 Channels:2 BitsPerSample:16  Length:529200 TotalTime:00:00:03  
-            // Cave Ceremony 01.wav SampleRate:44100 Channels:2 BitsPerSample:16  Length:846720 TotalTime:00:00:04.8000000  
-            // Fat Box 01.wav SampleRate:44100 Channels:1 BitsPerSample:16 Length:211832 TotalTime:00:00:02.4017233  
-            // Horns 01.wav SampleRate:44100 Channels:2 BitsPerSample:24  Length:1306722 TotalTime:00:00:04.9384807
-            // _kidch.mp3 SampleRate:44100 Channels:1 BitsPerSample:0 Length:??? TotalTime:???   
-            // one-sec.mp3 SampleRate:44100 Channels:1 BitsPerSample:0 Length:92160 TotalTime:00:00:01.0448979  
-            // one-sec.wav SampleRate:44100 Channels:1 BitsPerSample:16 Length:88384 TotalTime:00:00:01.0020861  
-            // Orchestra 03.wav SampleRate:44100 Channels:1 BitsPerSample:24  Length:605331 TotalTime:00:00:04.5754421  
-            // ref-stereo.wav SampleRate:44100 Channels:2 BitsPerSample:16  Length:176400 TotalTime:00:00:01  
-            // sin-stereo-audible.wav SampleRate:44100 Channels:2 BitsPerSample:16  Length:176400 TotalTime:00:00:01  
-            // sin.wav SampleRate:44100 Channels:1 BitsPerSample:16 Length:88200 TotalTime:00:00:01  
-            // test.wav SampleRate:44100 Channels:1 BitsPerSample:16 Length:447488 TotalTime:00:00:05.0735600
-
             _player.Run(false);
             btnPlayer.Checked = false;
             btnSwap.Checked = false;
@@ -86,7 +75,6 @@ namespace AudioLib.Test
             try
             {
                 // ClipSampleProvider is mono only. Use AudioFileReader for stereo.
-
                 switch (sender!.ToString())
                 {
                     case "wav":
