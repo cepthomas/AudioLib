@@ -14,6 +14,21 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using NAudio.Mixer;
 
 
+
+
+//TODO1 cmbSelMode: Sample, Beat, Time + Snap on/off
+// - Beats mode:
+//   - Establish timing by select two samples and identify corresponding number of beats.
+//   - Show in waveform.
+//   - Subsequent selections are by beat using snap.
+// - Time mode:
+//   - Select two times using ?? resolution.
+//   - Shows number of samples and time in UI.
+// - Sample mode:
+//   - Select two samples using ?? resolution.
+//   - Shows number of samples and time in UI.
+
+
 // TODO make mouse etc commands configurable.
 
 
@@ -29,6 +44,9 @@ namespace AudioLib
         readonly Font _textFont = new("Cascadia", 9, FontStyle.Bold, GraphicsUnit.Point, 0);
 
         /// <summary>For drawing text.</summary>
+        readonly Brush _textBrush = Brushes.Black;
+
+        /// <summary>For drawing text.</summary>
         readonly StringFormat _format = new() { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
 
         /// <summary>The data buffer.</summary>
@@ -42,9 +60,6 @@ namespace AudioLib
 
         /// <summary>Make this look like a stream for sample provider.</summary>
         int _position = 0;
-
-        /// <summary>Grid Y resolution. Assumes +-1.0f range.</summary>
-        const float GRID_STEP = 0.25f;
 
         /// <summary>For painting. Essentially the zoom factor.</summary>
         int _samplesPerPixel = 0;
@@ -85,12 +100,21 @@ namespace AudioLib
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
+
+
+
+        //>>>>>> TODO1 these need to be updated from main form.
         /// <summary>Snap control.</summary>
         public bool Snap { get; set; } = true;
 
         /// <summary>How to select wave.</summary>
         public WaveSelectionMode SelectionMode { get; set; } = WaveSelectionMode.Sample;
 
+        public double BPM { get; set; } = 100.0;
+
+
+
+        //>>>>>> TODO these could be from user settings.
         /// <summary>UI gain adjustment.</summary>
         public float GainIncrement { get; set; } = 0.05f;
 
@@ -100,8 +124,12 @@ namespace AudioLib
         /// <summary>Zoom increment.</summary>
         public int ZoomIncrement { get; set; } = 20;
 
-        /// <summary>Number of pixels to shift by.</summary>
+        /// <summary>Number of pixels to x shift by.</summary>
         public int ShiftIncrement { get; set; } = 10;
+
+
+
+
 
         /// <summary>Length of the clip in samples.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -468,6 +496,19 @@ namespace AudioLib
         /// </summary>
         protected override void OnPaint(PaintEventArgs pe)
         {
+            const int NUM_Y_GRID = 5;
+            const float Y_GRID_SPACING = 0.25f;
+
+
+            //for (int i = -5; i <= 5; i++)
+            //{
+            //    float val = i * 0.25f;
+            //    float yGrid = MathUtils.Map(val, -1.25f, 1.25f, 0, Height);
+
+
+
+
+
             // Setup.
             pe.Graphics.Clear(BackColor);
 
@@ -479,34 +520,81 @@ namespace AudioLib
 
             if (_vals is null || _vals.Length == 0)
             {
-                pe.Graphics.DrawString("No data", _textFont, Brushes.DarkGray, ClientRectangle, _format);
+                pe.Graphics.DrawString("No data", _textFont, _textBrush, ClientRectangle, _format);
             }
             else
             {
                 // Draw everything from bottom up.
-
                 if (!_simple)
                 {
                     // Y grid lines.
                     _penGrid.Width = 1;
-                    float yMin = -5 * GRID_STEP;
-                    float yMax = 5 * GRID_STEP;
-                    for (float gs = yMin; gs <= yMax; gs += GRID_STEP)
+                    for (int i = -NUM_Y_GRID; i <= NUM_Y_GRID; i++)
                     {
-                        float yGrid = MathUtils.Map(gs, yMin, yMax, 0, Height);
-                        pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
-                        pe.Graphics.DrawString($"{-gs:0.00}", _textFont, _penGrid.Brush, 25, yGrid, _format);
+                        float val = i * Y_GRID_SPACING;
+                        float yGrid = MathUtils.Map(val, -NUM_Y_GRID * Y_GRID_SPACING, NUM_Y_GRID * Y_GRID_SPACING, 0, Height);
+
+                        // Some special treatments.
+                        switch(i)
+                        {
+                            case 0:
+                                // A bit thicker.
+                                _penGrid.Width = 5;
+                                pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
+                                _penGrid.Width = 1;
+                                pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
+                                break;
+                            case NUM_Y_GRID:
+                            case -NUM_Y_GRID:
+                                // No label.
+                                break;
+                            default:
+                                pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
+                                pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
+                                break;
+                        }
                     }
 
-                    // Y zero is a bit thicker.
-                    _penGrid.Width = 5;
-                    float yZero = MathUtils.Map(0.0f, 1.0f, -1.0f, 0, Height);
-                    pe.Graphics.DrawLine(_penGrid, 0, yZero, Width, yZero);
+                    // X grid lines.
+                    int numLines = 10; // user prop?
+                    _penGrid.Width = 1;
+
+                    switch (SelectionMode)
+                    {
+                        case WaveSelectionMode.Time:
+                            TimeSpan start = AudioLibUtils.SampleToTime(VisibleStart);
+                            TimeSpan end = AudioLibUtils.SampleToTime(VisibleStart + VisibleLength);
+                            TimeSpan tlen = end - start;
+                            // anywhere from 10 msec to MaxClipSize (10 min)
+                            TimeSpan incr = tlen / numLines;
+
+                            int sincr = VisibleLength / numLines;
+
+                            for (int xs = 0; xs < VisibleLength; xs += sincr)
+                            {
+                                float xGrid = MathUtils.Map(xs, 0, VisibleLength, 0, Width);
+                                pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
+                                pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
+                            }
+
+                            break;
+
+                        case WaveSelectionMode.Beat:
+
+                            break;
+
+                        case WaveSelectionMode.Sample:
+
+                            break;
+                    }
+
+
+
 
                     // Info.
-                    //pe.Graphics.DrawString($"Gain:{_gain:0.00}", _textFont, _penGrid.Brush, 50, 10);
-                    pe.Graphics.DrawString($"Gain:{_gain:0.00} Vstart:{_visibleStart} Mark:{Marker}", _textFont, Brushes.Black, 50, 10);
-                    pe.Graphics.DrawString($"Spp:{_samplesPerPixel} SppMax:{_samplesPerPixelMax} VisibleLength:{VisibleLength}", _textFont, Brushes.Black, 50, 30);
+                    //pe.Graphics.DrawString($"Gain:{_gain:0.00}", _textFont, _textBrush, 50, 10);
+                    pe.Graphics.DrawString($"Gain:{_gain:0.00} Vstart:{_visibleStart} Mark:{Marker}", _textFont, _textBrush, 50, 10);
+                    pe.Graphics.DrawString($"Spp:{_samplesPerPixel} SppMax:{_samplesPerPixelMax} VisibleLength:{VisibleLength}", _textFont, _textBrush, 50, 30);
                 }
 
                 // Then the data.
