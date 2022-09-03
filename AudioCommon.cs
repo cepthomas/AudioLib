@@ -10,6 +10,7 @@ using NBagOfTricks;
 
 namespace AudioLib
 {
+    #region Definitions
     public class AudioLibDefs
     {
         /// <summary>Supported types.</summary>
@@ -37,6 +38,11 @@ namespace AudioLib
     /// <summary>How to handle stereo files.</summary>
     public enum StereoCoercion { Left, Right, Mono }
 
+    /// <summary>Selection.</summary>
+    public enum WaveSelectionMode { Beat, Time, Sample };
+    #endregion
+
+    #region Utilities
     public static class AudioLibUtils
     {
         /// <summary>
@@ -83,5 +89,39 @@ namespace AudioLib
             float msec = 1000.0f * sample / AudioLibDefs.SAMPLE_RATE;
             return msec;
         }
+
+        /// <summary>
+        /// Conversion function.
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <param name="bpm"></param>
+        /// <returns>(bar, beat)</returns>
+        public static (int bar, int beat) SampleToBarBeat(int sample, float bpm)
+        {
+            float minPerBeat = 1.0f / bpm;
+            float secPerBeat = minPerBeat * 60;
+            float smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
+            int totalBeats = (int)(sample / smplPerBeat);
+            int bar = totalBeats / 4;
+            int beat = totalBeats % 4;
+            return (bar, beat);
+        }
+
+        /// <summary>
+        /// Conversion function.
+        /// </summary>
+        /// <param name="bar"></param>
+        /// <param name="beat"></param>
+        /// <param name="bpm"></param>
+        /// <returns>Sample</returns>
+        public static int BarBeatToSample(int bar, int beat, float bpm)
+        {
+            int totalBeats = 4 * bar + beat;
+            float minPerBeat = 1.0f / bpm;
+            float secPerBeat = minPerBeat * 60;
+            float smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
+            return (int)(totalBeats * smplPerBeat);
+        }
     }
+    #endregion
 }

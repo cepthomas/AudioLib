@@ -15,7 +15,6 @@ using NAudio.Mixer;
 
 
 // TODO make mouse etc commands configurable.
-// TODO close button on tab.
 
 
 namespace AudioLib
@@ -86,6 +85,12 @@ namespace AudioLib
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
+        /// <summary>Snap control.</summary>
+        public bool Snap { get; set; } = true;
+
+        /// <summary>How to select wave.</summary>
+        public WaveSelectionMode SelectionMode { get; set; } = WaveSelectionMode.Sample;
+
         /// <summary>UI gain adjustment.</summary>
         public float GainIncrement { get; set; } = 0.05f;
 
@@ -93,7 +98,7 @@ namespace AudioLib
         public int WheelResolution { get; set; } = 8;
 
         /// <summary>Zoom increment.</summary>
-        public int ZoomFactor { get; set; } = 20;
+        public int ZoomIncrement { get; set; } = 20;
 
         /// <summary>Number of pixels to shift by.</summary>
         public int ShiftIncrement { get; set; } = 10;
@@ -276,21 +281,19 @@ namespace AudioLib
 
             if (ModifierKeys == Keys.Control) // x zoom
             {
-                // Get current center sample - or mouse or marker... TODO?
+                // Get current center sample - or mouse or marker... TODO1?
                 int center = PixelToSample(Width / 2);
                 //int center = PixelToSample(MouseX());
                 //int center = _marker;
                 //int centerSample = _marker > 0 ? _marker : PixelToSample(MouseX());
 
-                // Modify the zoom factor.  TODO should be muliplier/nonlinear? get rid of _samplesPerPixelMax then.  doesn't stay quite centered
-                int incr = _samplesPerPixelMax / ZoomFactor;
+                // Modify the zoom factor.  TODO1 should be muliplier/nonlinear? get rid of _samplesPerPixelMax then.  doesn't stay quite centered
+                int incr = _samplesPerPixelMax / ZoomIncrement;
                 _samplesPerPixel += delta > 0 ? -incr : incr; // in or out
                 _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, _samplesPerPixelMax);
 
                 // Recenter.
                 Center(center);
-
-
 
                 // original:
                 //// Update visible. Note these calcs will be checked in ValidateProperties().
@@ -308,7 +311,6 @@ namespace AudioLib
                 //_visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length - VisibleLength);
                 Invalidate();
 
-
                 // was
                 //int incr = _samplesPerPixel * PanFactor;
 
@@ -325,7 +327,6 @@ namespace AudioLib
                 //    Invalidate();
                 //}
                 //// else ignore
-
             }
             else if (ModifierKeys == Keys.Shift) // gain
             {
@@ -562,14 +563,14 @@ namespace AudioLib
                             pe.Graphics.DrawRectangle(_penMark, x - 10, 10, 10, 10);
                         }
                     }
+                }
 
-                    if (_marker != -1)
+                if (_marker != -1)
+                {
+                    int x = SampleToPixel(_marker);
+                    if (x >= 0)
                     {
-                        int x = SampleToPixel(_marker);
-                        if (x >= 0)
-                        {
-                            pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
-                        }
+                        pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
                     }
                 }
             }

@@ -99,7 +99,7 @@
             this.waveViewer1.Size = new System.Drawing.Size(1157, 130);
             this.waveViewer1.TabIndex = 26;
             this.waveViewer1.WheelResolution = 8;
-            this.waveViewer1.ZoomFactor = 20;
+            this.waveViewer1.ZoomIncrement = 20;
             // 
             // waveViewer2
             // 
@@ -118,7 +118,7 @@
             this.waveViewer2.Size = new System.Drawing.Size(1157, 130);
             this.waveViewer2.TabIndex = 32;
             this.waveViewer2.WheelResolution = 8;
-            this.waveViewer2.ZoomFactor = 20;
+            this.waveViewer2.ZoomIncrement = 20;
             // 
             // toolStrip1
             // 
