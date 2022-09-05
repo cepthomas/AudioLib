@@ -22,8 +22,8 @@ namespace AudioLib
         /// Make a buffer from the provider contents. Mono only.
         /// </summary>
         /// <param name="prov">The provider.</param>
-        /// <returns>Values and min/max.</returns>
-        public static (float[] vals, float max, float min) ReadAll(this ISampleProvider prov)
+        /// <returns>Values.</returns>
+        public static float[] ReadAll(this ISampleProvider prov)
         {
             prov.Validate(true);
             prov.Rewind();
@@ -45,11 +45,7 @@ namespace AudioLib
                 }
             }
 
-            // Get min/max.
-            float max = data.Max();
-            float min = data.Min();
-
-            return (data.ToArray(), max, min);
+            return data.ToArray();
         }
 
         /// <summary>
@@ -69,10 +65,10 @@ namespace AudioLib
         }
 
         // or like:
-        //public static void RewindXXX(this ClipSampleProvider prov) { prov.Position = 0; }
-        //public static void RewindXXX(this WaveViewer prov) { prov.Rewind(); }
-        //public static void RewindXXX(this AudioFileReader prov) { prov.Position = 0; }
-        //public static void RewindXXX(this SwappableSampleProvider prov) { prov.Rewind(); }
+        //public static void Rewind(this ClipSampleProvider prov) { prov.Position = 0; }
+        //public static void Rewind(this WaveViewer prov) { prov.Rewind(); }
+        //public static void Rewind(this AudioFileReader prov) { prov.Position = 0; }
+        //public static void Rewind(this SwappableSampleProvider prov) { prov.Rewind(); }
 
 
         /// <summary>

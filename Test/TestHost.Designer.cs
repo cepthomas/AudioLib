@@ -41,12 +41,11 @@
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.btnFileInfo = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            this.sldGain = new NBagOfUis.Slider();
-            this.navBar = new System.Windows.Forms.HScrollBar();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.lblInfo = new System.Windows.Forms.ToolStripStatusLabel();
             this.btnResample = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.sldGain = new NBagOfUis.Slider();
+            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.lblInfo = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -60,9 +59,9 @@
             this.txtInfo.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.txtInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtInfo.Location = new System.Drawing.Point(10, 482);
+            this.txtInfo.Location = new System.Drawing.Point(549, 44);
             this.txtInfo.Name = "txtInfo";
-            this.txtInfo.Size = new System.Drawing.Size(1157, 96);
+            this.txtInfo.Size = new System.Drawing.Size(618, 113);
             this.txtInfo.TabIndex = 29;
             this.txtInfo.Text = "";
             // 
@@ -78,7 +77,7 @@
             this.timeBar.MarkerColor = System.Drawing.Color.Black;
             this.timeBar.Name = "timeBar";
             this.timeBar.ProgressColor = System.Drawing.Color.Orange;
-            this.timeBar.Size = new System.Drawing.Size(555, 64);
+            this.timeBar.Size = new System.Drawing.Size(345, 64);
             this.timeBar.SnapMsec = 0;
             this.timeBar.TabIndex = 24;
             // 
@@ -87,16 +86,19 @@
             this.waveViewer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.waveViewer1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.waveViewer1.BPM = 100F;
             this.waveViewer1.DrawColor = System.Drawing.Color.Orange;
             this.waveViewer1.Gain = 1F;
             this.waveViewer1.GainIncrement = 0.05F;
             this.waveViewer1.GridColor = System.Drawing.Color.LightGray;
-            this.waveViewer1.Location = new System.Drawing.Point(10, 129);
+            this.waveViewer1.Location = new System.Drawing.Point(6, 164);
             this.waveViewer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.waveViewer1.MarkColor = System.Drawing.Color.Red;
             this.waveViewer1.Name = "waveViewer1";
+            this.waveViewer1.SelectionMode = AudioLib.WaveSelectionMode.Sample;
             this.waveViewer1.ShiftIncrement = 10;
-            this.waveViewer1.Size = new System.Drawing.Size(1157, 130);
+            this.waveViewer1.Size = new System.Drawing.Size(1157, 197);
+            this.waveViewer1.Snap = true;
             this.waveViewer1.TabIndex = 26;
             this.waveViewer1.WheelResolution = 8;
             this.waveViewer1.ZoomIncrement = 20;
@@ -106,16 +108,19 @@
             this.waveViewer2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.waveViewer2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.waveViewer2.BPM = 100F;
             this.waveViewer2.DrawColor = System.Drawing.Color.Orange;
             this.waveViewer2.Gain = 1F;
             this.waveViewer2.GainIncrement = 0.05F;
             this.waveViewer2.GridColor = System.Drawing.Color.LightGray;
-            this.waveViewer2.Location = new System.Drawing.Point(10, 258);
+            this.waveViewer2.Location = new System.Drawing.Point(6, 369);
             this.waveViewer2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.waveViewer2.MarkColor = System.Drawing.Color.Red;
             this.waveViewer2.Name = "waveViewer2";
+            this.waveViewer2.SelectionMode = AudioLib.WaveSelectionMode.Sample;
             this.waveViewer2.ShiftIncrement = 10;
-            this.waveViewer2.Size = new System.Drawing.Size(1157, 130);
+            this.waveViewer2.Size = new System.Drawing.Size(1157, 198);
+            this.waveViewer2.Snap = true;
             this.waveViewer2.TabIndex = 32;
             this.waveViewer2.WheelResolution = 8;
             this.waveViewer2.ZoomIncrement = 20;
@@ -286,27 +291,34 @@
             this.toolStripSeparator6.Name = "toolStripSeparator6";
             this.toolStripSeparator6.Size = new System.Drawing.Size(6, 27);
             // 
+            // btnResample
+            // 
+            this.btnResample.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnResample.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnResample.Name = "btnResample";
+            this.btnResample.Size = new System.Drawing.Size(74, 24);
+            this.btnResample.Text = "resample";
+            this.btnResample.Click += new System.EventHandler(this.Resample_Click);
+            // 
+            // toolStripSeparator7
+            // 
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 27);
+            // 
             // sldGain
             // 
             this.sldGain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.sldGain.DrawColor = System.Drawing.Color.CornflowerBlue;
             this.sldGain.Label = "gain";
-            this.sldGain.Location = new System.Drawing.Point(593, 44);
+            this.sldGain.Location = new System.Drawing.Point(371, 44);
             this.sldGain.Maximum = 3D;
             this.sldGain.Minimum = 0D;
             this.sldGain.Name = "sldGain";
             this.sldGain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             this.sldGain.Resolution = 0.05D;
-            this.sldGain.Size = new System.Drawing.Size(188, 64);
+            this.sldGain.Size = new System.Drawing.Size(156, 64);
             this.sldGain.TabIndex = 33;
             this.sldGain.Value = 1D;
-            // 
-            // navBar
-            // 
-            this.navBar.Location = new System.Drawing.Point(10, 411);
-            this.navBar.Name = "navBar";
-            this.navBar.Size = new System.Drawing.Size(1157, 26);
-            this.navBar.TabIndex = 34;
             // 
             // statusStrip1
             // 
@@ -325,27 +337,12 @@
             this.lblInfo.Size = new System.Drawing.Size(151, 20);
             this.lblInfo.Text = "toolStripStatusLabel1";
             // 
-            // btnResample
-            // 
-            this.btnResample.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnResample.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnResample.Name = "btnResample";
-            this.btnResample.Size = new System.Drawing.Size(74, 24);
-            this.btnResample.Text = "resample";
-            this.btnResample.Click += new System.EventHandler(this.Resample_Click);
-            // 
-            // toolStripSeparator7
-            // 
-            this.toolStripSeparator7.Name = "toolStripSeparator7";
-            this.toolStripSeparator7.Size = new System.Drawing.Size(6, 27);
-            // 
             // TestHost
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1175, 597);
             this.Controls.Add(this.statusStrip1);
-            this.Controls.Add(this.navBar);
             this.Controls.Add(this.sldGain);
             this.Controls.Add(this.waveViewer2);
             this.Controls.Add(this.toolStrip1);
@@ -390,7 +387,6 @@
         private System.Windows.Forms.ToolStripButton btnFileInfo;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private NBagOfUis.Slider sldGain;
-        private System.Windows.Forms.HScrollBar navBar;
         private System.Windows.Forms.ToolStripMenuItem shortToolStripMenuItem;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel lblInfo;

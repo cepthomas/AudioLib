@@ -37,7 +37,7 @@ namespace AudioLib
     /// <summary>
     /// Simple mono wave display.
     /// </summary>
-    public partial class WaveViewer : UserControl, ISampleProvider
+    public partial class WaveViewer : UserControl//, ISampleProvider
     {
         #region Fields
         /// <summary>For drawing text.</summary>
@@ -84,9 +84,9 @@ namespace AudioLib
         #endregion
 
         #region Properties
-        /// <summary>Gets the WaveFormat of this Sample Provider. ISampleProvider implementation.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
+        ///// <summary>Gets the WaveFormat of this Sample Provider. ISampleProvider implementation.</summary>
+        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+        //public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
 
         /// <summary>The waveform color.</summary>
         public Color DrawColor { get { return _penDraw.Color; } set { _penDraw.Color = value; Invalidate(); } }
@@ -137,7 +137,7 @@ namespace AudioLib
 
         /// <summary>Length of the clip in seconds.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public TimeSpan TotalTime { get { return TimeSpan.FromSeconds((double)Length / WaveFormat.SampleRate); } }
+        public TimeSpan TotalTime { get { return TimeSpan.FromSeconds((double)Length / AudioLibDefs.SAMPLE_RATE); } }
 
         /// <summary>Selection start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -186,10 +186,18 @@ namespace AudioLib
         {
             _simple = simple;
 
-            var (vals, max, min) = prov.ReadAll();
-            _vals = vals;
-            _min = min;
-            _max = max;
+            _vals = prov.ReadAll();
+            if(_vals.Length > 0)
+            {
+                // Get min/max.
+                _max = _vals.Max();
+                _min = _vals.Min();
+            }
+            else
+            {
+                _min = 0;
+                _max = 0;
+            }
 
             _selStart = -1;
             _selLength = 0;
@@ -243,30 +251,30 @@ namespace AudioLib
             _position = _selStart;
         }
 
-        /// <summary>
-        /// Fill the buffer with selected data. ISampleProvider implementation.
-        /// </summary>
-        /// <param name="buffer">The buffer to fill with samples.</param>
-        /// <param name="offset">Offset into buffer.</param>
-        /// <param name="count">The number of samples to read.</param>
-        /// <returns>the number of samples written to the buffer.</returns>
-        public int Read(float[] buffer, int offset, int count)
-        {
-            int numRead = 0;
+        ///// <summary>
+        ///// Fill the buffer with selected data. ISampleProvider implementation.
+        ///// </summary>
+        ///// <param name="buffer">The buffer to fill with samples.</param>
+        ///// <param name="offset">Offset into buffer.</param>
+        ///// <param name="count">The number of samples to read.</param>
+        ///// <returns>the number of samples written to the buffer.</returns>
+        //public int Read(float[] buffer, int offset, int count)
+        //{
+        //    int numRead = 0;
 
-            if (!_simple)
-            {
-                int numToRead = Math.Min(count, _selLength - _position);
-                for (int n = 0; n < numToRead; n++)
-                {
-                    buffer[n + offset] = _vals[_position];
-                    _position++;
-                    numRead++;
-                }
-            }
+        //    if (!_simple)
+        //    {
+        //        int numToRead = Math.Min(count, _selLength - _position);
+        //        for (int n = 0; n < numToRead; n++)
+        //        {
+        //            buffer[n + offset] = _vals[_position];
+        //            _position++;
+        //            numRead++;
+        //        }
+        //    }
 
-            return numRead;
-        }
+        //    return numRead;
+        //}
 
         /// <summary>
         /// Fit the wave exactly.

@@ -46,7 +46,7 @@ namespace AudioLib
         public int Position
         {
            get { return _position; }
-           set { _position = MathUtils.Constrain(value, 0, _vals.Length - 1); }
+           set { _position = _vals.Length > 0 ? MathUtils.Constrain(value, 0, _vals.Length - 1) : 0; }
         }
         #endregion
 
@@ -135,7 +135,7 @@ namespace AudioLib
                 };
             }
 
-            _vals = source.ReadAll().vals;
+            _vals = source.ReadAll();
         }
         #endregion
     }

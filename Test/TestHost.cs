@@ -43,12 +43,17 @@ namespace AudioLib.Test
             timeBar.BackColor = Color.Salmon;
 
             // Controls.
+            waveViewer1.DrawColor = Color.Red;
+            waveViewer1.BackColor = Color.Cyan;
             waveViewer1.GainChangedEvent += (_, __) => sldGain.Value = waveViewer1.Gain;
             sldGain.ValueChanged += (_, __) =>
             {
                 waveViewer1.Gain = (float)sldGain.Value;
                 waveViewer1.Invalidate();
             };
+
+            waveViewer2.DrawColor = Color.Blue;
+            waveViewer2.BackColor = Color.LightYellow;
 
             // Player.
             _waveOutSwapper = new();
@@ -80,8 +85,8 @@ namespace AudioLib.Test
                     case "wav":
                         {
                             string fn = _testFilesDir + "ref-stereo.wav";
-                            var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            //var prov = new AudioFileReader(fn);
+                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            var prov = new AudioFileReader(fn);
                             SetProvider(prov);
                         }
                         break;
@@ -89,7 +94,8 @@ namespace AudioLib.Test
                     case "mp3":
                         {
                             string fn = _testFilesDir + "one-sec.mp3";
-                            var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            var prov = new AudioFileReader(fn);
                             SetProvider(prov);
                         }
                         break;
@@ -97,8 +103,8 @@ namespace AudioLib.Test
                     case "flac":
                         {
                             string fn = _testFilesDir + "ambi_swoosh.flac";
-                            var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            //var prov = new AudioFileReader(fn);
+                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            var prov = new AudioFileReader(fn);
                             SetProvider(prov);
                         }
                         break;
@@ -106,8 +112,8 @@ namespace AudioLib.Test
                     case "m4a":
                         {
                             string fn = _testFilesDir + "avTouch_sample.m4a"; // other sample rate - breaks
-                            var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            //var prov = new AudioFileReader(fn);
+                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                            var prov = new AudioFileReader(fn);
                             SetProvider(prov);
                         }
                         break;
@@ -161,55 +167,42 @@ namespace AudioLib.Test
             _prov = prov;
 
             ShowWave(prov);
+            _waveOutSwapper.SetInput(prov);
         }
 
         // Boilerplate helper.
         void ShowWave(ISampleProvider? prov)
         {
-            _waveOutSwapper.SetInput(prov); // This is actually hear not show.
-
             if(prov is null)
             {
                 return;
             }
 
-            int bytesPerSample = prov.WaveFormat.BitsPerSample / 8;
-            int sclen = prov.Length() / bytesPerSample;
-
-            int ht = waveViewer2.Bottom - waveViewer1.Top;
-            int wd = waveViewer1.Width;
+            int sclen = prov.Length();
 
             // If it's stereo split into two monos, one viewer per.
             if (prov.WaveFormat.Channels == 2) // stereo
             {
                 prov.Rewind();
-                waveViewer1.Init(new StereoToMonoSampleProvider(prov) { LeftVolume = 1.0f, RightVolume = 0.0f });
-                waveViewer1.Size = new(wd, ht / 2);
-                waveViewer1.DrawColor = Color.Red;
-                waveViewer1.BackColor = Color.Cyan;
+                waveViewer1.Init(new ClipSampleProvider(prov, StereoCoercion.Left));
                 waveViewer1.SelStart = sclen / 3;
                 waveViewer1.SelLength = sclen / 4;
                 waveViewer1.Marker = 2 * sclen / 3;
 
                 prov.Rewind();
-                waveViewer2.Init(new StereoToMonoSampleProvider(prov) { LeftVolume = 0.0f, RightVolume = 1.0f });
-                waveViewer2.Visible = true;
-                waveViewer2.Size = new(wd, ht / 2);
-                waveViewer2.DrawColor = Color.Blue;
-                waveViewer2.BackColor = Color.LightYellow;
+                waveViewer2.Init(new ClipSampleProvider(prov, StereoCoercion.Right));
                 waveViewer2.SelStart = sclen / 4;
                 waveViewer1.SelLength = sclen / 4;
                 waveViewer2.Marker = 3 * sclen / 4;
             }
             else // mono
             {
-                waveViewer1.Init(prov);
-                waveViewer2.Visible = false;
-                waveViewer1.Size = new(wd, ht);
-                waveViewer1.DrawColor = Color.Green;
+                waveViewer1.Init(new ClipSampleProvider(prov, StereoCoercion.None));
                 waveViewer1.SelStart = sclen / 10;
-                waveViewer1.SelLength = sclen / 4;
-                waveViewer1.Marker = 9 * sclen / 10;
+                waveViewer1.SelLength = 9 * sclen / 10;
+                waveViewer1.Marker = sclen / 4;
+
+                waveViewer2.Init(new ClipSampleProvider(Array.Empty<float>()));
             }
 
             prov.Rewind();
@@ -250,6 +243,7 @@ namespace AudioLib.Test
             else
             {
                 var newProv = btnSwap.Checked ? _provSwap : _prov;
+                _waveOutSwapper.SetInput(newProv); // For listen.
                 ShowWave(newProv);
                 lblInfo.Text = newProv.GetInfoString();
             }
