@@ -25,18 +25,18 @@ namespace AudioLib
         /// <summary>Maximum gain.</summary>
         public const float MAX_GAIN = 5.0f;
 
-        /// <summary>Stream buffer size.</summary>
-        public const int READ_BUFF_SIZE = 1000000;
-
         /// <summary>For viewing purposes.</summary>
         public const string TS_FORMAT = @"mm\:ss\.fff";
 
         /// <summary>Everything internal.</summary>
         public const int SAMPLE_RATE = 44100;
+
+        /// <summary>Stream buffer size.</summary>
+        public const int READ_BUFF_SIZE = SAMPLE_RATE;
     }
 
     /// <summary>How to handle stereo files.</summary>
-    public enum StereoCoercion { Left, Right, Mono }
+    public enum StereoCoercion { None, Left, Right, Mono }
 
     /// <summary>Selection.</summary>
     public enum WaveSelectionMode { Beat, Time, Sample };

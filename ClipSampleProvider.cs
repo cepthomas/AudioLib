@@ -52,10 +52,10 @@ namespace AudioLib
 
         #region Constructors
         /// <summary>
-        /// Constructor from a sample provider. Coerces stereo to mono.
+        /// Constructor from a sample provider.Coerces stereo to mono.
         /// </summary>
-        /// <param name="source">Source provider to use.</param>
-        /// <param name="mode">How to handle stereo files.</param>
+        /// <param name = "source" > Source provider to use.</param>
+        /// <param name = "mode" > How to handle stereo files.</param>
         public ClipSampleProvider(ISampleProvider source, StereoCoercion mode)
         {
             FileName = "";
@@ -137,42 +137,6 @@ namespace AudioLib
 
             _vals = source.ReadAll().vals;
         }
-
-        ///// <summary>
-        ///// Get the envelope in effect at the position.
-        ///// </summary>
-        ///// <param name="pos"></param>
-        ///// <returns>The envelope gain at pos.</returns>
-        //void GetEnvelopeGain(int pos)
-        //{
-        //    _currentGain = 1.0f; // default
-
-        //    if (_envelope.Count > 0)
-        //    {
-        //        // Find where offset is currently.
-        //        //_envelope.OrderBy(e => e.Key)
-
-        //        // Make an ordered copy of the _envelope point locations.
-        //        List<int> envLocs = _envelope.Keys.ToList();
-        //        envLocs.Sort();
-
-        //        int tempEnv = 0;
-        //        for (int i = 0; i < envLocs.Count; i++)
-        //        {
-        //            if (envLocs[i] > pos)
-        //            {
-        //                // Found the transition after.
-        //                _currentGain = _envelope[tempEnv];
-        //                break;
-        //            }
-        //            else
-        //            {
-        //                // Next.
-        //                tempEnv = i;
-        //            }
-        //        }
-        //    }
-        //}
         #endregion
     }
 }

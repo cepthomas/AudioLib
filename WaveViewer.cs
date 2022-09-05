@@ -110,7 +110,7 @@ namespace AudioLib
         /// <summary>How to select wave.</summary>
         public WaveSelectionMode SelectionMode { get; set; } = WaveSelectionMode.Sample;
 
-        public double BPM { get; set; } = 100.0;
+        public float BPM { get; set; } = 100.0f;
 
 
 
@@ -588,13 +588,10 @@ namespace AudioLib
                             break;
                     }
 
-
-
-
-                    // Info.
-                    //pe.Graphics.DrawString($"Gain:{_gain:0.00}", _textFont, _textBrush, 50, 10);
-                    pe.Graphics.DrawString($"Gain:{_gain:0.00} Vstart:{_visibleStart} Mark:{Marker}", _textFont, _textBrush, 50, 10);
-                    pe.Graphics.DrawString($"Spp:{_samplesPerPixel} SppMax:{_samplesPerPixelMax} VisibleLength:{VisibleLength}", _textFont, _textBrush, 50, 30);
+                    // Show info.
+                    //var sinfo = $"Gain:{_gain:0.00}";
+                    var sinfo = $"Gain:{_gain:0.00} Vstart:{_visibleStart} Mark:{Marker} Spp:{_samplesPerPixel} SppMax:{_samplesPerPixelMax} VisibleLength:{VisibleLength}";
+                    pe.Graphics.DrawString(sinfo, _textFont, _textBrush, Width / 2, Height - 20, _format);
                 }
 
                 // Then the data.

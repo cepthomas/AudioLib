@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Windows.Forms;
 using NAudio.Wave;
@@ -21,171 +22,77 @@ namespace AudioLib
         /// Make a buffer from the provider contents. Mono only.
         /// </summary>
         /// <param name="prov">The provider.</param>
-        /// <returns></returns>
+        /// <returns>Values and min/max.</returns>
         public static (float[] vals, float max, float min) ReadAll(this ISampleProvider prov)
         {
             prov.Validate(true);
             prov.Rewind();
 
-            List<float[]> parts = new();
-            float max = 0.0f;
-            float min = 0.0f;
+            var data = new List<float>(AudioLibDefs.READ_BUFF_SIZE);
+            var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
+            int numRead;
             int totalRead = 0;
-            int maxSamples = AudioSettings.LibSettings.MaxClipSize * AudioLibDefs.SAMPLE_RATE * 60; //26,460,000
-
-            bool done = false;
-            while (!done)
+            int maxSamples = AudioSettings.LibSettings.MaxClipSize * AudioLibDefs.SAMPLE_RATE * 60;
+            while ((numRead = prov.Read(buff, 0, buff.Length)) > 0)
             {
-                // Get a chunk.
-                int toRead = AudioLibDefs.READ_BUFF_SIZE;//1.000,000
-                var data = new float[toRead];
-
-                int numRead = prov.Read(data, 0, toRead);
+                data.AddRange(buff.Take(numRead));
 
                 // Test for max size.
                 totalRead += numRead;
-                if(totalRead > maxSamples)
+                if (totalRead > maxSamples)
                 {
                     throw new InvalidOperationException($"Provider/file too large");
                 }
-
-                if(numRead != toRead)
-                {
-                    // last bunch
-                    Array.Resize(ref data, numRead);
-                    done = true;
-                }
-                parts.Add(data);
-
-                // Get min/max.
-                data.ForEach(v => { max = Math.Max(max, v); min = Math.Min(min, v); });
             }
 
-            var all = new float[totalRead]; // TODO1 doubles memory use! be smarter.
+            // Get min/max.
+            float max = data.Max();
+            float min = data.Min();
 
-            // Copy.
-            int destIndex = 0;
-            parts.ForEach(p => { p.CopyTo(all, destIndex); destIndex += p.Length; } );
-
-            return (all, max, min);
+            return (data.ToArray(), max, min);
         }
-
-        ///// <summary>
-        ///// Agnostic position getter.
-        ///// </summary>
-        ///// <param name="prov"></param>
-        ///// <returns></returns>
-        //public static int GetPosition(this ISampleProvider? prov) //TODO these are a bit klunky.
-        //{
-        //    int pos = 0;
-        //    if (prov is ClipSampleProvider csp)
-        //    {
-        //        pos = csp.Position;
-        //    }
-        //    else if (prov is AudioFileReader afr)
-        //    {
-        //        pos = (int)afr.Position;
-        //    }
-        //    return pos;
-        //}
 
         /// <summary>
         /// Agnostic position setter.
         /// </summary>
         /// <param name="prov"></param>
-        public static void Rewind(this ISampleProvider prov)// TODO klunky
+        public static void Rewind(this ISampleProvider prov)// TODO are these a bit klunky?
         {
             switch(prov)
             {
-                case ClipSampleProvider csp:
-                    csp.Position = 0;
-                    break;
-
-                case WaveViewer wv:
-                    wv.Rewind();
-                    break;
-
-                case AudioFileReader afr:
-                    afr.Position = 0;
-                    break;
-
-                case SwappableSampleProvider ssp:
-                    ssp.Rewind();
-                    break;
-
-                default:
-                    // Don't care
-                    break;
+                case ClipSampleProvider csp: csp.Position = 0; break;
+                case WaveViewer wv: wv.Rewind(); break;
+                case AudioFileReader afr: afr.Position = 0; break;
+                case SwappableSampleProvider ssp: ssp.Rewind(); break;
+                default: break;
             }
         }
+
+        // or like:
+        //public static void RewindXXX(this ClipSampleProvider prov) { prov.Position = 0; }
+        //public static void RewindXXX(this WaveViewer prov) { prov.Rewind(); }
+        //public static void RewindXXX(this AudioFileReader prov) { prov.Position = 0; }
+        //public static void RewindXXX(this SwappableSampleProvider prov) { prov.Rewind(); }
+
 
         /// <summary>
         /// Agnostic property.
         /// </summary>
         /// <param name="prov"></param>
-        /// <returns>The length or 0 if unknown.</returns>
-        public static int Length(this ISampleProvider prov)// TODO klunky
+        /// <returns>The length or -1 if unknown.</returns>
+        public static int Length(this ISampleProvider prov)
         {
-            int len = 0; // default
-
+            int len = -1; // default
             switch (prov)
             {
-                case ClipSampleProvider csp:
-                    len = csp.Length;
-                    break;
-
-                case WaveViewer wv:
-                    len = wv.Length;
-                    break;
-
-                case AudioFileReader afr:
-                    len = (int)afr.Length;
-                    break;
-
-                default:
-                    // Don't care
-                    break;
+                case ClipSampleProvider csp: len = csp.Length; break;
+                case WaveViewer wv: len = wv.Length; break;
+                case AudioFileReader afr: len = (int)afr.Length; break;
+                case SwappableSampleProvider ssp: len = 0; break;
+                default: break;
             }
-
             return len;
         }
-
-        //public static void Rewind(this ClipSampleProvider prov)
-        //{
-        //    prov.Position = 0;
-        //}
-
-        //public static void Rewind(this WaveViewer prov)
-        //{
-        //    prov.Rewind();
-        //}
-
-        //public static void Rewind(this AudioFileReader prov)
-        //{
-        //    prov.Position = 0;
-        //}
-
-        //public static void Rewind(this SwappableSampleProvider prov)
-        //{
-        //    prov.Rewind();
-        //}
-
-        ///// <summary>
-        ///// Agnostic position setter.
-        ///// </summary>
-        ///// <param name="prov"></param>
-        ///// <param name="pos"></param>
-        //public static void SetPosition(this ISampleProvider prov, int pos)
-        //{
-        //    if (prov is ClipSampleProvider csp)
-        //    {
-        //        csp.Position = pos;
-        //    }
-        //    else if (prov is AudioFileReader afr)
-        //    {
-        //        afr.Position = pos;
-        //    }
-        //}
 
         /// <summary>
         /// Get provider info. Mainly for window header.
@@ -213,31 +120,27 @@ namespace AudioLib
             string s = prov.GetType().ToString().Replace("NAudio.Wave.", "").Replace("AudioLib.", "");
             info.Add(("Provider", s));
 
-            string fn = "None";
-            int numsamp = -1;
-            TimeSpan ttime = new();
-
-            // Type specific stuff. TODO klunky
+            // Type specific stuff.
             switch (prov)
             {
                 case ClipSampleProvider csp:
-                    fn = csp.FileName == "" ? "None" : Path.GetFileName(csp.FileName);
-                    numsamp = csp.Length;
-                    ttime = csp.TotalTime;
+                    info.Add(("File", csp.FileName == "" ? "None" : Path.GetFileName(csp.FileName)));
+                    info.Add(("Length", csp.Length.ToString()));
+                    info.Add(("Time", csp.TotalTime.ToString(AudioLibDefs.TS_FORMAT)));
                     break;
 
                 case WaveViewer wv:
-                    numsamp = (int)wv.Length;
-                    ttime = wv.TotalTime;
+                    info.Add(("Length", wv.Length.ToString()));
+                    info.Add(("Time", wv.TotalTime.ToString(AudioLibDefs.TS_FORMAT)));
                     break;
 
                 case AudioFileReader afr:
-                    fn = afr.FileName == "" ? "None" : Path.GetFileName(afr.FileName);
-                    numsamp = (int)afr.Length;
-                    ttime = afr.TotalTime;
+                    info.Add(("File", afr.FileName == "" ? "None" : Path.GetFileName(afr.FileName)));
+                    info.Add(("Length", afr.Length.ToString()));
+                    info.Add(("Time", afr.TotalTime.ToString(AudioLibDefs.TS_FORMAT)));
                     break;
 
-                case SwappableSampleProvider ssp://TODO anything useful?
+                case SwappableSampleProvider ssp:// anything useful?
                     break;
 
                 default:
@@ -246,14 +149,6 @@ namespace AudioLib
             }
 
             // More common stuff.
-            info.Add(("File", fn));
-
-            if (numsamp != -1)
-            {
-                info.Add(("Length", numsamp.ToString()));
-                info.Add(("Time", ttime.ToString(AudioLibDefs.TS_FORMAT)));
-            }
-
             var wf = prov.WaveFormat;
             info.Add(("Encoding", wf.Encoding.ToString()));
             info.Add(("Channels", wf.Channels.ToString()));
