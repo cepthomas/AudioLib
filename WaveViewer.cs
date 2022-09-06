@@ -12,6 +12,7 @@ using NAudio.Wave.SampleProviders;
 using System.Runtime;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using NAudio.Mixer;
+using System.Diagnostics;
 
 
 
@@ -41,7 +42,7 @@ namespace AudioLib
     {
         #region Fields
         /// <summary>For drawing text.</summary>
-        readonly Font _textFont = new("Cascadia", 9, FontStyle.Bold, GraphicsUnit.Point, 0);
+        readonly Font _textFont = new("Calibri", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>For drawing text.</summary>
         readonly Brush _textBrush = Brushes.Black;
@@ -73,10 +74,13 @@ namespace AudioLib
 
         #region Backing fields
         float _gain = 1.0f;
-        int _visibleStart = -1;
-        int _selStart = -1;
+        bool _snap = true;
+        WaveSelectionMode _selectionMode = WaveSelectionMode.Sample;
+        float _bpm = 100.0f;
+        int _visibleStart = 0;
+        int _selStart = 0;
         int _selLength = 0;
-        int _marker = -1;
+        int _marker = 0;
         readonly Pen _penDraw = new(Color.Black, 1);
         readonly Pen _penGrid = new(Color.LightGray, 1);
         readonly Pen _penMark = new(Color.Red, 1);
@@ -100,21 +104,16 @@ namespace AudioLib
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
-
-
-
-        //>>>>>> TODO1 these need to be updated from main form.
         /// <summary>Snap control.</summary>
-        public bool Snap { get; set; } = true;
+        public bool Snap { get { return _snap; } set { _snap = value; Invalidate(); } }
 
         /// <summary>How to select wave.</summary>
-        public WaveSelectionMode SelectionMode { get; set; } = WaveSelectionMode.Sample;
+        public WaveSelectionMode SelectionMode { get { return _selectionMode; } set { _selectionMode = value; Invalidate(); } }
 
-        public float BPM { get; set; } = 100.0f;
+        /// <summary>How fast to go for beat mode.</summary>
+        public float BPM { get { return _bpm; } set { _bpm = value; Invalidate(); } }
 
-
-
-        //>>>>>> TODO these could be from user settings.
+        // TODO these 4 could be from user settings.
         /// <summary>UI gain adjustment.</summary>
         public float GainIncrement { get; set; } = 0.05f;
 
@@ -126,10 +125,6 @@ namespace AudioLib
 
         /// <summary>Number of pixels to x shift by.</summary>
         public int ShiftIncrement { get; set; } = 10;
-
-
-
-
 
         /// <summary>Length of the clip in samples.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -143,7 +138,7 @@ namespace AudioLib
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int SelStart { get { return _selStart; } set { _selStart = value; Invalidate(); } }
 
-        /// <summary>Selection length in samples. Could be negative.</summary>
+        /// <summary>Selection length in samples.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int SelLength { get { return _selLength; } set { _selLength = value; Invalidate(); } }
 
@@ -185,23 +180,13 @@ namespace AudioLib
         public void Init(ISampleProvider prov, bool simple = false)
         {
             _simple = simple;
-
             _vals = prov.ReadAll();
-            if(_vals.Length > 0)
-            {
-                // Get min/max.
-                _max = _vals.Max();
-                _min = _vals.Min();
-            }
-            else
-            {
-                _min = 0;
-                _max = 0;
-            }
+            _max = _vals.Length > 0 ? _vals.Max() : 0;
+            _min = _vals.Length > 0 ? _vals.Min() : 0;
 
-            _selStart = -1;
+            _selStart = 0;
             _selLength = 0;
-            _marker = -1;
+            _marker = 0;
 
             if(_simple)
             {
@@ -403,7 +388,7 @@ namespace AudioLib
 
                         Invalidate();
                     }
-                    else if (!_simple && ModifierKeys == Keys.Shift && _selStart != -1) // sel end
+                    else if (!_simple && ModifierKeys == Keys.Shift && _selStart > 0) // sel end
                     {
                         var sel = PixelToSample(MouseX());
                         _selLength = sel - _selStart;
@@ -465,7 +450,7 @@ namespace AudioLib
                     break;
 
                 case Keys.M: // go to marker
-                    if(_marker != -1)
+                    if(_marker > 0)
                     {
                         Center(_marker);
                         //Invalidate();
@@ -474,7 +459,7 @@ namespace AudioLib
                     break;
 
                 case Keys.S: // go to selection
-                    if (_selStart != -1)
+                    if (_selStart > 0)
                     {
                         Center(_selStart);
                         //Invalidate();
@@ -498,12 +483,21 @@ namespace AudioLib
         }
         #endregion
 
+
+        //public new void Validate()
+        //{
+        //    Debug.WriteLine("Validate");
+        //    base.Validate();
+        //}
+
         #region Drawing
         /// <summary>
         /// Paint the waveform.
         /// </summary>
         protected override void OnPaint(PaintEventArgs pe)
         {
+            //Debug.WriteLine("OnPaint");
+
             const int NUM_Y_GRID = 5;
             const float Y_GRID_SPACING = 0.25f;
 
@@ -521,9 +515,9 @@ namespace AudioLib
             pe.Graphics.Clear(BackColor);
 
             // Do a few sanity checks.
-            _selStart = MathUtils.Constrain(_selStart, -1, _vals.Length);
-            _selLength = MathUtils.Constrain(_selLength, -_vals.Length, _vals.Length);
-            _marker = MathUtils.Constrain(_marker, -1, _vals.Length);
+            _selStart = MathUtils.Constrain(_selStart, 0, _vals.Length);
+            _selLength = MathUtils.Constrain(_selLength, 0, _vals.Length - _selStart);
+            _marker = MathUtils.Constrain(_marker, 0, _vals.Length);
             _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
 
             if (_vals is null || _vals.Length == 0)
@@ -637,7 +631,7 @@ namespace AudioLib
                 // Selection and markers.
                 if (!_simple)
                 {
-                    if (_selStart != -1)
+                    if (_selStart > 0)
                     {
                         int x = SampleToPixel(_selStart);
                         if (x >= 0)
@@ -658,7 +652,7 @@ namespace AudioLib
                     }
                 }
 
-                if (_marker != -1)
+                if (_marker > 0)
                 {
                     int x = SampleToPixel(_marker);
                     if (x >= 0)

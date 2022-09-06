@@ -48,6 +48,13 @@ namespace AudioLib
            get { return _position; }
            set { _position = _vals.Length > 0 ? MathUtils.Constrain(value, 0, _vals.Length - 1) : 0; }
         }
+
+        //TODO1 Main (cliped?) sets these from viewer.
+        /// <summary>Selection start sample.</summary>
+        public int SelStart { get; set; } = 0;
+
+        /// <summary>Selection length in samples.</summary>
+        public int SelLength { get; set; } = 0;
         #endregion
 
         #region Constructors
@@ -93,7 +100,7 @@ namespace AudioLib
         /// <param name="offset">Offset into buffer.</param>
         /// <param name="count">Number of samples required.</param>
         /// <returns>Number of samples read.</returns>
-        public int Read(float[] buffer, int offset, int count)
+        public int Read(float[] buffer, int offset, int count) //TODO1 use start/len
         {
             int numRead = 0;
             int numToRead = Math.Min(count, _vals.Length - _position);
