@@ -15,30 +15,14 @@ using NAudio.Mixer;
 using System.Diagnostics;
 
 
-
-
-//TODO1 cmbSelMode: Sample, Beat, Time + Snap on/off
-// - Beats mode:
-//   - Establish timing by select two samples and identify corresponding number of beats.
-//   - Show in waveform.
-//   - Subsequent selections are by beat using snap.
-// - Time mode:
-//   - Select two times using ?? resolution.
-//   - Shows number of samples and time in UI.
-// - Sample mode:
-//   - Select two samples using ?? resolution.
-//   - Shows number of samples and time in UI.
-
-
 // TODO make mouse etc commands configurable.
-
 
 namespace AudioLib
 {
     /// <summary>
     /// Simple mono wave display.
     /// </summary>
-    public partial class WaveViewer : UserControl//, ISampleProvider
+    public partial class WaveViewer : UserControl
     {
         #region Fields
         /// <summary>For drawing text.</summary>
@@ -70,6 +54,18 @@ namespace AudioLib
 
         /// <summary>Simple display only.</summary>
         bool _simple = false;
+
+        /// <summary>UI gain adjustment.</summary>
+        const float GAIN_INCREMENT = 0.05f;
+
+        /// <summary>How fast the mouse wheel goes.</summary>
+        const int WHEEL_RESOLUTION = 8;
+
+        /// <summary>Zoom increment.</summary>
+        const int ZOOM_INCREMENT = 20;
+
+        /// <summary>Number of pixels to x shift by.</summary>
+        const int PAN_INCREMENT = 10;
         #endregion
 
         #region Backing fields
@@ -88,43 +84,26 @@ namespace AudioLib
         #endregion
 
         #region Properties
-        ///// <summary>Gets the WaveFormat of this Sample Provider. ISampleProvider implementation.</summary>
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        //public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
-
         /// <summary>The waveform color.</summary>
-        public Color DrawColor { get { return _penDraw.Color; } set { _penDraw.Color = value; Invalidate(); } }
+        public Color DrawColor { set { _penDraw.Color = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
-        public Color GridColor { get { return _penGrid.Color; } set { _penGrid.Color = value; Invalidate(); } }
+        public Color GridColor { set { _penGrid.Color = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
-        public Color MarkColor { get { return _penMark.Color; } set { _penMark.Color = value; _brushMark.Color = value; Invalidate(); } }
+        public Color MarkColor { set { _penMark.Color = value; _brushMark.Color = value; Invalidate(); } }
 
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
         /// <summary>Snap control.</summary>
-        public bool Snap { get { return _snap; } set { _snap = value; Invalidate(); } }
+        public bool Snap { set { _snap = value; Invalidate(); } }
 
         /// <summary>How to select wave.</summary>
-        public WaveSelectionMode SelectionMode { get { return _selectionMode; } set { _selectionMode = value; Invalidate(); } }
+        public WaveSelectionMode SelectionMode { set { _selectionMode = value; Invalidate(); } }
 
         /// <summary>How fast to go for beat mode.</summary>
-        public float BPM { get { return _bpm; } set { _bpm = value; Invalidate(); } }
-
-        // TODO these 4 could be from user settings.
-        /// <summary>UI gain adjustment.</summary>
-        public float GainIncrement { get; set; } = 0.05f;
-
-        /// <summary>How fast the mouse wheel goes.</summary>
-        public int WheelResolution { get; set; } = 8;
-
-        /// <summary>Zoom increment.</summary>
-        public int ZoomIncrement { get; set; } = 20;
-
-        /// <summary>Number of pixels to x shift by.</summary>
-        public int ShiftIncrement { get; set; } = 10;
+        public float BPM { set { _bpm = value; Invalidate(); } }
 
         /// <summary>Length of the clip in samples.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -136,19 +115,23 @@ namespace AudioLib
 
         /// <summary>Selection start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int SelStart { get { return _selStart; } set { _selStart = value; Invalidate(); } }
+        public int SelStart { get { return _selStart; } }
+        // public int SelStart { get { return _selStart; } set { _selStart = value; Invalidate(); } }
 
         /// <summary>Selection length in samples.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int SelLength { get { return _selLength; } set { _selLength = value; Invalidate(); } }
+        public int SelLength { get { return _selLength; } }
+        //public int SelLength { get { return _selLength; } set { _selLength = value; Invalidate(); } }
 
         /// <summary>General purpose marker location.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int Marker { get { return _marker; } set { _marker = value; Invalidate(); } }
+        //public int Marker { get { return _marker; } }
+        public int Marker { get { return _marker; } set { _marker = value; ValidateUi(); Invalidate(); } }
 
         /// <summary>Visible start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int VisibleStart { get { return _visibleStart; } set { _visibleStart = value; Invalidate(); } }
+        public int VisibleStart { get { return _visibleStart; } }
+        //public int VisibleStart { get { return _visibleStart; } set { _visibleStart = value; Invalidate(); } }
 
         /// <summary>Visible length in samples. Always positive.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -158,6 +141,9 @@ namespace AudioLib
         #region Events
         /// <summary>Value changed by user.</summary>
         public event EventHandler? GainChangedEvent;
+
+        /// <summary>Value changed by user.</summary>
+        public event EventHandler? SelectionChangedEvent;
 
         /// <summary>Value changed by user.</summary>
         public event EventHandler? MarkerChangedEvent;
@@ -236,31 +222,6 @@ namespace AudioLib
             _position = _selStart;
         }
 
-        ///// <summary>
-        ///// Fill the buffer with selected data. ISampleProvider implementation.
-        ///// </summary>
-        ///// <param name="buffer">The buffer to fill with samples.</param>
-        ///// <param name="offset">Offset into buffer.</param>
-        ///// <param name="count">The number of samples to read.</param>
-        ///// <returns>the number of samples written to the buffer.</returns>
-        //public int Read(float[] buffer, int offset, int count)
-        //{
-        //    int numRead = 0;
-
-        //    if (!_simple)
-        //    {
-        //        int numToRead = Math.Min(count, _selLength - _position);
-        //        for (int n = 0; n < numToRead; n++)
-        //        {
-        //            buffer[n + offset] = _vals[_position];
-        //            _position++;
-        //            numRead++;
-        //        }
-        //    }
-
-        //    return numRead;
-        //}
-
         /// <summary>
         /// Fit the wave exactly.
         /// </summary>
@@ -298,7 +259,7 @@ namespace AudioLib
             hme.Handled = true; // This prevents the mouse wheel event from getting back to the parent.
 
             // Number of detents the mouse wheel has rotated, multiplied by the WHEEL_DELTA constant.
-            int delta = WheelResolution * e.Delta / SystemInformation.MouseWheelScrollDelta;
+            int delta = WHEEL_RESOLUTION * e.Delta / SystemInformation.MouseWheelScrollDelta;
 
             if (ModifierKeys == Keys.Control) // x zoom
             {
@@ -306,52 +267,27 @@ namespace AudioLib
                 int center = PixelToSample(Width / 2);
                 //int center = PixelToSample(MouseX());
                 //int center = _marker;
-                //int centerSample = _marker > 0 ? _marker : PixelToSample(MouseX());
 
                 // Modify the zoom factor.  TODO1 should be muliplier/nonlinear? get rid of _samplesPerPixelMax then.  doesn't stay quite centered
-                int incr = _samplesPerPixelMax / ZoomIncrement;
+                int incr = _samplesPerPixelMax / ZOOM_INCREMENT;
                 _samplesPerPixel += delta > 0 ? -incr : incr; // in or out
                 _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, _samplesPerPixelMax);
 
                 // Recenter.
                 Center(center);
 
-                // original:
-                //// Update visible. Note these calcs will be checked in ValidateProperties().
-                //// Zooming is around the mouse position or marker if provided.
-                //int center = Marker > 0 ? Marker : VisStart + VisLength / 2;
-                //int visSamples = Width * _samplesPerPixel;
-
                 //Invalidate();
             }
             else if (ModifierKeys == Keys.None) // no mods = x shift/pan
             {
-                int incr = _samplesPerPixel * ShiftIncrement;
+                int incr = _samplesPerPixel * PAN_INCREMENT;
                 _visibleStart += delta > 0 ? incr : -incr; // left or right
                 _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
-                //_visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length - VisibleLength);
                 Invalidate();
-
-                // was
-                //int incr = _samplesPerPixel * PanFactor;
-
-                //if (delta > 0) // pan right
-                //{
-                //    VisStart += incr;
-                //    VisStart = MathUtils.Constrain(VisStart, 0, _vals.Length - VisLength - 1);
-                //    Invalidate();
-                //}
-                //else if (delta < 0) // pan left
-                //{
-                //    VisStart -= incr;
-                //    VisStart = MathUtils.Constrain(VisStart, 0, _vals.Length - VisLength - 1);
-                //    Invalidate();
-                //}
-                //// else ignore
             }
             else if (ModifierKeys == Keys.Shift) // gain
             {
-                _gain += delta > 0 ? GainIncrement : -GainIncrement;
+                _gain += delta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
                 _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
                 GainChangedEvent?.Invoke(this, EventArgs.Empty);
                 Invalidate();
@@ -370,28 +306,32 @@ namespace AudioLib
                     if (ModifierKeys == Keys.None) // marker
                     {
                         _marker = PixelToSample(MouseX());
-                        Invalidate();
+                        ValidateUi();
                         MarkerChangedEvent?.Invoke(this, EventArgs.Empty);
+                        Invalidate();
                     }
                     else if (!_simple && ModifierKeys == Keys.Control) // sel start
                     {
-                        if(_selLength > 0)
+                        if(_selLength == 0)
+                        {
+                            _selStart = PixelToSample(MouseX());
+                        }
+                        else
                         {
                             var ends = _selStart + _selLength;
                             _selStart = PixelToSample(MouseX());
                             _selLength = ends - _selStart;
                         }
-                        else
-                        {
-                            _selStart = PixelToSample(MouseX());
-                        }
-
+                        ValidateUi();
+                        SelectionChangedEvent?.Invoke(this, EventArgs.Empty);
                         Invalidate();
                     }
                     else if (!_simple && ModifierKeys == Keys.Shift && _selStart > 0) // sel end
                     {
                         var sel = PixelToSample(MouseX());
                         _selLength = sel - _selStart;
+                        ValidateUi();
+                        SelectionChangedEvent?.Invoke(this, EventArgs.Empty);
                         Invalidate();
                     }
                     break;
@@ -423,6 +363,7 @@ namespace AudioLib
 
             base.OnMouseMove(e);
         }
+
 
         /// <summary>
         /// Key press.
@@ -484,11 +425,11 @@ namespace AudioLib
         #endregion
 
 
-        //public new void Validate()
-        //{
+        // public new void Validate()
+        // {
         //    Debug.WriteLine("Validate");
         //    base.Validate();
-        //}
+        // }
 
         #region Drawing
         /// <summary>
@@ -498,27 +439,24 @@ namespace AudioLib
         {
             //Debug.WriteLine("OnPaint");
 
+            //TODO1 cmbSelMode: Sample, Beat, Time + Snap on/off
+            // - Beats mode:
+            //   - Establish timing by select two samples and identify corresponding number of beats.
+            //   - Show in waveform.
+            //   - Subsequent selections are by beat using snap.
+            // - Time mode:
+            //   - Select two times using ?? resolution.
+            //   - Shows number of samples and time in UI.
+            // - Sample mode:
+            //   - Select two samples using ?? resolution.
+            //   - Shows number of samples and time in UI.
+
+
             const int NUM_Y_GRID = 5;
             const float Y_GRID_SPACING = 0.25f;
 
-
-            //for (int i = -5; i <= 5; i++)
-            //{
-            //    float val = i * 0.25f;
-            //    float yGrid = MathUtils.Map(val, -1.25f, 1.25f, 0, Height);
-
-
-
-
-
             // Setup.
             pe.Graphics.Clear(BackColor);
-
-            // Do a few sanity checks.
-            _selStart = MathUtils.Constrain(_selStart, 0, _vals.Length);
-            _selLength = MathUtils.Constrain(_selLength, 0, _vals.Length - _selStart);
-            _marker = MathUtils.Constrain(_marker, 0, _vals.Length);
-            _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
 
             if (_vals is null || _vals.Length == 0)
             {
@@ -561,7 +499,7 @@ namespace AudioLib
                     int numLines = 10; // user prop?
                     _penGrid.Width = 1;
 
-                    switch (SelectionMode)
+                    switch (_selectionMode)
                     {
                         case WaveSelectionMode.Time:
                             TimeSpan start = AudioLibUtils.SampleToTime(VisibleStart);
@@ -665,6 +603,18 @@ namespace AudioLib
         #endregion
 
         #region Private functions
+        /// <summary>
+        /// Make sure user entered values are harmonious.
+        /// </summary>
+        void ValidateUi()
+        {
+            // Do a few sanity checks.
+            _selStart = MathUtils.Constrain(_selStart, 0, _vals.Length);
+            _selLength = MathUtils.Constrain(_selLength, 0, _vals.Length - _selStart);
+            _marker = MathUtils.Constrain(_marker, 0, _vals.Length);
+            _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
+        }
+
         /// <summary>
         /// Convert x pos to sample index.
         /// </summary>

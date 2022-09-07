@@ -185,21 +185,21 @@ namespace AudioLib.Test
             {
                 prov.Rewind();
                 waveViewer1.Init(new ClipSampleProvider(prov, StereoCoercion.Left));
-                waveViewer1.SelStart = sclen / 3;
-                waveViewer1.SelLength = sclen / 4;
+                //waveViewer1.SelStart = sclen / 3;
+                //waveViewer1.SelLength = sclen / 4;
                 waveViewer1.Marker = 2 * sclen / 3;
 
                 prov.Rewind();
                 waveViewer2.Init(new ClipSampleProvider(prov, StereoCoercion.Right));
-                waveViewer2.SelStart = sclen / 4;
-                waveViewer1.SelLength = sclen / 4;
+                //waveViewer2.SelStart = sclen / 4;
+                //waveViewer1.SelLength = sclen / 4;
                 waveViewer2.Marker = 3 * sclen / 4;
             }
             else // mono
             {
                 waveViewer1.Init(new ClipSampleProvider(prov, StereoCoercion.None));
-                waveViewer1.SelStart = sclen / 10;
-                waveViewer1.SelLength = 9 * sclen / 10;
+                //waveViewer1.SelStart = sclen / 10;
+                //waveViewer1.SelLength = 9 * sclen / 10;
                 waveViewer1.Marker = sclen / 4;
 
                 waveViewer2.Init(new ClipSampleProvider(Array.Empty<float>()));

@@ -1,11 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Diagnostics;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
+using System;
 
 
 namespace AudioLib
@@ -49,7 +45,6 @@ namespace AudioLib
            set { _position = _vals.Length > 0 ? MathUtils.Constrain(value, 0, _vals.Length - 1) : 0; }
         }
 
-        //TODO1 Main (cliped?) sets these from viewer.
         /// <summary>Selection start sample.</summary>
         public int SelStart { get; set; } = 0;
 
@@ -59,10 +54,10 @@ namespace AudioLib
 
         #region Constructors
         /// <summary>
-        /// Constructor from a sample provider.Coerces stereo to mono.
+        /// Constructor from a sample provider. Coerces stereo to mono.
         /// </summary>
-        /// <param name = "source" > Source provider to use.</param>
-        /// <param name = "mode" > How to handle stereo files.</param>
+        /// <param name="source">Source provider to use.</param>
+        /// <param name="mode">How to handle stereo files.</param>
         public ClipSampleProvider(ISampleProvider source, StereoCoercion mode)
         {
             FileName = "";
@@ -100,7 +95,7 @@ namespace AudioLib
         /// <param name="offset">Offset into buffer.</param>
         /// <param name="count">Number of samples required.</param>
         /// <returns>Number of samples read.</returns>
-        public int Read(float[] buffer, int offset, int count) //TODO1 use start/len
+        public int Read(float[] buffer, int offset, int count) // TODO1 use start/len + position
         {
             int numRead = 0;
             int numToRead = Math.Min(count, _vals.Length - _position);
