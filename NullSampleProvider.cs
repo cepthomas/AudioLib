@@ -18,7 +18,7 @@ namespace AudioLib
         /// </summary>
         /// <param name="buffer">Sample buffer.</param>
         /// <param name="offset">Offset into buffer.</param>
-        /// <param name="count">Number of samples required.</param>
+        /// <param name="count">Number of samples requested.</param>
         /// <returns>Number of samples read.</returns>
         public int Read(float[] buffer, int offset, int count)
         {

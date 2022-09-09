@@ -49,9 +49,6 @@ namespace AudioLib
         /// <summary>For painting. Essentially the zoom factor.</summary>
         int _samplesPerPixel = 0;
 
-        /// <summary>Means fully zoomed out.</summary>
-        int _samplesPerPixelMax = 0;
-
         /// <summary>Simple display only.</summary>
         bool _simple = false;
 
@@ -191,7 +188,6 @@ namespace AudioLib
         {
             _visibleStart = 0;
             _samplesPerPixel = _vals.Length / Width;
-            _samplesPerPixelMax = _samplesPerPixel;
         }
 
         /// <summary>
@@ -268,10 +264,14 @@ namespace AudioLib
                 //int center = PixelToSample(MouseX());
                 //int center = _marker;
 
-                // Modify the zoom factor.  TODO1 should be muliplier/nonlinear? get rid of _samplesPerPixelMax then.  doesn't stay quite centered
-                int incr = _samplesPerPixelMax / ZOOM_INCREMENT;
+                // Modify the zoom factor.  TODO1 should be multiplier/nonlinear? Also doesn't stay quite centered
+                
+                // Means fully zoomed out.
+                int samplesPerPixelMax = _vals.Length / Width; // 160
+
+                int incr = _samplesPerPixel / ZOOM_INCREMENT;
                 _samplesPerPixel += delta > 0 ? -incr : incr; // in or out
-                _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, _samplesPerPixelMax);
+                _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, samplesPerPixelMax);
 
                 // Recenter.
                 Center(center);
@@ -292,6 +292,7 @@ namespace AudioLib
                 GainChangedEvent?.Invoke(this, EventArgs.Empty);
                 Invalidate();
             }
+            base.OnMouseWheel(e);
         }
 
         /// <summary>
@@ -336,6 +337,7 @@ namespace AudioLib
                     }
                     break;
             }
+            base.OnMouseDown(e);
         }
 
         /// <summary>
@@ -408,6 +410,7 @@ namespace AudioLib
                     }
                     break;
             }
+            base.OnKeyDown(e);
         }
 
         /// <summary>
@@ -417,19 +420,11 @@ namespace AudioLib
         protected override void OnResize(EventArgs e)
         {
             // Recalc scale.
-            _samplesPerPixel = _vals.Length / Width;
-            _samplesPerPixelMax = _samplesPerPixel;
-
+            _samplesPerPixel = Width > 0 ? _vals.Length / Width : 0;
             Invalidate();
+            base.OnResize(e);
         }
         #endregion
-
-
-        // public new void Validate()
-        // {
-        //    Debug.WriteLine("Validate");
-        //    base.Validate();
-        // }
 
         #region Drawing
         /// <summary>
@@ -530,7 +525,7 @@ namespace AudioLib
 
                     // Show info.
                     //var sinfo = $"Gain:{_gain:0.00}";
-                    var sinfo = $"Gain:{_gain:0.00} Vstart:{_visibleStart} Mark:{Marker} Spp:{_samplesPerPixel} SppMax:{_samplesPerPixelMax} VisibleLength:{VisibleLength}";
+                    var sinfo = $"Gain:{_gain:0.00}  VisStart:{_visibleStart}  Mark:{Marker}  SPP:{_samplesPerPixel}  VisLength:{VisibleLength}";
                     pe.Graphics.DrawString(sinfo, _textFont, _textBrush, Width / 2, Height - 20, _format);
                 }
 

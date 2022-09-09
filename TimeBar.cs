@@ -216,6 +216,7 @@ namespace AudioLib
             {
                 Invalidate();
             }
+            base.OnKeyDown(e);
         }
 
         /// <summary>
@@ -231,6 +232,7 @@ namespace AudioLib
                     e.IsInputKey = true;
                     break;
             }
+            base.OnPreviewKeyDown(e);
         }
 
         /// <summary>

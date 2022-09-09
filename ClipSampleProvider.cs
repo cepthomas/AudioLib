@@ -89,19 +89,31 @@ namespace AudioLib
 
         #region Public functions
         /// <summary>
-        /// Reads samples from this sample provider with adjustments for gain. ISampleProvider implementation.
+        /// Reads samples from this sample provider with adjustments for gain.
+        /// Honors user selection if specified.
+        /// ISampleProvider implementation.
         /// </summary>
         /// <param name="buffer">Sample buffer.</param>
         /// <param name="offset">Offset into buffer.</param>
-        /// <param name="count">Number of samples required.</param>
+        /// <param name="count">Number of samples requested.</param>
         /// <returns>Number of samples read.</returns>
-        public int Read(float[] buffer, int offset, int count) // TODO1 use start/len + position
+        public int Read(float[] buffer, int offset, int count)
         {
             int numRead = 0;
-            int numToRead = Math.Min(count, _vals.Length - _position);
+            int end = _vals.Length;
+
+            // Is it a specific selection?
+            if(SelLength > 0)
+            {
+                _position = Math.Max(SelStart, _position);
+                end = SelStart + SelLength;
+            }
+
+            // Read area of interest.
+            int numToRead = Math.Min(count, end - _position);
             for (int n = 0; n < numToRead; n++)
             {
-                buffer[n + offset] = (float)(_vals[_position] * Gain);
+                buffer[n + offset] = _vals[_position] * Gain;
                 _position++;
                 numRead++;
             }
@@ -114,7 +126,8 @@ namespace AudioLib
         /// </summary>
         public void Rewind()
         {
-            _position = 0;
+            // Is it a specific selection?
+            _position = SelLength > 0 ? SelStart : 0;
         }
         #endregion
 
