@@ -191,13 +191,13 @@ namespace AudioLib
         {
             switch (e.KeyData)
             {
-                case Keys.Add:
+                case Keys.Oemplus:
                 case Keys.Up:
                     IncrementCurrent(e.Shift ? SMALL_CHANGE : LARGE_CHANGE);
                     e.Handled = true;
                     break;
 
-                case Keys.Subtract:
+                case Keys.OemMinus:
                 case Keys.Down:
                     IncrementCurrent(e.Shift ? -SMALL_CHANGE : -LARGE_CHANGE);
                     e.Handled = true;

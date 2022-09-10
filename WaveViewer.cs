@@ -6,13 +6,9 @@ using System.Text;
 using System.Windows.Forms;
 using System.IO;
 using System.ComponentModel;
-using NBagOfTricks;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using System.Runtime;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
-using NAudio.Mixer;
-using System.Diagnostics;
+using NBagOfTricks;
 
 
 // TODO make mouse etc commands configurable.
@@ -43,14 +39,14 @@ namespace AudioLib
         /// <summary>Extent of _vals.</summary>
         float _max = 0;
 
-        /// <summary>Make this look like a stream for sample provider.</summary>
-        int _position = 0;
-
         /// <summary>For painting. Essentially the zoom factor.</summary>
         int _samplesPerPixel = 0;
 
         /// <summary>Simple display only.</summary>
         bool _simple = false;
+
+        /// <summary>Last pixel.</summary>
+        int _lastXPos = 0;
 
         /// <summary>UI gain adjustment.</summary>
         const float GAIN_INCREMENT = 0.05f;
@@ -77,6 +73,8 @@ namespace AudioLib
         readonly Pen _penDraw = new(Color.Black, 1);
         readonly Pen _penGrid = new(Color.LightGray, 1);
         readonly Pen _penMark = new(Color.Red, 1);
+        private ToolTip toolTip;
+        private IContainer components;
         readonly SolidBrush _brushMark = new(Color.White);
         #endregion
 
@@ -123,7 +121,7 @@ namespace AudioLib
         /// <summary>General purpose marker location.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         //public int Marker { get { return _marker; } }
-        public int Marker { get { return _marker; } set { _marker = value; ValidateUi(); Invalidate(); } }
+        public int Marker { get { return _marker; } set { _marker = value; CheckSel(); Invalidate(); } }
 
         /// <summary>Visible start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -211,14 +209,6 @@ namespace AudioLib
 
         #region Public functions
         /// <summary>
-        /// Put back to area of interest.
-        /// </summary>
-        public void Rewind()
-        {
-            _position = _selStart;
-        }
-
-        /// <summary>
         /// Fit the wave exactly.
         /// </summary>
         public void FitGain()
@@ -235,6 +225,7 @@ namespace AudioLib
         {
             // Recenter.
             _visibleStart = sample - VisibleLength / 2;
+            CheckSel();
             Invalidate();
         }
         #endregion
@@ -259,16 +250,13 @@ namespace AudioLib
 
             if (ModifierKeys == Keys.Control) // x zoom
             {
-                // Get current center sample - or mouse or marker... TODO1?
-                int center = PixelToSample(Width / 2);
+                // Get current center sample.
+                int center = _marker;
+                //int center = PixelToSample(Width / 2);
                 //int center = PixelToSample(MouseX());
-                //int center = _marker;
 
-                // Modify the zoom factor.  TODO1 should be multiplier/nonlinear? Also doesn't stay quite centered
-                
-                // Means fully zoomed out.
-                int samplesPerPixelMax = _vals.Length / Width; // 160
-
+                // Modify the zoom factor.
+                int samplesPerPixelMax = _vals.Length / Width;
                 int incr = _samplesPerPixel / ZOOM_INCREMENT;
                 _samplesPerPixel += delta > 0 ? -incr : incr; // in or out
                 _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, samplesPerPixelMax);
@@ -307,7 +295,7 @@ namespace AudioLib
                     if (ModifierKeys == Keys.None) // marker
                     {
                         _marker = PixelToSample(MouseX());
-                        ValidateUi();
+                        CheckSel();
                         MarkerChangedEvent?.Invoke(this, EventArgs.Empty);
                         Invalidate();
                     }
@@ -323,7 +311,7 @@ namespace AudioLib
                             _selStart = PixelToSample(MouseX());
                             _selLength = ends - _selStart;
                         }
-                        ValidateUi();
+                        CheckSel();
                         SelectionChangedEvent?.Invoke(this, EventArgs.Empty);
                         Invalidate();
                     }
@@ -331,7 +319,7 @@ namespace AudioLib
                     {
                         var sel = PixelToSample(MouseX());
                         _selLength = sel - _selStart;
-                        ValidateUi();
+                        CheckSel();
                         SelectionChangedEvent?.Invoke(this, EventArgs.Empty);
                         Invalidate();
                     }
@@ -346,22 +334,37 @@ namespace AudioLib
         /// <param name="e"></param>
         protected override void OnMouseMove(MouseEventArgs e)
         {
-            // if (e.Button == MouseButtons.Left)
-            // {
-            //     _current = GetTimeFromMouse(e.X);
-            //     CurrentTimeChanged?.Invoke(this, new EventArgs());
-            // }
-            // else
-            // {
-            //     if (e.X != _lastXPos)
-            //     {
-            //         TimeSpan ts = GetTimeFromMouse(e.X);
-            //         _toolTip.SetToolTip(this, ts.ToString(AudioLibDefs.TS_FORMAT));
-            //         _lastXPos = e.X;
-            //     }
-            // }
-            //
-            // Invalidate();
+
+            if (e.X != _lastXPos)
+            {
+                switch (_selectionMode)
+                {
+                    case WaveSelectionMode.Time:
+                        TimeSpan tstart = AudioLibUtils.SampleToTime(VisibleStart);
+                        TimeSpan tend = AudioLibUtils.SampleToTime(VisibleStart + VisibleLength);
+                        TimeSpan tlen = tend - tstart;
+                        break;
+
+                    case WaveSelectionMode.Beat:
+                        break;
+
+                    case WaveSelectionMode.Sample:
+                        var sample = PixelToSample(e.X);
+                        //         _toolTip.SetToolTip(this, ts.ToString(AudioLibDefs.TS_FORMAT));
+                        break;
+                }
+
+                _lastXPos = e.X;
+
+                Invalidate();
+            }
+
+
+            if (e.Button == MouseButtons.Left)
+            {
+                //_current = GetTimeFromMouse(e.X);
+                //CurrentTimeChanged?.Invoke(this, new EventArgs());
+            }
 
             base.OnMouseMove(e);
         }
@@ -432,23 +435,9 @@ namespace AudioLib
         /// </summary>
         protected override void OnPaint(PaintEventArgs pe)
         {
-            //Debug.WriteLine("OnPaint");
-
-            //TODO1 cmbSelMode: Sample, Beat, Time + Snap on/off
-            // - Beats mode:
-            //   - Establish timing by select two samples and identify corresponding number of beats.
-            //   - Show in waveform.
-            //   - Subsequent selections are by beat using snap.
-            // - Time mode:
-            //   - Select two times using ?? resolution.
-            //   - Shows number of samples and time in UI.
-            // - Sample mode:
-            //   - Select two samples using ?? resolution.
-            //   - Shows number of samples and time in UI.
-
-
-            const int NUM_Y_GRID = 5;
-            const float Y_GRID_SPACING = 0.25f;
+            const int Y_NUM_LINES = 5;
+            const float Y_SPACING = 0.25f;
+            const int X_NUM_LINES = 10; // approx
 
             // Setup.
             pe.Graphics.Clear(BackColor);
@@ -464,10 +453,10 @@ namespace AudioLib
                 {
                     // Y grid lines.
                     _penGrid.Width = 1;
-                    for (int i = -NUM_Y_GRID; i <= NUM_Y_GRID; i++)
+                    for (int i = -Y_NUM_LINES; i <= Y_NUM_LINES; i++)
                     {
-                        float val = i * Y_GRID_SPACING;
-                        float yGrid = MathUtils.Map(val, -NUM_Y_GRID * Y_GRID_SPACING, NUM_Y_GRID * Y_GRID_SPACING, 0, Height);
+                        float val = i * Y_SPACING;
+                        float yGrid = MathUtils.Map(val, -Y_NUM_LINES * Y_SPACING, Y_NUM_LINES * Y_SPACING, 0, Height);
 
                         // Some special treatments.
                         switch(i)
@@ -479,8 +468,8 @@ namespace AudioLib
                                 _penGrid.Width = 1;
                                 pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
                                 break;
-                            case NUM_Y_GRID:
-                            case -NUM_Y_GRID:
+                            case Y_NUM_LINES:
+                            case -Y_NUM_LINES:
                                 // No label.
                                 break;
                             default:
@@ -490,20 +479,21 @@ namespace AudioLib
                         }
                     }
 
-                    // X grid lines.
-                    int numLines = 10; // user prop?
                     _penGrid.Width = 1;
 
                     switch (_selectionMode)
                     {
                         case WaveSelectionMode.Time:
-                            TimeSpan start = AudioLibUtils.SampleToTime(VisibleStart);
-                            TimeSpan end = AudioLibUtils.SampleToTime(VisibleStart + VisibleLength);
-                            TimeSpan tlen = end - start;
-                            // anywhere from 10 msec to MaxClipSize (10 min)
-                            TimeSpan incr = tlen / numLines;
+                            TimeSpan tstart = AudioLibUtils.SampleToTime(VisibleStart);
+                            TimeSpan tend = AudioLibUtils.SampleToTime(VisibleStart + VisibleLength);
+                            TimeSpan tlen = tend - tstart;
 
-                            int sincr = VisibleLength / numLines;
+
+                            // anywhere from 10 msec to MaxClipSize (10 min)
+                            // 0.01 -> 600.0
+                            TimeSpan incr = tlen / X_NUM_LINES;
+
+                            int sincr = VisibleLength / X_NUM_LINES;
 
                             for (int xs = 0; xs < VisibleLength; xs += sincr)
                             {
@@ -511,20 +501,48 @@ namespace AudioLib
                                 pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
                                 pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
                             }
-
                             break;
 
                         case WaveSelectionMode.Beat:
+                            // - Beats mode:
+                            //   - Establish timing by select two samples and identify corresponding number of beats.
+                            //   - Show in waveform.
+                            //   - Subsequent selections are by beat using snap.
+
+                            // 123:2.456.
+                            // 
 
                             break;
 
                         case WaveSelectionMode.Sample:
+                            // - Sample mode:
+                            //   - Select two samples using ?? resolution.
+                            //   - Shows number of samples and time in UI.
+                            int sampincr = VisibleLength / X_NUM_LINES;
+                            // Round to a reasonable value.
+                            int digits = MathUtils.NumDigits(sampincr);
 
+                            // 12345 > 10000   17899 > 20000
+                            // 123 > 100   178 > 200
+
+                            // largest: 26,460,000 (10 min) ~264,600 spp sampincr=2,646,000
+                            // smallest: 1 spp sampincr=1
+
+
+
+
+
+
+                            for (int xs = 0; xs < VisibleLength; xs += sampincr)
+                            {
+                                float xGrid = MathUtils.Map(xs, 0, VisibleLength, 0, Width);
+                                pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
+                                pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
+                            }
                             break;
                     }
 
                     // Show info.
-                    //var sinfo = $"Gain:{_gain:0.00}";
                     var sinfo = $"Gain:{_gain:0.00}  VisStart:{_visibleStart}  Mark:{Marker}  SPP:{_samplesPerPixel}  VisLength:{VisibleLength}";
                     pe.Graphics.DrawString(sinfo, _textFont, _textBrush, Width / 2, Height - 20, _format);
                 }
@@ -601,7 +619,7 @@ namespace AudioLib
         /// <summary>
         /// Make sure user entered values are harmonious.
         /// </summary>
-        void ValidateUi()
+        void CheckSel()
         {
             // Do a few sanity checks.
             _selStart = MathUtils.Constrain(_selStart, 0, _vals.Length);
@@ -664,7 +682,7 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// 
+        /// Helper.
         /// </summary>
         /// <returns></returns>
         int MouseX()
@@ -693,5 +711,18 @@ namespace AudioLib
             return sample;
         }
         #endregion
+
+
+        private void InitializeComponent()
+        {
+            this.components = new System.ComponentModel.Container();
+            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
+            this.SuspendLayout();
+            // 
+            // WaveViewer
+            // 
+            this.Name = "WaveViewer";
+            this.ResumeLayout(false);
+        }
     }
 }

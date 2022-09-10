@@ -57,7 +57,6 @@ namespace AudioLib
             switch(prov)
             {
                 case ClipSampleProvider csp: csp.Position = 0; break;
-                case WaveViewer wv: wv.Rewind(); break;
                 case AudioFileReader afr: afr.Position = 0; break;
                 case SwappableSampleProvider ssp: ssp.Rewind(); break;
                 default: break;
@@ -66,7 +65,6 @@ namespace AudioLib
 
         // or like:
         //public static void Rewind(this ClipSampleProvider prov) { prov.Position = 0; }
-        //public static void Rewind(this WaveViewer prov) { prov.Rewind(); }
         //public static void Rewind(this AudioFileReader prov) { prov.Position = 0; }
         //public static void Rewind(this SwappableSampleProvider prov) { prov.Rewind(); }
 
@@ -82,7 +80,6 @@ namespace AudioLib
             switch (prov)
             {
                 case ClipSampleProvider csp: len = csp.Length; break;
-                case WaveViewer wv: len = wv.Length; break;
                 case AudioFileReader afr: len = (int)afr.Length; break;
                 case SwappableSampleProvider ssp: len = 0; break;
                 default: break;
@@ -123,11 +120,6 @@ namespace AudioLib
                     info.Add(("File", csp.FileName == "" ? "None" : Path.GetFileName(csp.FileName)));
                     info.Add(("Length", csp.Length.ToString()));
                     info.Add(("Time", csp.TotalTime.ToString(AudioLibDefs.TS_FORMAT)));
-                    break;
-
-                case WaveViewer wv:
-                    info.Add(("Length", wv.Length.ToString()));
-                    info.Add(("Time", wv.TotalTime.ToString(AudioLibDefs.TS_FORMAT)));
                     break;
 
                 case AudioFileReader afr:
