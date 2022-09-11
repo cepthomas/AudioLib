@@ -42,6 +42,19 @@ namespace AudioLib
         [Browsable(true)]
         public int MaxClipSize { get; set; } = 10;
         #endregion
+
+        #region Persisted Non-editable Persisted Properties
+        [Browsable(false)]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public WaveSelectionMode SelectionMode { get; set; } = WaveSelectionMode.Sample;
+
+        [Browsable(false)]
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public SnapType Snap { get; set; } = SnapType.Fine;
+
+        [Browsable(false)]
+        public double BPM { get; set; } = 100.0;
+        #endregion
     }
 
     /// <summary>Converter for selecting property value from known lists.</summary>

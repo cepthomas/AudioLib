@@ -86,7 +86,6 @@
             this.waveViewer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.waveViewer1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.waveViewer1.BPM = 100F;
             this.waveViewer1.DrawColor = System.Drawing.Color.Orange;
             this.waveViewer1.Gain = 1F;
             this.waveViewer1.GridColor = System.Drawing.Color.LightGray;
@@ -94,9 +93,7 @@
             this.waveViewer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.waveViewer1.MarkColor = System.Drawing.Color.Red;
             this.waveViewer1.Name = "waveViewer1";
-            this.waveViewer1.SelectionMode = AudioLib.WaveSelectionMode.Sample;
             this.waveViewer1.Size = new System.Drawing.Size(1157, 197);
-            this.waveViewer1.Snap = true;
             this.waveViewer1.TabIndex = 26;
             // 
             // waveViewer2
@@ -104,7 +101,6 @@
             this.waveViewer2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.waveViewer2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.waveViewer2.BPM = 100F;
             this.waveViewer2.DrawColor = System.Drawing.Color.Orange;
             this.waveViewer2.Gain = 1F;
             this.waveViewer2.GridColor = System.Drawing.Color.LightGray;
@@ -112,9 +108,7 @@
             this.waveViewer2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.waveViewer2.MarkColor = System.Drawing.Color.Red;
             this.waveViewer2.Name = "waveViewer2";
-            this.waveViewer2.SelectionMode = AudioLib.WaveSelectionMode.Sample;
             this.waveViewer2.Size = new System.Drawing.Size(1157, 198);
-            this.waveViewer2.Snap = true;
             this.waveViewer2.TabIndex = 32;
             // 
             // toolStrip1

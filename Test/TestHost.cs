@@ -308,7 +308,7 @@ namespace AudioLib.Test
             int diff1 = Math.Abs(sampout1 - sample);
             float msec1 = AudioLibUtils.SampleToMsec(diff1);
 
-            TimeSpan ts = AudioLibUtils.SampleToTime(sample);
+            TimeSpan ts = AudioLibUtils.SampleToTime(sample, SnapType.None);
             int sampout2 = AudioLibUtils.TimeToSample(ts);
             int diff2 = Math.Abs(sampout2 - sample);
             float msec2 = AudioLibUtils.SampleToMsec(diff2);
