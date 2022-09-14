@@ -176,7 +176,7 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Resample to a new file compatible with this application.
+        /// Resample to a new wav file.
         /// </summary>
         /// <param name="fn">The current filename</param>
         /// <param name="newfn">The new filename</param>

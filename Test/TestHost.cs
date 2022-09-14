@@ -22,7 +22,7 @@ namespace AudioLib.Test
 {
     public partial class TestHost : Form
     {
-        readonly string _testFilesDir = @"C:\Dev\repos\TestAudioFiles\";
+        readonly string _testFilesDir = @"C:\Dev\repos\TestAudioFiles";
         ISampleProvider? _prov;
         readonly ClipSampleProvider _provSwap;
         readonly SwappableSampleProvider _waveOutSwapper;
@@ -62,13 +62,20 @@ namespace AudioLib.Test
             _player.PlaybackStopped += (_, __) =>
             {
                 LogLine("player finished");
-                this.InvokeIfRequired(_ => btnPlayer.Checked = false);
+                this.InvokeIfRequired(_ => chkPlay.Checked = false);
                 _prov?.Rewind();
             };
-            _provSwap = new ClipSampleProvider(_testFilesDir + "test.wav", StereoCoercion.Mono);
+            _provSwap = new ClipSampleProvider(Path.Join(_testFilesDir, "test.wav"), StereoCoercion.Mono);
+            chkPlay.Click += (_, __) => Play_Click();
+
+            // File openers.
+            foreach (var fn in new[] { "ref-stereo.wav", "one-sec.mp3", "ambi_swoosh.flac", "Tracy.m4a",
+                "avTouch_sample_22050.m4a", "tri-ref.txt", "short_samples.txt", "generated.sin" })
+            {
+                LoadButton.DropDownItems.Add(fn, null, Load_Click);
+            }
 
             btnTest.Click += (_, __) => UnitTests();
-
 
             // Go-go-go.
             timer1.Interval = 100;
@@ -78,82 +85,37 @@ namespace AudioLib.Test
         void Load_Click(object? sender, EventArgs args)
         {
             _player.Run(false);
-            btnPlayer.Checked = false;
+            chkPlay.Checked = false;
             btnSwap.Checked = false;
+
+            var ext = Path.GetExtension(sender!.ToString());
 
             try
             {
-                // ClipSampleProvider is mono only. Use AudioFileReader for stereo.
-                switch (sender!.ToString())
+                ISampleProvider? prov = null;
+                string fn = Path.Join(_testFilesDir, sender!.ToString());
+
+                switch (ext)
                 {
-                    case "wav":
-                        {
-                            string fn = _testFilesDir + "ref-stereo.wav";
-                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            var prov = new AudioFileReader(fn);
-                            SetProvider(prov);
-                        }
+                    case ".sin": // Generate a sin wave.
+                        var data = new float[2000];
+                        for (int i = 0; i < data.Length; i++) { data[i] = (float)Math.Sin(i * 0.02); }
+                        prov = new ClipSampleProvider(data);
                         break;
 
-                    case "mp3":
-                        {
-                            string fn = _testFilesDir + "one-sec.mp3";
-                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            var prov = new AudioFileReader(fn);
-                            SetProvider(prov);
-                        }
+                    case ".txt": // Wave from csv file.
+                        var sdata = File.ReadAllLines(fn);
+                        var tdata = new float[sdata.Length];
+                        for (int i = 0; i < sdata.Length; i++) { tdata[i] = float.Parse(sdata[i]); }
+                        prov = new ClipSampleProvider(tdata);
                         break;
 
-                    case "flac":
-                        {
-                            string fn = _testFilesDir + "ambi_swoosh.flac";
-                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            var prov = new AudioFileReader(fn);
-                            SetProvider(prov);
-                        }
-                        break;
 
-                    case "m4a":
-                        {
-                            string fn = _testFilesDir + "avTouch_sample.m4a"; // other sample rate - breaks
-                            //var prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            var prov = new AudioFileReader(fn);
-                            SetProvider(prov);
-                        }
-                        break;
-
-                    case "sin":
-                        {
-                            // Draw a sin wave.
-                            var data = new float[500];
-                            for (int i = 0; i < data.Length; i++) { data[i] = (float)Math.Sin(i * 0.1); }
-                            var prov = new ClipSampleProvider(data);
-                            SetProvider(prov);
-                        }
-                        break;
-
-                    case "txt":
-                        {
-                            // Wave from csv file.
-                            var sdata = File.ReadAllLines(_testFilesDir + "tri-ref.txt");
-                            var data = new float[sdata.Length];
-                            for (int i = 0; i < sdata.Length; i++) { data[i] = float.Parse(sdata[i]); }
-                            var prov = new ClipSampleProvider(data);
-                            SetProvider(prov);
-                        }
-                        break;
-
-                    case "short":
-                        {
-                            // Short wave from csv file.
-                            var sdata = File.ReadAllLines(_testFilesDir + "500_samples.txt");
-                            var data = new float[sdata.Length];
-                            for (int i = 0; i < sdata.Length; i++) { data[i] = float.Parse(sdata[i]); }
-                            var prov = new ClipSampleProvider(data);
-                            SetProvider(prov);
-                        }
+                    default: // Audio file.
+                        prov = btnClipProvider.Checked ? new ClipSampleProvider(fn, StereoCoercion.Mono) : new AudioFileReader(fn);
                         break;
                 }
+                SetProvider(prov);
             }
             catch (Exception e)
             {
@@ -218,7 +180,7 @@ namespace AudioLib.Test
             timeBar.Length = new(0, 0, 0, 0, msec); // msec;
         }
 
-        void Player_Click(object? sender, EventArgs args)
+        void Play_Click()
         {
             if (_prov is null)
             {
@@ -226,18 +188,19 @@ namespace AudioLib.Test
             }
             else
             {
-                _player.Run(btnPlayer.Checked);
+                _player.Run(chkPlay.Checked);
             }
         }
 
         void Resample_Click(object? sender, EventArgs e)
         {
-            string fn = _testFilesDir + "avTouch_sample.m4a"; // other sample rate - breaks
-            string newfn = _testFilesDir + "_resampled.wav";
+            string fn = Path.Join(_testFilesDir, "Tracy.m4a");
+            string newfn = Path.Join(_testFilesDir, "Tracy.wav");
 
             NAudioEx.Resample(fn, newfn);
         }
 
+        // Swap test for SwappableSampleProvider.
         void Swap_Click(object? sender, EventArgs args)
         {
             if (_prov is null)
@@ -258,13 +221,13 @@ namespace AudioLib.Test
             // Dump all test files.
             bool verbose = false;
             string[] files = new[] {
-                "ambi_swoosh.flac", "avTouch_sample.m4a", "bass_woodsy_c.flac", "Cave Ceremony 01.wav", "Fat Box 01.wav",
+                "ambi_swoosh.flac", "avTouch_sample_22050.m4a", "bass_woodsy_c.flac", "Cave Ceremony 01.wav", "Fat Box 01.wav",
                 "Horns 01.wav", "one-sec.mp3", "_kidch.mp3", "one-sec.wav", "Orchestra 03.wav", "ref-stereo.wav",
                 "sin-stereo-audible.wav", "sin.wav", "test.wav" };
 
             files.ForEach(f =>
             {
-                string s = AudioFileInfo.GetFileInfo(_testFilesDir + f, verbose);
+                string s = AudioFileInfo.GetFileInfo(Path.Join(_testFilesDir, f), verbose);
                 txtInfo.AppendText(s + Environment.NewLine);
             });
 

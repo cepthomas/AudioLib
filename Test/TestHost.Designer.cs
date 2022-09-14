@@ -26,17 +26,8 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.btnSettings = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
-            this.wavToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.mp3ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.flacToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.m4aToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.txtToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.sinToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.shortToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.LoadButton = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnPlayer = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.btnSwap = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.btnFileInfo = new System.Windows.Forms.ToolStripButton();
@@ -45,9 +36,12 @@
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.btnTest = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnClipProvider = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.sldGain = new NBagOfUis.Slider();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.lblInfo = new System.Windows.Forms.ToolStripStatusLabel();
+            this.chkPlay = new System.Windows.Forms.CheckBox();
             this.toolStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -88,6 +82,8 @@
             this.waveViewer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.waveViewer1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.waveViewer1.BPM = 0F;
+            this.waveViewer1.DefaultSelectionMode = AudioLib.WaveSelectionMode.Sample;
             this.waveViewer1.Gain = 1F;
             this.waveViewer1.Location = new System.Drawing.Point(6, 164);
             this.waveViewer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -100,6 +96,8 @@
             this.waveViewer2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.waveViewer2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.waveViewer2.BPM = 0F;
+            this.waveViewer2.DefaultSelectionMode = AudioLib.WaveSelectionMode.Sample;
             this.waveViewer2.Gain = 1F;
             this.waveViewer2.Location = new System.Drawing.Point(6, 369);
             this.waveViewer2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
@@ -115,10 +113,8 @@
             this.toolStripSeparator1,
             this.btnSettings,
             this.toolStripSeparator2,
-            this.toolStripDropDownButton1,
+            this.LoadButton,
             this.toolStripSeparator3,
-            this.btnPlayer,
-            this.toolStripSeparator4,
             this.btnSwap,
             this.toolStripSeparator5,
             this.btnFileInfo,
@@ -126,7 +122,9 @@
             this.btnResample,
             this.toolStripSeparator7,
             this.btnTest,
-            this.toolStripSeparator8});
+            this.toolStripSeparator8,
+            this.btnClipProvider,
+            this.toolStripSeparator9});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(1175, 27);
@@ -161,90 +159,18 @@
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(6, 27);
             // 
-            // toolStripDropDownButton1
+            // LoadButton
             // 
-            this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.wavToolStripMenuItem,
-            this.mp3ToolStripMenuItem,
-            this.flacToolStripMenuItem,
-            this.m4aToolStripMenuItem,
-            this.txtToolStripMenuItem,
-            this.sinToolStripMenuItem,
-            this.shortToolStripMenuItem});
-            this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
-            this.toolStripDropDownButton1.Size = new System.Drawing.Size(53, 24);
-            this.toolStripDropDownButton1.Text = "load";
-            // 
-            // wavToolStripMenuItem
-            // 
-            this.wavToolStripMenuItem.Name = "wavToolStripMenuItem";
-            this.wavToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
-            this.wavToolStripMenuItem.Text = "wav";
-            this.wavToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
-            // 
-            // mp3ToolStripMenuItem
-            // 
-            this.mp3ToolStripMenuItem.Name = "mp3ToolStripMenuItem";
-            this.mp3ToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
-            this.mp3ToolStripMenuItem.Text = "mp3";
-            this.mp3ToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
-            // 
-            // flacToolStripMenuItem
-            // 
-            this.flacToolStripMenuItem.Name = "flacToolStripMenuItem";
-            this.flacToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
-            this.flacToolStripMenuItem.Text = "flac";
-            this.flacToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
-            // 
-            // m4aToolStripMenuItem
-            // 
-            this.m4aToolStripMenuItem.Name = "m4aToolStripMenuItem";
-            this.m4aToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
-            this.m4aToolStripMenuItem.Text = "m4a";
-            this.m4aToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
-            // 
-            // txtToolStripMenuItem
-            // 
-            this.txtToolStripMenuItem.Name = "txtToolStripMenuItem";
-            this.txtToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
-            this.txtToolStripMenuItem.Text = "txt";
-            this.txtToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
-            // 
-            // sinToolStripMenuItem
-            // 
-            this.sinToolStripMenuItem.Name = "sinToolStripMenuItem";
-            this.sinToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
-            this.sinToolStripMenuItem.Text = "sin";
-            this.sinToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
-            // 
-            // shortToolStripMenuItem
-            // 
-            this.shortToolStripMenuItem.Name = "shortToolStripMenuItem";
-            this.shortToolStripMenuItem.Size = new System.Drawing.Size(125, 26);
-            this.shortToolStripMenuItem.Text = "short";
-            this.shortToolStripMenuItem.Click += new System.EventHandler(this.Load_Click);
+            this.LoadButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.LoadButton.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.LoadButton.Name = "LoadButton";
+            this.LoadButton.Size = new System.Drawing.Size(53, 24);
+            this.LoadButton.Text = "load";
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
             this.toolStripSeparator3.Size = new System.Drawing.Size(6, 27);
-            // 
-            // btnPlayer
-            // 
-            this.btnPlayer.CheckOnClick = true;
-            this.btnPlayer.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnPlayer.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnPlayer.Name = "btnPlayer";
-            this.btnPlayer.Size = new System.Drawing.Size(54, 24);
-            this.btnPlayer.Text = "player";
-            this.btnPlayer.Click += new System.EventHandler(this.Player_Click);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 27);
             // 
             // btnSwap
             // 
@@ -302,18 +228,33 @@
             this.toolStripSeparator8.Name = "toolStripSeparator8";
             this.toolStripSeparator8.Size = new System.Drawing.Size(6, 27);
             // 
+            // btnClipProvider
+            // 
+            this.btnClipProvider.CheckOnClick = true;
+            this.btnClipProvider.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnClipProvider.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnClipProvider.Name = "btnClipProvider";
+            this.btnClipProvider.Size = new System.Drawing.Size(71, 24);
+            this.btnClipProvider.Text = "clip prov";
+            this.btnClipProvider.ToolTipText = "Select ClipSampleProvider or AudioFileReader";
+            // 
+            // toolStripSeparator9
+            // 
+            this.toolStripSeparator9.Name = "toolStripSeparator9";
+            this.toolStripSeparator9.Size = new System.Drawing.Size(6, 27);
+            // 
             // sldGain
             // 
             this.sldGain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.sldGain.DrawColor = System.Drawing.Color.CornflowerBlue;
             this.sldGain.Label = "gain";
-            this.sldGain.Location = new System.Drawing.Point(10, 119);
+            this.sldGain.Location = new System.Drawing.Point(199, 115);
             this.sldGain.Maximum = 3D;
             this.sldGain.Minimum = 0D;
             this.sldGain.Name = "sldGain";
             this.sldGain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             this.sldGain.Resolution = 0.05D;
-            this.sldGain.Size = new System.Drawing.Size(156, 35);
+            this.sldGain.Size = new System.Drawing.Size(156, 42);
             this.sldGain.TabIndex = 33;
             this.sldGain.Value = 1D;
             // 
@@ -334,11 +275,25 @@
             this.lblInfo.Size = new System.Drawing.Size(151, 20);
             this.lblInfo.Text = "toolStripStatusLabel1";
             // 
+            // chkPlay
+            // 
+            this.chkPlay.Appearance = System.Windows.Forms.Appearance.Button;
+            this.chkPlay.BackColor = System.Drawing.Color.Fuchsia;
+            this.chkPlay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.chkPlay.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.chkPlay.Location = new System.Drawing.Point(12, 115);
+            this.chkPlay.Name = "chkPlay";
+            this.chkPlay.Size = new System.Drawing.Size(57, 42);
+            this.chkPlay.TabIndex = 36;
+            this.chkPlay.Text = "play";
+            this.chkPlay.UseVisualStyleBackColor = false;
+            // 
             // TestHost
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1175, 597);
+            this.Controls.Add(this.chkPlay);
             this.Controls.Add(this.txtInfo);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.sldGain);
@@ -369,27 +324,21 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton btnSettings;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
-        private System.Windows.Forms.ToolStripMenuItem wavToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem mp3ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem flacToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem txtToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem sinToolStripMenuItem;
+        private System.Windows.Forms.ToolStripDropDownButton LoadButton;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripButton btnPlayer;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripButton btnSwap;
-        private System.Windows.Forms.ToolStripMenuItem m4aToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripButton btnFileInfo;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private NBagOfUis.Slider sldGain;
-        private System.Windows.Forms.ToolStripMenuItem shortToolStripMenuItem;
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel lblInfo;
         private System.Windows.Forms.ToolStripButton btnResample;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripButton btnTest;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+        private System.Windows.Forms.ToolStripButton btnClipProvider;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
+        private System.Windows.Forms.CheckBox chkPlay;
     }
 }

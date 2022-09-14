@@ -48,9 +48,9 @@ namespace AudioLib
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public WaveSelectionMode SelectionMode { get; set; } = WaveSelectionMode.Sample;
 
-        [Browsable(false)]
-        [JsonConverter(typeof(JsonStringEnumConverter))]
-        public SnapType Snap { get; set; } = SnapType.Fine;
+        // [Browsable(false)]
+        // [JsonConverter(typeof(JsonStringEnumConverter))]
+        // public SnapType Snap { get; set; } = SnapType.Fine;
 
         [Browsable(false)]
         public double BPM { get; set; } = 100.0;

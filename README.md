@@ -16,6 +16,7 @@ Contents:
 - SwappableSampleProvider: Sample provider that supports hot swapping of input.
 - PeakProvider: Customized version of NAudio's IPeakProvider family for displayiing waveforms.
 - NAudioEx: NAudio compatible extension methods for the providers implemented here.
+- Converters: Between samples, TimeSpan, milliseconds, Bar/Beat.
 
 # External Components
 

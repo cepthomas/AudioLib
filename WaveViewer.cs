@@ -21,6 +21,9 @@ namespace AudioLib
     public partial class WaveViewer : UserControl
     {
         #region Fields
+        /// <summary>Simple display only.</summary>
+        bool _simple = false;
+
         /// <summary>For drawing text.</summary>
         readonly Font _textFont = new("Calibri", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
@@ -42,9 +45,6 @@ namespace AudioLib
         /// <summary>For painting. Essentially the zoom factor.</summary>
         int _samplesPerPixel = 0;
 
-        /// <summary>Simple display only.</summary>
-        bool _simple = false;
-
         /// <summary>Last pixel.</summary>
         int _lastXPos = 0;
         #endregion
@@ -65,7 +65,8 @@ namespace AudioLib
 
         #region Backing fields
         float _gain = 1.0f;
-        WaveSelectionMode _selectionMode = WaveSelectionMode.Sample;//TODO1
+        float _bpm = 0;
+        WaveSelectionMode _defaultSelectionMode = WaveSelectionMode.Sample;
         int _visibleStart = 0;
         int _selStart = 0;
         int _selLength = 0;
@@ -87,6 +88,12 @@ namespace AudioLib
 
         /// <summary>For styling.</summary>
         public Color MarkColor { set { _penMark.Color = value; _brushMark.Color = value; Invalidate(); } }
+
+        /// <summary>Global mode - overridden from keyboard.</summary>
+        public WaveSelectionMode DefaultSelectionMode { set { _defaultSelectionMode = value; Invalidate(); } }
+
+        /// <summary>Global tempo if using Beat selection mode.</summary>
+        public float BPM { set { _bpm = value; Invalidate(); } }
 
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
@@ -139,13 +146,12 @@ namespace AudioLib
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
             //InitializeComponent();
-            this.components = new System.ComponentModel.Container();
-            this.toolTip = new System.Windows.Forms.ToolTip(this.components);
-            this.SuspendLayout();
-            this.Name = "WaveViewer";
-            this.ResumeLayout(false);
+            components = new Container();
+            toolTip = new(components);
+            SuspendLayout();
+            Name = "WaveViewer";
+            ResumeLayout(false);
         }
-
 
         /// <summary>
         /// Set everything from data source. Client must do this before setting properties as some are overwritten.
@@ -172,7 +178,6 @@ namespace AudioLib
 
             Invalidate();
         }
-
 
         /// <summary>
         /// Clean up any resources being used.
@@ -278,7 +283,7 @@ namespace AudioLib
             SnapType snap = GetSnapType();
             var sample = PixelToSample(e.X);
 
-            switch (e.Button, _selectionMode, ModifierKeys)
+            switch (e.Button, _defaultSelectionMode, ModifierKeys)
             {
                 case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.None): // marker
                     _marker = Converters.SnapSample(sample, snap);
@@ -351,7 +356,7 @@ namespace AudioLib
                 SnapType snap = GetSnapType();
                 var sample = PixelToSample(e.X);
 
-                switch (_selectionMode)
+                switch (_defaultSelectionMode)
                 {
                     case WaveSelectionMode.Time:
                         TimeSpan tm = Converters.SampleToTime(sample, snap);
@@ -491,7 +496,7 @@ namespace AudioLib
                     }
 
                     // X grid lines.
-                    switch (_selectionMode)
+                    switch (_defaultSelectionMode)
                     {
                         case WaveSelectionMode.Time:
                             //TimeSpan tstart = Converters.SampleToTime(VisibleStart, snap);

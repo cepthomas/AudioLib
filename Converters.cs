@@ -8,6 +8,10 @@ using NAudio.Wave;
 using NBagOfTricks;
 
 // Functons to convert between the various time representation.
+// There will be a certain inaccuracy with these conversions. Small-ish for TimeSpan/msec conversions,
+// worse for BarBeat. Such is the nature of things.
+// 44.1 samples per msec <-> 0.0227 msec per sample
+
 
 namespace AudioLib
 {
@@ -61,7 +65,8 @@ namespace AudioLib
                 SnapType.Fine => Clamp(msec, 100), // tenth second
                 _ => msec, // none
             };
-            return new(0, 0, 0, 0, msec);
+            TimeSpan res = new(0, 0, 0, 0, msec);
+            return res;
         }
 
         /// <summary>
@@ -119,7 +124,8 @@ namespace AudioLib
         {
             double msec = 1000D * sample / AudioLibDefs.SAMPLE_RATE;
             msec = Math.Round(msec);
-            return SnapTime(new(0, 0, 0, 0, (int)msec), snap);
+            TimeSpan res = SnapTime(new(0, 0, 0, 0, (int)msec), snap);
+            return res;
         }
 
         /// <summary>
@@ -157,7 +163,8 @@ namespace AudioLib
                 PartBeat = (int)partBeats % BarBeat.BEAT_PARTS
             };
 
-            return SnapBarBeat(bb, snap);
+            var res = SnapBarBeat(bb, snap);
+            return res;
         }
 
         /// <summary>
@@ -173,7 +180,8 @@ namespace AudioLib
             float secPerBeat = minPerBeat * 60;
             float smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
 
-            return (int)(partBeats * smplPerBeat / BarBeat.BEAT_PARTS);
+            var res = (int)(partBeats * smplPerBeat / BarBeat.BEAT_PARTS);
+            return res;
         }
 
         /// <summary>
