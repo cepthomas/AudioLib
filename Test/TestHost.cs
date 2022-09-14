@@ -10,11 +10,12 @@ using System.IO;
 using System.Windows.Forms;
 using System.Diagnostics;
 using System.Drawing.Design;
-using NBagOfTricks;
 using AudioLib;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using System.Runtime.Intrinsics.Arm;
+using NBagOfTricks;
+using NBagOfTricks.PNUT;
+
 
 
 namespace AudioLib.Test
@@ -65,6 +66,9 @@ namespace AudioLib.Test
                 _prov?.Rewind();
             };
             _provSwap = new ClipSampleProvider(_testFilesDir + "test.wav", StereoCoercion.Mono);
+
+            btnTest.Click += (_, __) => UnitTests();
+
 
             // Go-go-go.
             timer1.Interval = 100;
@@ -299,19 +303,17 @@ namespace AudioLib.Test
             this.InvokeIfRequired(_ => { txtInfo.AppendText(s + Environment.NewLine); });
         }
 
-        void OtherStuff()
+        void UnitTests()
         {
-            // Conversion tests.
-            int sample = 123456;
-            float msec = AudioLibUtils.SampleToMsec(sample);
-            int sampout1 = AudioLibUtils.MsecToSample(msec);
-            int diff1 = Math.Abs(sampout1 - sample);
-            float msec1 = AudioLibUtils.SampleToMsec(diff1);
+            // Run pnut tests from cmd line.
+            Size stxt = txtInfo.Size;
+            txtInfo.Size = new Size(stxt.Width, Height - 200);
 
-            TimeSpan ts = AudioLibUtils.SampleToTime(sample, SnapType.None);
-            int sampout2 = AudioLibUtils.TimeToSample(ts);
-            int diff2 = Math.Abs(sampout2 - sample);
-            float msec2 = AudioLibUtils.SampleToMsec(diff2);
+            TestRunner runner = new(OutputFormat.Readable);
+            var cases = new[] { "CONVERTERS" };
+            runner.RunSuites(cases);
+            runner.Context.OutputLines.ForEach(l => LogLine(l));
+            //File.WriteAllLines(@"..\..\out\test_out.txt", runner.Context.OutputLines);
         }
 
         protected override void Dispose(bool disposing)

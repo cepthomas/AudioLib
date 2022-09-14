@@ -47,7 +47,9 @@ namespace AudioLib
 
         /// <summary>Last pixel.</summary>
         int _lastXPos = 0;
+        #endregion
 
+        #region Constants
         /// <summary>UI gain adjustment.</summary>
         const float GAIN_INCREMENT = 0.05f;
 
@@ -63,7 +65,7 @@ namespace AudioLib
 
         #region Backing fields
         float _gain = 1.0f;
-        WaveSelectionMode _selectionMode = WaveSelectionMode.Sample;
+        WaveSelectionMode _selectionMode = WaveSelectionMode.Sample;//TODO1
         int _visibleStart = 0;
         int _selStart = 0;
         int _selLength = 0;
@@ -279,7 +281,7 @@ namespace AudioLib
             switch (e.Button, _selectionMode, ModifierKeys)
             {
                 case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.None): // marker
-                    _marker = AudioLibUtils.SampleToSample(sample, snap);
+                    _marker = Converters.SnapSample(sample, snap);
                     CheckSel();
                     MarkerChangedEvent?.Invoke(this, EventArgs.Empty);
                     Invalidate();
@@ -352,7 +354,7 @@ namespace AudioLib
                 switch (_selectionMode)
                 {
                     case WaveSelectionMode.Time:
-                        TimeSpan tm = AudioLibUtils.SampleToTime(sample, snap);
+                        TimeSpan tm = Converters.SampleToTime(sample, snap);
                         toolTip.SetToolTip(this, tm.ToString(AudioLibDefs.TS_FORMAT));
                         break;
 
@@ -361,7 +363,7 @@ namespace AudioLib
                         break;
 
                     case WaveSelectionMode.Sample:
-                        sample = AudioLibUtils.SampleToSample(sample, snap);
+                        sample = Converters.SnapSample(sample, snap);
                         toolTip.SetToolTip(this, sample.ToString());
                         break;
                 }
@@ -492,8 +494,8 @@ namespace AudioLib
                     switch (_selectionMode)
                     {
                         case WaveSelectionMode.Time:
-                            //TimeSpan tstart = AudioLibUtils.SampleToTime(VisibleStart, snap);
-                            //TimeSpan tend = AudioLibUtils.SampleToTime(VisibleStart + VisibleLength, snap);
+                            //TimeSpan tstart = Converters.SampleToTime(VisibleStart, snap);
+                            //TimeSpan tend = Converters.SampleToTime(VisibleStart + VisibleLength, snap);
                             //TimeSpan tlen = tend - tstart;
 
 
