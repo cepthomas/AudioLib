@@ -7,7 +7,8 @@ using System.Windows.Forms;
 using NAudio.Wave;
 using NBagOfTricks;
 
-// Functons to convert between the various time representation.
+
+// Functions to convert between the various time representation.
 // There will be a certain inaccuracy with these conversions. Small-ish for TimeSpan/msec conversions,
 // worse for BarBeat. Such is the nature of things.
 // 44.1 samples per msec <-> 0.0227 msec per sample
@@ -21,12 +22,13 @@ namespace AudioLib
         /// Snap to closest neighbor.
         /// </summary>
         /// <param name="val"></param>
-        /// <param name="granularity">Where the neighbors are.</param>
+        /// <param name="granularity">The neighbors increment.</param>
+        /// <param name="round">Round or truncate.</param>
         /// <returns></returns>
-        static int Clamp(int val, int granularity) // TODO put in nbot.
+        public static int Clamp(int val, int granularity, bool round) // TODO put in nbot.
         {
             int res = (val / granularity) * granularity;
-            if (val % granularity > granularity / 2)
+            if (round && val % granularity > granularity / 2)
             {
                 res += granularity;
             }
@@ -43,8 +45,8 @@ namespace AudioLib
         {
             int snapped = snap switch
             {
-                SnapType.Coarse => Clamp(sample, 10000),
-                SnapType.Fine => Clamp(sample, 1000),
+                SnapType.Coarse => Clamp(sample, 10000, true),
+                SnapType.Fine => Clamp(sample, 1000, true),
                 _ => sample,
             };
             return snapped;
@@ -61,8 +63,8 @@ namespace AudioLib
             int msec = (int)ts.TotalMilliseconds;
             msec = snap switch
             {
-                SnapType.Coarse => Clamp(msec, 1000), // second
-                SnapType.Fine => Clamp(msec, 100), // tenth second
+                SnapType.Coarse => Clamp(msec, 1000, true), // second
+                SnapType.Fine => Clamp(msec, 100, true), // tenth second
                 _ => msec, // none
             };
             TimeSpan res = new(0, 0, 0, 0, msec);

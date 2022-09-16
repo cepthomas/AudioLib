@@ -73,18 +73,18 @@ namespace AudioLib
         /// Agnostic property.
         /// </summary>
         /// <param name="prov"></param>
-        /// <returns>The length or -1 if unknown.</returns>
-        public static int Length(this ISampleProvider prov)
+        /// <returns>The number of samples per channel or -1 if unknown.</returns>
+        public static int SamplesPerChannel(this ISampleProvider prov)
         {
-            int len = -1; // default
+            int num = -1; // default
             switch (prov)
             {
-                case ClipSampleProvider csp: len = csp.Length; break;
-                case AudioFileReader afr: len = (int)afr.Length; break;
-                case SwappableSampleProvider ssp: len = 0; break;
+                case ClipSampleProvider csp: num = csp.SamplesPerChannel; break;
+                case AudioFileReader afr: num = (int)afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels ; break;
+                case SwappableSampleProvider ssp: num = -1; break;
                 default: break;
             }
-            return len;
+            return num;
         }
 
         /// <summary>
@@ -118,7 +118,7 @@ namespace AudioLib
             {
                 case ClipSampleProvider csp:
                     info.Add(("File", csp.FileName == "" ? "None" : Path.GetFileName(csp.FileName)));
-                    info.Add(("Length", csp.Length.ToString()));
+                    info.Add(("SamplesPerChannel", csp.SamplesPerChannel.ToString()));
                     info.Add(("Time", csp.TotalTime.ToString(AudioLibDefs.TS_FORMAT)));
                     break;
 

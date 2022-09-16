@@ -1,7 +1,7 @@
+using System;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
-using System;
 
 
 namespace AudioLib
@@ -23,7 +23,7 @@ namespace AudioLib
         #endregion
 
         #region Properties
-        /// <summary>The WaveFormat of this sample provider. Fixed to mono. ISampleProvider implementation.</summary>
+        /// <summary>The WaveFormat of this sample provider. Only mono. ISampleProvider implementation.</summary>
         public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
 
         /// <summary>The associated file name. Empty if new.</summary>
@@ -33,10 +33,10 @@ namespace AudioLib
         public float Gain { get; set; } = 1.0f;
 
         /// <summary>Length of the clip in samples.</summary>
-        public int Length { get { return _vals.Length; } }
+        public int SamplesPerChannel { get { return _vals.Length; } }
 
         /// <summary>Length of the clip in seconds.</summary>
-        public TimeSpan TotalTime { get { return TimeSpan.FromSeconds((double)Length / WaveFormat.SampleRate); } }
+        public TimeSpan TotalTime { get { return TimeSpan.FromSeconds((double)SamplesPerChannel / WaveFormat.SampleRate); } }
 
         /// <summary>Position of the simulated stream as sample index.</summary>
         public int Position

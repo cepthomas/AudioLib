@@ -15,8 +15,7 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 using NBagOfTricks.PNUT;
-
-
+using NBagOfUis;
 
 namespace AudioLib.Test
 {
@@ -43,20 +42,21 @@ namespace AudioLib.Test
             timeBar.ProgressColor = Color.CornflowerBlue;
             timeBar.BackColor = Color.Salmon;
 
-            // Controls.
-            waveViewer1.DrawColor = Color.Red;
-            waveViewer1.BackColor = Color.Cyan;
-            waveViewer1.GainChangedEvent += (_, __) => sldGain.Value = waveViewer1.Gain;
-            sldGain.ValueChanged += (_, __) =>
-            {
-                waveViewer1.Gain = (float)sldGain.Value;
-                waveViewer1.Invalidate();
-            };
+            // Wave viewers.
+            wv1.DrawColor = Color.Red;
+            wv1.BackColor = Color.Cyan;
+            wv1.GainChangedEvent += (_, __) => sldGain.Value = wv1.Gain;
+            sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
+            wv2.DrawColor = Color.Blue;
+            wv2.BackColor = Color.LightYellow;
+            wv2.MarkerChangedEvent += (_, __) => wv1.Recenter(wv2.Marker);
+            // Hardcode viewers.
+            WaveSelectionMode sel = WaveSelectionMode.Sample;
+            wv1.SelectionMode = sel;
+            wv2.SelectionMode = sel;
+            wv1.BPM = 100;
 
-            waveViewer2.DrawColor = Color.Blue;
-            waveViewer2.BackColor = Color.LightYellow;
-
-            // Player.
+            // Play.
             _waveOutSwapper = new();
             _player = new("Microsoft Sound Mapper", 200, _waveOutSwapper) { Volume = 0.5 };
             _player.PlaybackStopped += (_, __) =>
@@ -70,9 +70,9 @@ namespace AudioLib.Test
 
             // File openers.
             foreach (var fn in new[] { "ref-stereo.wav", "one-sec.mp3", "ambi_swoosh.flac", "Tracy.m4a",
-                "avTouch_sample_22050.m4a", "tri-ref.txt", "short_samples.txt", "generated.sin" })
+                "avTouch_sample_22050.m4a", "tri-ref.txt", "short_samples.txt", "generate.sin" })
             {
-                LoadButton.DropDownItems.Add(fn, null, Load_Click);
+                LoadButton.DropDownItems.Add(fn, null, LoadViewer_Click);
             }
 
             btnTest.Click += (_, __) => UnitTests();
@@ -82,7 +82,7 @@ namespace AudioLib.Test
             timer1.Enabled = true;
         }
 
-        void Load_Click(object? sender, EventArgs args)
+        void LoadViewer_Click(object? sender, EventArgs args)
         {
             _player.Run(false);
             chkPlay.Checked = false;
@@ -144,31 +144,31 @@ namespace AudioLib.Test
                 return;
             }
 
-            int sclen = prov.Length();
+            int sclen = prov.SamplesPerChannel();
 
             // If it's stereo split into two monos, one viewer per.
             if (prov.WaveFormat.Channels == 2) // stereo
             {
                 prov.Rewind();
-                waveViewer1.Init(new ClipSampleProvider(prov, StereoCoercion.Left));
-                //waveViewer1.SelStart = sclen / 3;
-                //waveViewer1.SelLength = sclen / 4;
-                waveViewer1.Marker = 2 * sclen / 3;
+                wv1.Init(new ClipSampleProvider(prov, StereoCoercion.Left));
+                wv1.SelStart = sclen / 3;
+                wv1.SelLength = sclen / 4;
+                wv1.Marker = 2 * sclen / 3;
 
                 prov.Rewind();
-                waveViewer2.Init(new ClipSampleProvider(prov, StereoCoercion.Right));
-                //waveViewer2.SelStart = sclen / 4;
-                //waveViewer1.SelLength = sclen / 4;
-                waveViewer2.Marker = 3 * sclen / 4;
+                wv2.Init(new ClipSampleProvider(prov, StereoCoercion.Right), true); // simple
+                //wv2.SelStart = sclen / 4;
+                //wv1.SelLength = sclen / 4;
+                wv2.Marker = 3 * sclen / 4;
             }
             else // mono
             {
-                waveViewer1.Init(new ClipSampleProvider(prov, StereoCoercion.None));
-                //waveViewer1.SelStart = sclen / 10;
-                //waveViewer1.SelLength = 9 * sclen / 10;
-                waveViewer1.Marker = sclen / 4;
+                wv1.Init(new ClipSampleProvider(prov, StereoCoercion.None));
+                //wv1.SelStart = sclen / 10;
+                //wv1.SelLength = 9 * sclen / 10;
+                wv1.Marker = sclen / 4;
 
-                waveViewer2.Init(new ClipSampleProvider(Array.Empty<float>()));
+                wv2.Init(new ClipSampleProvider(Array.Empty<float>()), true); // simple);
             }
 
             prov.Rewind();
@@ -238,7 +238,7 @@ namespace AudioLib.Test
         void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
             LogLine($"Current time:{timeBar.Current}");
-            waveViewer1.Marker = (int)timeBar.Current.TotalMilliseconds;
+            wv1.Marker = (int)timeBar.Current.TotalMilliseconds;
         }
 
         void Timer1_Tick(object? sender, EventArgs args)

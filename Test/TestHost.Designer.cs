@@ -19,8 +19,8 @@
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.txtInfo = new System.Windows.Forms.RichTextBox();
             this.timeBar = new AudioLib.TimeBar();
-            this.waveViewer1 = new AudioLib.WaveViewer();
-            this.waveViewer2 = new AudioLib.WaveViewer();
+            this.wv1 = new AudioLib.WaveViewer();
+            this.wv2 = new AudioLib.WaveViewer();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnRunBars = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -68,7 +68,7 @@
             this.timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.timeBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.timeBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.timeBar.Location = new System.Drawing.Point(10, 44);
+            this.timeBar.Location = new System.Drawing.Point(6, 44);
             this.timeBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.timeBar.MarkerColor = System.Drawing.Color.Black;
             this.timeBar.Name = "timeBar";
@@ -77,33 +77,29 @@
             this.timeBar.SnapMsec = 0;
             this.timeBar.TabIndex = 24;
             // 
-            // waveViewer1
+            // wv1
             // 
-            this.waveViewer1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.wv1.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.waveViewer1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.waveViewer1.BPM = 0F;
-            this.waveViewer1.DefaultSelectionMode = AudioLib.WaveSelectionMode.Sample;
-            this.waveViewer1.Gain = 1F;
-            this.waveViewer1.Location = new System.Drawing.Point(6, 164);
-            this.waveViewer1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.waveViewer1.Name = "waveViewer1";
-            this.waveViewer1.Size = new System.Drawing.Size(1157, 197);
-            this.waveViewer1.TabIndex = 26;
+            this.wv1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.wv1.Gain = 1F;
+            this.wv1.Location = new System.Drawing.Point(6, 164);
+            this.wv1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.wv1.Name = "wv1";
+            this.wv1.Size = new System.Drawing.Size(1157, 300);
+            this.wv1.TabIndex = 26;
             // 
-            // waveViewer2
+            // wv2
             // 
-            this.waveViewer2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.wv2.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.waveViewer2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.waveViewer2.BPM = 0F;
-            this.waveViewer2.DefaultSelectionMode = AudioLib.WaveSelectionMode.Sample;
-            this.waveViewer2.Gain = 1F;
-            this.waveViewer2.Location = new System.Drawing.Point(6, 369);
-            this.waveViewer2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.waveViewer2.Name = "waveViewer2";
-            this.waveViewer2.Size = new System.Drawing.Size(1157, 198);
-            this.waveViewer2.TabIndex = 32;
+            this.wv2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.wv2.Gain = 1F;
+            this.wv2.Location = new System.Drawing.Point(6, 472);
+            this.wv2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.wv2.Name = "wv2";
+            this.wv2.Size = new System.Drawing.Size(1157, 95);
+            this.wv2.TabIndex = 32;
             // 
             // toolStrip1
             // 
@@ -248,13 +244,13 @@
             this.sldGain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.sldGain.DrawColor = System.Drawing.Color.CornflowerBlue;
             this.sldGain.Label = "gain";
-            this.sldGain.Location = new System.Drawing.Point(199, 115);
+            this.sldGain.Location = new System.Drawing.Point(75, 115);
             this.sldGain.Maximum = 3D;
             this.sldGain.Minimum = 0D;
             this.sldGain.Name = "sldGain";
             this.sldGain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             this.sldGain.Resolution = 0.05D;
-            this.sldGain.Size = new System.Drawing.Size(156, 42);
+            this.sldGain.Size = new System.Drawing.Size(96, 42);
             this.sldGain.TabIndex = 33;
             this.sldGain.Value = 1D;
             // 
@@ -281,7 +277,7 @@
             this.chkPlay.BackColor = System.Drawing.Color.Fuchsia;
             this.chkPlay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.chkPlay.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.chkPlay.Location = new System.Drawing.Point(12, 115);
+            this.chkPlay.Location = new System.Drawing.Point(6, 115);
             this.chkPlay.Name = "chkPlay";
             this.chkPlay.Size = new System.Drawing.Size(57, 42);
             this.chkPlay.TabIndex = 36;
@@ -297,9 +293,9 @@
             this.Controls.Add(this.txtInfo);
             this.Controls.Add(this.statusStrip1);
             this.Controls.Add(this.sldGain);
-            this.Controls.Add(this.waveViewer2);
+            this.Controls.Add(this.wv2);
             this.Controls.Add(this.toolStrip1);
-            this.Controls.Add(this.waveViewer1);
+            this.Controls.Add(this.wv1);
             this.Controls.Add(this.timeBar);
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "TestHost";
@@ -316,8 +312,8 @@
         #endregion
         private System.Windows.Forms.Timer timer1;
         private TimeBar timeBar;
-        private WaveViewer waveViewer1;
-        private WaveViewer waveViewer2;
+        private WaveViewer wv1;
+        private WaveViewer wv2;
         private System.Windows.Forms.RichTextBox txtInfo;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton btnRunBars;

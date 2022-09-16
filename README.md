@@ -18,6 +18,28 @@ Contents:
 - NAudioEx: NAudio compatible extension methods for the providers implemented here.
 - Converters: Between samples, TimeSpan, milliseconds, Bar/Beat.
 
+
+# UI TODO get from Wavicler oe v.v.
+MouseDown:
+(MouseButtons.Left, Keys.None): // sample marker
+(MouseButtons.Left, Keys.Control): // sample sel start
+(MouseButtons.Left, Keys.Shift): // sample sel end
+
+KeyDown:
+case Keys.G: // reset gain
+case Keys.H: // reset to initial full view
+case Keys.M: // go to marker
+case Keys.S: // go to selection
+case Keys.F: // snap fine
+case Keys.C: // snap coarse
+case Keys.N: // snap none
+
+public enum WaveSelectionMode { Beat, Time, Sample };
+
+public enum SnapType { None, Fine, Coarse };
+
+OnMouseMove: tooltip only
+
 # External Components
 
 - [NAudio](https://github.com/naudio/NAudio) (Microsoft Public License).
