@@ -104,9 +104,9 @@ namespace AudioLib
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int Length { get { return _vals.Length; } }
 
-        /// <summary>Length of the clip in seconds.</summary>
+        /// <summary>Length of the clip.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public TimeSpanEx TotalTime { get { return new((float)Length / AudioLibDefs.SAMPLE_RATE); } }
+        public AudioTime TotalTime { get { return new((float)Length / AudioLibDefs.SAMPLE_RATE); } }
 
         /// <summary>Selection start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -355,12 +355,12 @@ namespace AudioLib
                         break;
 
                     case WaveSelectionMode.Time:
-                        TimeSpanEx tm = Converters.SampleToTime(sample, _snap);
+                        var tm = Converters.SampleToTime(sample, _snap);
                         toolTip.SetToolTip(this, tm.ToString());
                         break;
 
                     case WaveSelectionMode.Beat:
-                        BarBeat bb = Converters.SampleToBarBeat(sample, _bpm, _snap);
+                        var bb = Converters.SampleToBarBeat(sample, _bpm, _snap);
                         toolTip.SetToolTip(this, bb.ToString());
                         break;
                 }
@@ -542,14 +542,14 @@ namespace AudioLib
                             break;
 
                         case WaveSelectionMode.Time: // TODO1 paint time
-                            //TimeSpanEx tstart = Converters.SampleToTime(VisibleStart, snap);
-                            //TimeSpanEx tend = Converters.SampleToTime(VisibleStart + VisibleLength, snap);
-                            //TimeSpanEx tlen = tend - tstart;
+                            //AudioTime tstart = Converters.SampleToTime(VisibleStart, snap);
+                            //AudioTime tend = Converters.SampleToTime(VisibleStart + VisibleLength, snap);
+                            //AudioTime tlen = tend - tstart;
 
 
                             //// anywhere from 10 msec to MaxClipSize (10 min)
                             //// 0.01 -> 600.0
-                            //TimeSpanEx incr = tlen / X_NUM_LINES;
+                            //AudioTime incr = tlen / X_NUM_LINES;
 
                             //int sincr = VisibleLength / X_NUM_LINES;
                             break;

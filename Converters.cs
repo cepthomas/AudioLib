@@ -9,7 +9,7 @@ using NBagOfTricks;
 
 
 // Functions to convert between the various time representation.
-// There will be a certain inaccuracy with these conversions. Small-ish for TimeSpanEx/msec conversions,
+// There will be a certain inaccuracy with these conversions. Small-ish for AudioTime and msec conversions,
 // worse for BarBeat. Such is the nature of things.
 // 44.1 samples per msec <-> 0.0227 msec per sample
 
@@ -58,7 +58,7 @@ namespace AudioLib
         /// <param name="ts"></param>
         /// <param name="snap"></param>
         /// <returns></returns>
-        public static TimeSpanEx SnapTime(TimeSpanEx ts, SnapType snap)
+        public static AudioTime SnapTime(AudioTime ts, SnapType snap)
         {
             int msec = (int)ts.TotalMilliseconds;
             msec = snap switch
@@ -67,7 +67,7 @@ namespace AudioLib
                 SnapType.Fine => Clamp(msec, 100, true), // tenth second
                 _ => msec, // none
             };
-            TimeSpanEx res = new(msec);
+            AudioTime res = new(msec);
             return res;
         }
 
@@ -122,10 +122,10 @@ namespace AudioLib
         /// <param name="sample"></param>
         /// <param name="snap"></param>
         /// <returns></returns>
-        public static TimeSpanEx SampleToTime(int sample, SnapType snap)
+        public static AudioTime SampleToTime(int sample, SnapType snap)
         {
             double msec = 1000D * sample / AudioLibDefs.SAMPLE_RATE;
-            TimeSpanEx res = SnapTime(new((int)msec), snap);
+            AudioTime res = SnapTime(new((int)msec), snap);
             return res;
         }
 
@@ -134,7 +134,7 @@ namespace AudioLib
         /// </summary>
         /// <param name="ts"></param>
         /// <returns></returns>
-        public static int TimeToSample(TimeSpanEx ts)
+        public static int TimeToSample(AudioTime ts)
         {
             double sample = (double)AudioLibDefs.SAMPLE_RATE * ts.TotalMilliseconds / 1000D;
             return (int)sample;

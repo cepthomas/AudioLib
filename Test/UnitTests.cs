@@ -44,7 +44,7 @@ namespace AudioLib.Test
                 }
             }
 
-            // TimeSpanEx <-> sample.
+            // AudioTime <-> sample.
             {
                 int sample1 = 62398541;
                 int sample2 = 1904788;
@@ -54,14 +54,14 @@ namespace AudioLib.Test
                 UT_EQUAL(ts.ToString(), "23:34.933");
                 int sout = Converters.TimeToSample(ts);
                 int err = Math.Abs(sample1 - sout); //4
-                Debug.WriteLine($"TimeSpanEx error:{Converters.SampleToMsec(err)}");// TimeSpanEx error:0.09070295
+                Debug.WriteLine($"AudioTime error:{Converters.SampleToMsec(err)}");// AudioTime error:0.09070295
                 UT_LESS(err, errmax);
 
                 ts = Converters.SampleToTime(sample2, SnapType.None);
                 UT_EQUAL(ts.ToString(), "00:43.192");
                 sout = Converters.TimeToSample(ts);
                 err = Math.Abs(sample2 - sout);//21
-                Debug.WriteLine($"TimeSpanEx error:{Converters.SampleToMsec(err)}");// TimeSpanEx error:0.47619048
+                Debug.WriteLine($"AudioTime error:{Converters.SampleToMsec(err)}");// AudioTime error:0.47619048
                 UT_LESS(err, errmax);
 
                 ts = Converters.SampleToTime(sample1, SnapType.Fine); // round down

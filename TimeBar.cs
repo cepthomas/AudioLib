@@ -110,7 +110,7 @@ namespace AudioLib
         public void IncrementCurrent(int msec)
         {
             int smsec = DoSnap(msec);
-            _current = (smsec > 0) ? _current.Add(new TimeSpan(0, 0, 0, 0, smsec)) : _current.Subtract(new TimeSpan(0, 0, 0, 0, -smsec));
+            _current = (smsec > 0) ? _current.Add(new TimeSpan(smsec)) : _current.Subtract(new TimeSpan(0, 0, 0, 0, -smsec));
 
             if (_current > _length)
             {
