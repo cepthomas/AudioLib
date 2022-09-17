@@ -20,6 +20,10 @@ namespace AudioLib
         #region Properties
         /// <summary>The fixed stereo WaveFormat of this sample provider. ISampleProvider implementation.</summary>
         public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 2);
+
+        //public int Position { get { return _currentInput is null ? -1 : _currentInput.GetPosition(); } }
+
+        //public AudioTime TotalTime { get { return _currentInput is null ? AudioTime.Zero : new((float)_currentInput.SamplesPerChannel() / WaveFormat.SampleRate); } }
         #endregion
 
         #region Public functions

@@ -44,33 +44,69 @@ namespace AudioLib.Test
             timeBar.BackColor = Color.Salmon;
 
             // Wave viewers.
+            WaveSelectionMode sel = WaveSelectionMode.Sample;
+
             wv1.DrawColor = Color.Red;
             wv1.BackColor = Color.Cyan;
+            wv1.SelectionMode = sel;
             wv1.ViewerChangeEvent += ProcessViewerChangeEvent;
-
-
-
-
-
             sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
+
             wv2.DrawColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;
-            wv2.ViewerChangeEvent += ProcessViewerChangeEvent;
-            WaveSelectionMode sel = WaveSelectionMode.Sample;
-            wv1.SelectionMode = sel;
             wv2.SelectionMode = sel;
             wv1.BPM = 100;
+            wv2.ViewerChangeEvent += ProcessViewerChangeEvent;
 
             // Play.
             _waveOutSwapper = new();
-            _player = new("Microsoft Sound Mapper", 200, _waveOutSwapper) { Volume = 0.5 };
+            _provSwap = new ClipSampleProvider(Path.Join(_testFilesDir, "test.wav"), StereoCoercion.Mono);
+
+            var postVolumeMeter = new MeteringSampleProvider(_waveOutSwapper, _waveOutSwapper.WaveFormat.SampleRate / 10);
+            postVolumeMeter.StreamVolume += (object? sender, StreamVolumeEventArgs e) =>
+            {
+                timeBar.Current = new(1000.0f * _waveOutSwapper.GetPosition() / _waveOutSwapper.WaveFormat.SampleRate);
+                // timeBar.Current = _reader.CurrentTime;
+            };
+
+
+            _player = new("Microsoft Sound Mapper", 200, postVolumeMeter) { Volume = 0.5 };
             _player.PlaybackStopped += (_, __) =>
             {
                 LogLine("player finished");
                 this.InvokeIfRequired(_ => chkPlay.Checked = false);
                 _prov?.Rewind();
             };
-            _provSwap = new ClipSampleProvider(Path.Join(_testFilesDir, "test.wav"), StereoCoercion.Mono);
+
+
+
+            //var sampleChannel = new SampleChannel(_audioFileReader, false);
+            //sampleChannel.PreVolumeMeter += SampleChannel_PreVolumeMeter;
+            //var postVolumeMeter = new MeteringSampleProvider(sampleChannel);
+            //postVolumeMeter.StreamVolume += PostVolumeMeter_StreamVolume;
+            //void PostVolumeMeter_StreamVolume(object? sender, StreamVolumeEventArgs e)
+            //{
+            //    if (_audioFileReader is not null)
+            //    {
+            //        timeBar.Current = _audioFileReader.CurrentTime;
+            //    }
+            //}
+            //
+            //// For playing.
+            //_waveOutSwapper.SetInput(postVolumeMeter);
+            //
+            //timeBar.CurrentTimeChanged += (_, __) =>
+            //{
+            //    if (_audioFileReader is not null)
+            //    {
+            //        _audioFileReader.CurrentTime = timeBar.Current;
+            //    }
+            //};
+
+
+
+
+
             chkPlay.Click += (_, __) => Play_Click();
 
             // File openers.
@@ -136,7 +172,7 @@ namespace AudioLib.Test
                     sldGain.Value = wv1.Gain;
                     break;
 
-                case ("wvNav", UiChange.Marker):
+                case ("wv2", UiChange.Marker):
                     wv1.Recenter(wv2.Marker);
                     break;
 
@@ -166,29 +202,30 @@ namespace AudioLib.Test
                 return;
             }
 
-            int sclen = prov.SamplesPerChannel();
+            var tm = prov.TotalTime();
+            //int sclen = prov.SamplesPerChannel();
 
             // If it's stereo split into two monos, one viewer per.
             if (prov.WaveFormat.Channels == 2) // stereo
             {
                 prov.Rewind();
                 wv1.Init(new ClipSampleProvider(prov, StereoCoercion.Left));
-                wv1.SelStart = sclen / 3;
-                wv1.SelLength = sclen / 4;
-                wv1.Marker = 2 * sclen / 3;
+                //wv1.SelStart = sclen / 3;
+                //wv1.SelLength = sclen / 4;
+                //wv1.Marker = 2 * sclen / 3;
 
                 prov.Rewind();
                 wv2.Init(new ClipSampleProvider(prov, StereoCoercion.Right), true); // simple
                 //wv2.SelStart = sclen / 4;
                 //wv1.SelLength = sclen / 4;
-                wv2.Marker = 3 * sclen / 4;
+                //wv2.Marker = 3 * sclen / 4;
             }
             else // mono
             {
                 wv1.Init(new ClipSampleProvider(prov, StereoCoercion.None));
                 //wv1.SelStart = sclen / 10;
                 //wv1.SelLength = 9 * sclen / 10;
-                wv1.Marker = sclen / 4;
+                //wv1.Marker = sclen / 4;
 
                 wv2.Init(new ClipSampleProvider(Array.Empty<float>()), true); // simple);
             }
@@ -196,10 +233,9 @@ namespace AudioLib.Test
             prov.Rewind();
             lblInfo.Text = prov.GetInfoString();
 
-            int msec = 1000 * sclen / prov.WaveFormat.SampleRate;
-            timeBar.Marker1 = new TimeSpan(0, 0, 0, 0, msec / 3);
-            timeBar.Marker2 = new TimeSpan(0, 0, 0, 0, msec / 2);
-            timeBar.Length = new(0, 0, 0, 0, msec); // msec;
+            timeBar.Length = tm;
+            //timeBar.Marker1 = new AudioTime(msec / 3);
+            //timeBar.Marker2 = new AudioTime(msec / 2);
         }
 
         void Play_Click()

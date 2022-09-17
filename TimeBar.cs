@@ -32,28 +32,28 @@ namespace AudioLib
         #region Backing fields
         readonly SolidBrush _brushProgress = new(Color.White);
         readonly Pen _penMarker = new(Color.Black, 1);
-        TimeSpan _current = new();
-        TimeSpan _length = new();
-        TimeSpan _marker1 = new();
-        TimeSpan _marker2 = new();
+        AudioTime _current = new();
+        AudioTime _length = new();
+        AudioTime _marker1 = new();
+        AudioTime _marker2 = new();
         #endregion
 
         #region Properties
         /// <summary>Where we be now.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public TimeSpan Current { get { return _current; } set { _current = value; Invalidate(); } }
+        public AudioTime Current { get { return _current; } set { _current = value; Invalidate(); } }
 
         /// <summary>Total length.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public TimeSpan Length { get { return _length; } set { _length = value; Invalidate(); } }
+        public AudioTime Length { get { return _length; } set { _length = value; Invalidate(); } }
 
         /// <summary>One marker.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public TimeSpan Marker1 { get { return _marker1; } set { _marker1 = value; Invalidate(); } }
+        public AudioTime Marker1 { get { return _marker1; } set { _marker1 = value; Invalidate(); } }
 
         /// <summary>Other marker.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public TimeSpan Marker2 { get { return _marker2; } set { _marker2 = value; Invalidate(); } }
+        public AudioTime Marker2 { get { return _marker2; } set { _marker2 = value; Invalidate(); } }
 
         /// <summary>Snap to this increment value.</summary>
         public int SnapMsec { get; set; } = 0;
@@ -110,22 +110,22 @@ namespace AudioLib
         public void IncrementCurrent(int msec)
         {
             int smsec = DoSnap(msec);
-            _current = (smsec > 0) ? _current.Add(new TimeSpan(smsec)) : _current.Subtract(new TimeSpan(0, 0, 0, 0, -smsec));
+            _current = (smsec > 0) ? _current += new AudioTime(smsec) : _current -= new AudioTime(-smsec);
 
             if (_current > _length)
             {
                 _current = _length;
             }
 
-            if (_current < TimeSpan.Zero)
+            if (_current < AudioTime.Zero)
             {
-                _current = TimeSpan.Zero;
+                _current = AudioTime.Zero;
             }
             else if (_current >= _length)
             {
                 _current = _length;
             }
-            else if (_marker2 != TimeSpan.Zero && _current >= _marker2)
+            else if (_marker2 != AudioTime.Zero && _current >= _marker2)
             {
                 _current = _marker2;
             }
@@ -144,13 +144,13 @@ namespace AudioLib
             pe.Graphics.Clear(BackColor);
 
             // Validate times.
-            _marker1 = Constrain(_marker1, TimeSpan.Zero, _length);
-            _marker1 = Constrain(_marker1, TimeSpan.Zero, _marker2);
-            _marker2 = Constrain(_marker2, TimeSpan.Zero, _length);
+            _marker1 = Constrain(_marker1, AudioTime.Zero, _length);
+            _marker1 = Constrain(_marker1, AudioTime.Zero, _marker2);
+            _marker2 = Constrain(_marker2, AudioTime.Zero, _length);
             _marker2 = Constrain(_marker2, _marker1, _length);
             _current = Constrain(_current, _marker1, _marker2);
 
-            if (_marker2 == TimeSpan.Zero && _length != TimeSpan.Zero)
+            if (_marker2 == AudioTime.Zero && _length != AudioTime.Zero)
             {
                 _marker2 = _length;
             }
@@ -164,7 +164,7 @@ namespace AudioLib
             }
 
             // Draw start/end markers.
-            if (_marker1 != TimeSpan.Zero || _marker2 != _length)
+            if (_marker1 != AudioTime.Zero || _marker2 != _length)
             {
                 int mstart = Scale(_marker1);
                 int mend = Scale(_marker2);
@@ -174,11 +174,11 @@ namespace AudioLib
 
             // Text.
             _format.Alignment = StringAlignment.Center;
-            pe.Graphics.DrawString(_current.ToString(AudioLibDefs.TS_FORMAT), FontLarge, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_current.ToString(), FontLarge, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Near;
-            pe.Graphics.DrawString(_marker1.ToString(AudioLibDefs.TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_marker1.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Far;
-            pe.Graphics.DrawString(_marker2.ToString(AudioLibDefs.TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_marker2.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
         }
         #endregion
 
@@ -205,7 +205,7 @@ namespace AudioLib
 
                 case Keys.Escape:
                     // Reset.
-                    _marker1 = TimeSpan.Zero;
+                    _marker1 = AudioTime.Zero;
                     _marker2 = _length;
                     e.Handled = true;
                     Invalidate();
@@ -249,8 +249,8 @@ namespace AudioLib
             {
                 if (e.X != _lastXPos)
                 {
-                    TimeSpan ts = GetTimeFromMouse(e.X);
-                    _toolTip.SetToolTip(this, ts.ToString(AudioLibDefs.TS_FORMAT));
+                    AudioTime ts = GetTimeFromMouse(e.X);
+                    _toolTip.SetToolTip(this, ts.ToString());
                     _lastXPos = e.X;
                 }
             }
@@ -285,10 +285,10 @@ namespace AudioLib
 
         #region Private functions
         /// <summary>
-        /// Convert x pos to TimeSpan.
+        /// Convert x pos to AudioTime.
         /// </summary>
         /// <param name="x"></param>
-        TimeSpan GetTimeFromMouse(int x)
+        AudioTime GetTimeFromMouse(int x)
         {
             int msec = 0;
 
@@ -298,7 +298,7 @@ namespace AudioLib
                 msec = MathUtils.Constrain(msec, 0, (int)_length.TotalMilliseconds);
                 msec = DoSnap(msec);
             }
-            return new TimeSpan(0, 0, 0, 0, msec);
+            return new AudioTime(msec);
         }
 
         /// <summary>
@@ -328,9 +328,9 @@ namespace AudioLib
         /// <param name="lower"></param>
         /// <param name="upper"></param>
         /// <returns></returns>
-        TimeSpan Constrain(TimeSpan val, TimeSpan lower, TimeSpan upper)
+        AudioTime Constrain(AudioTime val, AudioTime lower, AudioTime upper)
         {
-            return TimeSpan.FromMilliseconds(MathUtils.Constrain(val.TotalMilliseconds, lower.TotalMilliseconds, upper.TotalMilliseconds));
+            return new AudioTime(MathUtils.Constrain(val.TotalMilliseconds, lower.TotalMilliseconds, upper.TotalMilliseconds));
         }
 
         /// <summary>
@@ -338,7 +338,7 @@ namespace AudioLib
         /// </summary>
         /// <param name="val"></param>
         /// <returns></returns>
-        public int Scale(TimeSpan val)
+        public int Scale(AudioTime val)
         {
             return (int)(val.TotalMilliseconds * Width / _length.TotalMilliseconds);
         }
