@@ -36,7 +36,7 @@ namespace AudioLib
         public int SamplesPerChannel { get { return _vals.Length; } }
 
         /// <summary>Length of the clip in seconds.</summary>
-        public TimeSpan TotalTime { get { return TimeSpan.FromSeconds((double)SamplesPerChannel / WaveFormat.SampleRate); } }
+        public TimeSpanEx TotalTime { get { return new((float)SamplesPerChannel / WaveFormat.SampleRate); } }
 
         /// <summary>Position of the simulated stream as sample index.</summary>
         public int Position

@@ -92,7 +92,7 @@ namespace AudioLib
         public Color MarkColor { set { _penMark.Color = value; _brushMark.Color = value; Invalidate(); } }
 
         /// <summary>Global mode.</summary>
-        public WaveSelectionMode SelectionMode { set { _selectionMode = value; Invalidate(); } }
+        public WaveSelectionMode SelectionMode { get { return _selectionMode; } set { _selectionMode = value; Invalidate(); } }
 
         /// <summary>Global tempo if using Beat selection mode.</summary>
         public float BPM { set { _bpm = value; Invalidate(); } }
@@ -106,7 +106,7 @@ namespace AudioLib
 
         /// <summary>Length of the clip in seconds.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public TimeSpan TotalTime { get { return TimeSpan.FromSeconds((double)Length / AudioLibDefs.SAMPLE_RATE); } }
+        public TimeSpanEx TotalTime { get { return new((float)Length / AudioLibDefs.SAMPLE_RATE); } }
 
         /// <summary>Selection start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -132,7 +132,6 @@ namespace AudioLib
         #region Events
         /// <summary>Value changed by user.</summary>
         public event EventHandler<ViewerChangeEventArgs>? ViewerChangeEvent;
-        public enum UiChange { Gain, Marker, SelStart, SelLength }
         public class ViewerChangeEventArgs { public UiChange Change { get; set; } }
         #endregion
 
@@ -356,8 +355,8 @@ namespace AudioLib
                         break;
 
                     case WaveSelectionMode.Time:
-                        TimeSpan tm = Converters.SampleToTime(sample, _snap);
-                        toolTip.SetToolTip(this, tm.ToString(AudioLibDefs.TS_FORMAT));
+                        TimeSpanEx tm = Converters.SampleToTime(sample, _snap);
+                        toolTip.SetToolTip(this, tm.ToString());
                         break;
 
                     case WaveSelectionMode.Beat:
@@ -543,14 +542,14 @@ namespace AudioLib
                             break;
 
                         case WaveSelectionMode.Time: // TODO1 paint time
-                            //TimeSpan tstart = Converters.SampleToTime(VisibleStart, snap);
-                            //TimeSpan tend = Converters.SampleToTime(VisibleStart + VisibleLength, snap);
-                            //TimeSpan tlen = tend - tstart;
+                            //TimeSpanEx tstart = Converters.SampleToTime(VisibleStart, snap);
+                            //TimeSpanEx tend = Converters.SampleToTime(VisibleStart + VisibleLength, snap);
+                            //TimeSpanEx tlen = tend - tstart;
 
 
                             //// anywhere from 10 msec to MaxClipSize (10 min)
                             //// 0.01 -> 600.0
-                            //TimeSpan incr = tlen / X_NUM_LINES;
+                            //TimeSpanEx incr = tlen / X_NUM_LINES;
 
                             //int sincr = VisibleLength / X_NUM_LINES;
                             break;

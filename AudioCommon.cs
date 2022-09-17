@@ -23,6 +23,33 @@ namespace AudioLib
     /// <summary>Notification type.</summary>
     public enum UiChange { Gain, Marker, SelStart, SelLength }
 
+    public static class EXXXXX
+    {
+        //        public static void Validate(this ISampleProvider prov, bool mono)
+
+    }
+    public class TimeSpanEx
+    {
+        TimeSpan _timeSpan = new();
+
+        public int TotalMilliseconds { get { return (int)Math.Round(_timeSpan.TotalMilliseconds); } }
+
+        public TimeSpanEx(int msec)
+        {
+            _timeSpan = new(0, 0, 0, 0, msec);
+        }
+
+        public TimeSpanEx(float seconds)
+        {
+            _timeSpan = TimeSpan.FromSeconds(seconds);
+        }
+
+        public override string ToString()
+        {
+            return _timeSpan.ToString(AudioLibDefs.TS_FORMAT);
+        }
+    }
+
     /// <summary>Container for musical time. Internally 0-based but traditional 1-based for the user.</summary>
     public class BarBeat
     {

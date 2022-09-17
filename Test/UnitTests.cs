@@ -44,37 +44,37 @@ namespace AudioLib.Test
                 }
             }
 
-            // TimeSpan <-> sample.
+            // TimeSpanEx <-> sample.
             {
                 int sample1 = 62398541;
                 int sample2 = 1904788;
                 int errmax = 50; // Roundtrip conversion error.
 
                 var ts = Converters.SampleToTime(sample1, SnapType.None);
-                UT_EQUAL(ts.ToString(AudioLibDefs.TS_FORMAT), "23:34.933");
+                UT_EQUAL(ts.ToString(), "23:34.933");
                 int sout = Converters.TimeToSample(ts);
                 int err = Math.Abs(sample1 - sout); //4
-                Debug.WriteLine($"TimeSpan error:{Converters.SampleToMsec(err)}");// TimeSpan error:0.09070295
+                Debug.WriteLine($"TimeSpanEx error:{Converters.SampleToMsec(err)}");// TimeSpanEx error:0.09070295
                 UT_LESS(err, errmax);
 
                 ts = Converters.SampleToTime(sample2, SnapType.None);
-                UT_EQUAL(ts.ToString(AudioLibDefs.TS_FORMAT), "00:43.192");
+                UT_EQUAL(ts.ToString(), "00:43.192");
                 sout = Converters.TimeToSample(ts);
                 err = Math.Abs(sample2 - sout);//21
-                Debug.WriteLine($"TimeSpan error:{Converters.SampleToMsec(err)}");// TimeSpan error:0.47619048
+                Debug.WriteLine($"TimeSpanEx error:{Converters.SampleToMsec(err)}");// TimeSpanEx error:0.47619048
                 UT_LESS(err, errmax);
 
                 ts = Converters.SampleToTime(sample1, SnapType.Fine); // round down
-                UT_EQUAL(ts.ToString(AudioLibDefs.TS_FORMAT), "23:34.900");
+                UT_EQUAL(ts.ToString(), "23:34.900");
 
                 ts = Converters.SampleToTime(sample2, SnapType.Fine); // round up
-                UT_EQUAL(ts.ToString(AudioLibDefs.TS_FORMAT), "00:43.200");
+                UT_EQUAL(ts.ToString(), "00:43.200");
 
                 ts = Converters.SampleToTime(sample1, SnapType.Coarse); // round up
-                UT_EQUAL(ts.ToString(AudioLibDefs.TS_FORMAT), "23:35.000");
+                UT_EQUAL(ts.ToString(), "23:35.000");
 
                 ts = Converters.SampleToTime(sample2, SnapType.Coarse); // round down
-                UT_EQUAL(ts.ToString(AudioLibDefs.TS_FORMAT), "00:43.000");
+                UT_EQUAL(ts.ToString(), "00:43.000");
             }
 
             // BarBeat <-> sample.

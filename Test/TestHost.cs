@@ -16,6 +16,7 @@ using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 using NBagOfTricks.PNUT;
 using NBagOfUis;
+using System.Xml.Linq;
 
 namespace AudioLib.Test
 {
@@ -45,12 +46,16 @@ namespace AudioLib.Test
             // Wave viewers.
             wv1.DrawColor = Color.Red;
             wv1.BackColor = Color.Cyan;
-            wv1.GainChangedEvent += (_, __) => sldGain.Value = wv1.Gain;
+            wv1.ViewerChangeEvent += ProcessViewerChangeEvent;
+
+
+
+
+
             sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
             wv2.DrawColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;
-            wv2.MarkerChangedEvent += (_, __) => wv1.Recenter(wv2.Marker);
-            // Hardcode viewers.
+            wv2.ViewerChangeEvent += ProcessViewerChangeEvent;
             WaveSelectionMode sel = WaveSelectionMode.Sample;
             wv1.SelectionMode = sel;
             wv2.SelectionMode = sel;
@@ -121,6 +126,23 @@ namespace AudioLib.Test
             {
                 LogLine("!!! " + e.Message);
             }
+        }
+
+        void ProcessViewerChangeEvent(object? sender, WaveViewer.ViewerChangeEventArgs e)
+        {
+            switch ((sender as WaveViewer)!.Name, e.Change)
+            {
+                case ("wv1", UiChange.Gain):
+                    sldGain.Value = wv1.Gain;
+                    break;
+
+                case ("wvNav", UiChange.Marker):
+                    wv1.Recenter(wv2.Marker);
+                    break;
+
+                default:
+                    break;
+            };
         }
 
         // Helper to manage resources.

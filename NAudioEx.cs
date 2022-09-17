@@ -119,13 +119,13 @@ namespace AudioLib
                 case ClipSampleProvider csp:
                     info.Add(("File", csp.FileName == "" ? "None" : Path.GetFileName(csp.FileName)));
                     info.Add(("SamplesPerChannel", csp.SamplesPerChannel.ToString()));
-                    info.Add(("Time", csp.TotalTime.ToString(AudioLibDefs.TS_FORMAT)));
+                    info.Add(("Time", csp.TotalTime.ToString()));
                     break;
 
                 case AudioFileReader afr:
                     info.Add(("File", afr.FileName == "" ? "None" : Path.GetFileName(afr.FileName)));
                     info.Add(("Length", afr.Length.ToString()));
-                    info.Add(("Time", afr.TotalTime.ToString(AudioLibDefs.TS_FORMAT)));
+                    info.Add(("Time", afr.TotalTime.ToString()));
                     break;
 
                 case SwappableSampleProvider ssp:// anything useful?
