@@ -20,6 +20,9 @@ namespace AudioLib
     /// <summary>How to snap.</summary>
     public enum SnapType { None, Fine, Coarse };
 
+    /// <summary>Notification type.</summary>
+    public enum UiChange { Gain, Marker, SelStart, SelLength }
+
     /// <summary>Container for musical time. Internally 0-based but traditional 1-based for the user.</summary>
     public class BarBeat
     {

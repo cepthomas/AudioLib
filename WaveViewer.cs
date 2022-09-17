@@ -131,13 +131,9 @@ namespace AudioLib
 
         #region Events
         /// <summary>Value changed by user.</summary>
-        public event EventHandler? GainChangedEvent;
-
-        /// <summary>Value changed by user.</summary>
-        public event EventHandler? SelectionChangedEvent;
-
-        /// <summary>Value changed by user.</summary>
-        public event EventHandler? MarkerChangedEvent;
+        public event EventHandler<ViewerChangeEventArgs>? ViewerChangeEvent;
+        public enum UiChange { Gain, Marker, SelStart, SelLength }
+        public class ViewerChangeEventArgs { public UiChange Change { get; set; } }
         #endregion
 
         #region Lifecycle
@@ -265,7 +261,7 @@ namespace AudioLib
                     case Keys.Shift: // y gain
                         _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
                         _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
-                        GainChangedEvent?.Invoke(this, EventArgs.Empty);
+                        ViewerChangeEvent?.Invoke(this, new() { Change = UiChange.Gain });
                         Invalidate();
                         break;
                 };
@@ -288,7 +284,7 @@ namespace AudioLib
                 case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.None, ViewerMode.Simple):
                     _marker = Converters.SnapSample(sample, _snap);
                     CheckSel();
-                    MarkerChangedEvent?.Invoke(this, EventArgs.Empty);
+                    ViewerChangeEvent?.Invoke(this, new() { Change = UiChange.Marker });
                     Invalidate();
                     break;
 
@@ -310,7 +306,7 @@ namespace AudioLib
                         _selLength = ends - _selStart;
                     }
                     CheckSel();
-                    SelectionChangedEvent?.Invoke(this, EventArgs.Empty);
+                    ViewerChangeEvent?.Invoke(this, new() { Change = UiChange.SelStart });
                     Invalidate();
                     break;
 
@@ -326,7 +322,7 @@ namespace AudioLib
                     var sel = Converters.SnapSample(sample, _snap);
                     _selLength = sel - _selStart;
                     CheckSel();
-                    SelectionChangedEvent?.Invoke(this, EventArgs.Empty);
+                    ViewerChangeEvent?.Invoke(this, new() { Change = UiChange.SelLength });
                     Invalidate();
                     break;
 
