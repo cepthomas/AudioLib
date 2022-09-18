@@ -355,12 +355,14 @@ namespace AudioLib
                         break;
 
                     case WaveSelectionMode.Time:
-                        var tm = Converters.SampleToTime(sample, _snap);
+                        var tm = new AudioTime(sample);
+                        tm.Snap(_snap);
                         toolTip.SetToolTip(this, tm.ToString());
                         break;
 
                     case WaveSelectionMode.Beat:
-                        var bb = Converters.SampleToBarBeat(sample, _bpm, _snap);
+                        var bb = new BarBeat(sample, _bpm);
+                        bb.Snap(_snap);
                         toolTip.SetToolTip(this, bb.ToString());
                         break;
                 }

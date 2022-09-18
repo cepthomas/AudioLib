@@ -53,10 +53,4 @@
       </EmbeddedResource>
     </ItemGroup>
 
-    <ItemGroup>
-        <None Update="wav.txt">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </None>
-    </ItemGroup>
-
 </Project>

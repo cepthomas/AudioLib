@@ -65,7 +65,7 @@ namespace AudioLib.Test
             var postVolumeMeter = new MeteringSampleProvider(_waveOutSwapper, _waveOutSwapper.WaveFormat.SampleRate / 10);
             postVolumeMeter.StreamVolume += (object? sender, StreamVolumeEventArgs e) =>
             {
-                timeBar.Current = new(1000.0f * _waveOutSwapper.GetPosition() / _waveOutSwapper.WaveFormat.SampleRate);
+//TODO1                timeBar.Current = new(1000.0f * _waveOutSwapper.GetPosition() / _waveOutSwapper.WaveFormat.SampleRate);
                 // timeBar.Current = _reader.CurrentTime;
             };
 
@@ -202,7 +202,7 @@ namespace AudioLib.Test
                 return;
             }
 
-            var tm = prov.TotalTime();
+            var tm = new AudioTime();//TODO1 prov.TotalTime();
             //int sclen = prov.SamplesPerChannel();
 
             // If it's stereo split into two monos, one viewer per.
@@ -331,7 +331,7 @@ namespace AudioLib.Test
             txtInfo.Size = new Size(stxt.Width, Height - 200);
 
             TestRunner runner = new(OutputFormat.Readable);
-            var cases = new[] { "CONVERTERS" };
+            var cases = new[] { "CONVERT" };
             runner.RunSuites(cases);
             runner.Context.OutputLines.ForEach(l => LogLine(l));
             //File.WriteAllLines(@"..\..\out\test_out.txt", runner.Context.OutputLines);

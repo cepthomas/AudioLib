@@ -22,40 +22,6 @@ namespace AudioLib
 
     /// <summary>Notification type.</summary>
     public enum UiChange { Gain, Marker, SelStart, SelLength }
-
-
-
-    // public static class EXXXXX
-    // {
-    //     public static void Testeroooo(this TimeSpanEx prov) {  }
-    // }
-
-
-    // public class TimeSpanEx
-    // {
-    //     TimeSpan _timeSpan = new(0);
-
-    //     public static TimeSpanEx Zero = new();
-
-    //     public int TotalMilliseconds { get { return (int)Math.Round(_timeSpan.TotalMilliseconds); } }
-
-    //     public TimeSpanEx() { }
-    //     public TimeSpanEx(int msec) { _timeSpan = new(0, 0, 0, 0, msec); }
-
-    //     public TimeSpanEx(float seconds) { _timeSpan = TimeSpan.FromSeconds(seconds); }
-
-    //     public override string ToString() { return _timeSpan.ToString(AudioLibDefs.TS_FORMAT); }
-    // }
-
-    /// <summary>Container for musical time. Internally 0-based but traditional 1-based for the user.</summary>
-    public class BarBeat
-    {
-        public const int BEAT_PARTS = 100;
-        public int Bar { get; set; } = 0; // 0 to N
-        public int Beat { get; set; } = 0; // 0 to 3
-        public int PartBeat { get; set; } = 0; // 0 to BEAT_PARTS-1
-        public override string ToString() { return $"{Bar+1}.{Beat+1}.{PartBeat:00}"; }
-    }
     #endregion
 
     #region Definitions
@@ -72,9 +38,6 @@ namespace AudioLib
 
         /// <summary>Maximum gain.</summary>
         public const float MAX_GAIN = 5.0f;
-
-        /// <summary>For viewing purposes.</summary>
-        public const string TS_FORMAT = @"mm\:ss\.fff";
 
         /// <summary>Everything internal.</summary>
         public const int SAMPLE_RATE = 44100;

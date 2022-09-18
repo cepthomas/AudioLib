@@ -17,7 +17,7 @@
         {
             this.components = new System.ComponentModel.Container();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.txtInfo = new System.Windows.Forms.RichTextBox();
+            this.txtInfo = new NBagOfUis.TextViewer();
             this.timeBar = new AudioLib.TimeBar();
             this.wv1 = new AudioLib.WaveViewer();
             this.wv2 = new AudioLib.WaveViewer();
@@ -314,7 +314,8 @@
         private TimeBar timeBar;
         private WaveViewer wv1;
         private WaveViewer wv2;
-        private System.Windows.Forms.RichTextBox txtInfo;
+        //private System.Windows.Forms.RichTextBox txtInfo;
+        private NBagOfUis.TextViewer txtInfo;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton btnRunBars;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
