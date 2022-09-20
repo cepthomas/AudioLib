@@ -15,6 +15,8 @@ namespace AudioLib
 {
     /// <summary>
     /// Extensions to enhance core NAudio for this application.
+    /// TODO1 A lot of these are kind of clunky but the alternative is to add some new functionality
+    /// to ISampleprovider. Maybe I'll branch NAudio some day.
     /// </summary>
     public static class NAudioEx
     {
@@ -26,7 +28,7 @@ namespace AudioLib
         public static float[] ReadAll(this ISampleProvider prov)
         {
             prov.Validate(true);
-            prov.Rewind();
+            prov.SetPosition(0); // rewind
 
             var data = new List<float>(AudioLibDefs.READ_BUFF_SIZE);
             var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
@@ -56,6 +58,7 @@ namespace AudioLib
         public static void Validate(this ISampleProvider prov, bool mono)
         {
             var wf = prov.WaveFormat;
+
             if (wf.Encoding != WaveFormatEncoding.IeeeFloat)
             {
                 throw new ArgumentException($"Invalid encoding {wf.Encoding}. Must be IEEE float.");
@@ -96,8 +99,9 @@ namespace AudioLib
         /// <param name="exportFileName"></param>
         public static void Export(this ISampleProvider prov, string exportFileName)
         {
+            prov.SetPosition(0); // rewind
+
             List<string> ls = new();
-            prov.Rewind();
             var vals = new float[AudioLibDefs.READ_BUFF_SIZE];
             bool done = false;
             int index = 0;
@@ -132,95 +136,67 @@ namespace AudioLib
             File.WriteAllLines(exportFileName, ls);
         }
 
-
-        ///////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////
-
-
-
         /// <summary>
         /// Agnostic position setter.
         /// </summary>
         /// <param name="prov"></param>
-        public static void Rewind(this ISampleProvider prov)// TODO are these a bit klunky?
+        /// <param name="pos"></param>
+        public static void SetPosition(this ISampleProvider prov, int pos)
         {
-            switch(prov)
+            switch (prov)
             {
-                case ClipSampleProvider csp: csp.Position = 0; break;
-                case AudioFileReader afr: afr.Position = 0; break;
-                case SwappableSampleProvider ssp: ssp.Rewind(); break;
-                default: break;
+                case ClipSampleProvider csp: csp.Position = pos; break;
+                case AudioFileReader afr: afr.Position = pos; break;
             }
         }
-        // or like:
-        //public static void Rewind(this ClipSampleProvider prov) { prov.Position = 0; }
-        //public static void Rewind(this AudioFileReader prov) { prov.Position = 0; }
-        //public static void Rewind(this SwappableSampleProvider prov) { prov.Rewind(); }
 
+        /// <summary>
+        /// Agnostic position getter.
+        /// </summary>
+        /// <param name="prov"></param>
+        public static long GetPosition(this ISampleProvider prov)
+        {
+            long pos = -1;
 
-        ///// <summary>
-        ///// Agnostic position getter.
-        ///// </summary>
-        ///// <param name="prov"></param>
-        //public static int GetPosition(this ISampleProvider prov)
-        //{
-        //    int pos = -1;
+            switch (prov)
+            {
+                case ClipSampleProvider csp: pos = csp.Position; break;
+                case AudioFileReader afr: pos = (int)afr.Position; break;
+            }
+            return pos;
+        }
 
-        //    switch (prov)
-        //    {
-        //        case ClipSampleProvider csp: pos = csp.Position; break;
-        //        case AudioFileReader afr: pos = (int)afr.Position; break;
-        //        case SwappableSampleProvider ssp: pos = ssp.Position; break;
-        //        default: break;
-        //    }
-        //    return pos;
-        //}
+        /// <summary>
+        /// Agnostic property.
+        /// </summary>
+        /// <param name="prov"></param>
+        /// <returns>The duration or AudioTime.Zero if unknown.</returns>
+        public static AudioTime GetTotalTime(this ISampleProvider prov)
+        {
+            AudioTime tm = AudioTime.Zero; // default
+            switch (prov)
+            {
+                case ClipSampleProvider csp: tm = csp.TotalTime; break;
+                case AudioFileReader afr: tm = new((int)afr.Length * 1000 / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels / AudioLibDefs.SAMPLE_RATE); break;
+            }
+            return tm;
+        }
 
-        ///// <summary>
-        ///// Agnostic property.
-        ///// </summary>
-        ///// <param name="prov"></param>
-        ///// <returns>The number of samples per channel or AudioTime.Zero if unknown.</returns>
-        //public static AudioTime TotalTime(this ISampleProvider prov)
-        //{
-        //    AudioTime tm = AudioTime.Zero; // default
-        //    switch (prov)
-        //    {
-        //        case ClipSampleProvider csp: tm = csp.TotalTime; break;
-        //        case AudioFileReader afr: tm = new((int)afr.Length * 1000 / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels / AudioLibDefs.SAMPLE_RATE); break;
-        //        case SwappableSampleProvider ssp: tm = ssp.TotalTime; break;
-        //        default: break;
-        //    }
-        //    return tm;
-        //}
-
-
-        ///////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////
-        ///////////////////////////////////////////////////////////
-
-
-
-        ///// <summary>
-        ///// Agnostic property.
-        ///// </summary>
-        ///// <param name="prov"></param>
-        ///// <returns>The number of samples per channel or -1 if unknown.</returns>
-        //public static int SamplesPerChannel(this ISampleProvider prov)
-        //{
-        //    int num = -1; // default
-        //    switch (prov)
-        //    {
-        //        case ClipSampleProvider csp: num = csp.SamplesPerChannel; break;
-        //        case AudioFileReader afr: num = (int)afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels; break;
-        //        case SwappableSampleProvider ssp: num = -1; break;
-        //        default: break;
-        //    }
-        //    return num;
-        //}
-
-
+        /// <summary>
+        /// Agnostic property.
+        /// </summary>
+        /// <param name="prov"></param>
+        /// <returns>The number of samples per channel or -1 if unknown.</returns>
+        public static int GetSamplesPerChannel(this ISampleProvider prov)
+        {
+            int num = -1; // default
+            switch (prov)
+            {
+                case ClipSampleProvider csp: num = csp.SamplesPerChannel; break;
+                case AudioFileReader afr: num = (int)afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels; break;
+            }
+            return num;
+        }
 
         /// <summary>
         /// Get provider info. Mainly for window header.
@@ -240,30 +216,21 @@ namespace AudioLib
                 case ClipSampleProvider csp:
                     ls.Add($"File:{csp.FileName}");
                     ls.Add($"Time:{csp.TotalTime}");
-                    ls.Add($"SamplesPerChannel:{csp.SamplesPerChannel}");
                     break;
 
                 case AudioFileReader afr:
                     ls.Add($"File:{afr.FileName}");
                     ls.Add($"Length:{afr.Length}");
                     ls.Add($"Time:{afr.TotalTime}");
-                    ls.Add($"SamplesPerChannel:{(int)afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels}");
-                    break;
-
-                //case SwappableSampleProvider ssp:// anything useful?
-                //    break;
-
-                default:
-                    // Don't care
                     break;
             }
 
             // More common stuff.
-            var wf = prov.WaveFormat;
-            ls.Add($"Encoding:{wf.Encoding}");
-            ls.Add($"Channels:{wf.Channels}");
-            ls.Add($"SampleRate:{wf.SampleRate}");
-            ls.Add($"BitsPerSample:{wf.BitsPerSample}");
+            ls.Add($"SamplesPerChannel:{prov.GetSamplesPerChannel()}");
+            ls.Add($"Encoding:{prov.WaveFormat.Encoding}");
+            ls.Add($"Channels:{prov.WaveFormat.Channels}");
+            ls.Add($"SampleRate:{prov.WaveFormat.SampleRate}");
+            ls.Add($"BitsPerSample:{prov.WaveFormat.BitsPerSample}");
 
             return string.Join("  ", ls);
         }

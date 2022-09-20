@@ -21,7 +21,18 @@ namespace AudioLib
     public enum SnapType { None, Fine, Coarse };
 
     /// <summary>Notification type.</summary>
-    public enum UiChange { Gain, Marker, SelStart, SelLength }
+    public enum Property { Gain, Marker, SelStart, SelLength }
+    #endregion
+
+    #region Globals
+    public static class Globals
+    {
+        /// <summary>Global mode.</summary>
+        public static WaveSelectionMode SelectionMode { get; set; } = WaveSelectionMode.Time;
+
+        /// <summary>Global tempo if using Beat selection mode.</summary>
+        public static float BPM  { get; set; } = 100.0f;
+    }
     #endregion
 
     #region Definitions

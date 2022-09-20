@@ -10,16 +10,10 @@ namespace AudioLib
     /// </summary>
     public class NullSampleProvider : ISampleProvider
     {
-        /// <summary>The fixed stereo WaveFormat of this sample provider. ISampleProvider implementation.</summary>
+        /// <inheritdoc />
         public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 2);
 
-        /// <summary>
-        /// ISampleProvider implementation.
-        /// </summary>
-        /// <param name="buffer">Sample buffer.</param>
-        /// <param name="offset">Offset into buffer.</param>
-        /// <param name="count">Number of samples requested.</param>
-        /// <returns>Number of samples read.</returns>
+        /// <inheritdoc />
         public int Read(float[] buffer, int offset, int count)
         {
             return 0;

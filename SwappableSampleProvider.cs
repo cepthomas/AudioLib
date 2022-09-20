@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using NAudio.Gui;
 using NAudio.Wave;
 
 
@@ -18,12 +19,8 @@ namespace AudioLib
         #endregion
 
         #region Properties
-        /// <summary>The fixed stereo WaveFormat of this sample provider. ISampleProvider implementation.</summary>
+        /// <summary>ISampleProvider implementation.</summary>
         public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 2);
-
-        //public int Position { get { return _currentInput is null ? -1 : _currentInput.GetPosition(); } }
-
-        //public AudioTime TotalTime { get { return _currentInput is null ? AudioTime.Zero : new((float)_currentInput.SamplesPerChannel() / WaveFormat.SampleRate); } }
         #endregion
 
         #region Public functions
@@ -37,15 +34,7 @@ namespace AudioLib
             input?.Validate(false);
             // Everything is good.
             _currentInput = input;
-            Rewind();
-        }
-
-        /// <summary>
-        /// Rewind.
-        /// </summary>
-        public void Rewind()
-        {
-            _currentInput?.Rewind();
+            //Rewind();
         }
 
         /// <summary>

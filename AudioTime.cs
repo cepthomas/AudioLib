@@ -19,9 +19,6 @@ namespace AudioLib
 
         /// <summary>Increment for unique value.</summary>
         static int _all_ids = 1;
-
-        ///// <summary>For formatting.</summary>
-        //const string TS_FORMAT = @"mm\:ss\.fff";
         #endregion
 
         #region Properties
@@ -125,9 +122,9 @@ namespace AudioLib
                 int p1 = -1;
                 int p2 = -1;
 
-                bool ok = int.TryParse(parts[0], out p0);
-                ok |= int.TryParse(parts[1], out p1);
-                ok |= int.TryParse(parts[2], out p2);
+                int.TryParse(parts[0], out p0);
+                int.TryParse(parts[1], out p1);
+                int.TryParse(parts[2], out p2);
 
                 if(p0 >= 0 && p0 < 60 && p1 >= 0 && p1 < 60 && p2 >= 0 && p2 < 1000)
                 {
@@ -144,8 +141,7 @@ namespace AudioLib
         /// <returns></returns>
         public override string ToString()
         {
-            //mm.ss.fff
-            //public const string TS_FORMAT = @"mm\:ss\.fff";
+            // TS_FORMAT = @"mm\:ss\.fff";
             return $"{Minutes:00}.{Seconds:00}.{Milliseconds:000}";
         }
         #endregion

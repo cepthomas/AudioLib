@@ -19,11 +19,11 @@ namespace AudioLib
         float[] _vals = Array.Empty<float>();
 
         /// <summary>Make this class look like a stream.</summary>
-        int _position = 0;
+        long _position = 0;
         #endregion
 
         #region Properties
-        /// <summary>The WaveFormat of this sample provider. Only mono. ISampleProvider implementation.</summary>
+        /// <inheritdoc />
         public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
 
         /// <summary>The associated file name. Empty if new.</summary>
@@ -32,17 +32,17 @@ namespace AudioLib
         /// <summary>Overall gain applied to all samples.</summary>
         public float Gain { get; set; } = 1.0f;
 
-        /// <summary>Length of the clip in samples.</summary>
+        /// <summary>The number of samples per channel or -1 if unknown.</summary>
         public int SamplesPerChannel { get { return _vals.Length; } }
 
-        /// <summary>Length of the clip in seconds.</summary>
+        /// <summary>The total time or AudioTime.Zero if unknown.</summary>
         public AudioTime TotalTime { get { return new((float)SamplesPerChannel / WaveFormat.SampleRate); } }
 
-        /// <summary>Position of the simulated stream as sample index.</summary>
-        public int Position
+        /// <summary>The total time or AudioTime.Zero if unknown.</summary>
+        public long Position
         {
            get { return _position; }
-           set { _position = _vals.Length > 0 ? MathUtils.Constrain(value, 0, _vals.Length - 1) : 0; }
+           set { _position = _vals.Length > 0 ? (long)MathUtils.Constrain(value, 0, _vals.Length - 1) : 0; }
         }
 
         /// <summary>Selection start sample.</summary>
@@ -50,6 +50,12 @@ namespace AudioLib
 
         /// <summary>Selection length in samples.</summary>
         public int SelLength { get; set; } = 0;
+
+        /// <summary>Get provider info. Mainly for window header.</summary>
+        public override string ToString()
+        {
+            return "";
+        }
         #endregion
 
         #region Constructors
@@ -110,7 +116,7 @@ namespace AudioLib
             }
 
             // Read area of interest.
-            int numToRead = Math.Min(count, end - _position);
+            long numToRead = Math.Min(count, end - _position);
             for (int n = 0; n < numToRead; n++)
             {
                 buffer[n + offset] = _vals[_position] * Gain;

@@ -89,10 +89,10 @@ namespace AudioLib.Test
             // Good one.
             tm = AudioTime.Parse("32.47.123");
             UT_NOT_NULL(tm);
-            UT_EQUAL(tm.Minutes, 32);
-            UT_EQUAL(tm.Seconds, 47);
-            UT_EQUAL(tm.Milliseconds, 123);
-            UT_EQUAL(tm.TotalMilliseconds, 32 * 60 * 1000 + 47 * 1000 + 123);
+            UT_EQUAL(tm!.Minutes, 32);
+            UT_EQUAL(tm!.Seconds, 47);
+            UT_EQUAL(tm!.Milliseconds, 123);
+            UT_EQUAL(tm!.TotalMilliseconds, 32 * 60 * 1000 + 47 * 1000 + 123);
             
             // Bad ones.
             tm = AudioTime.Parse("1:2");
@@ -165,10 +165,10 @@ namespace AudioLib.Test
             // Good one.
             bb = BarBeat.Parse("32.2.78");
             UT_NOT_NULL(bb);
-            UT_EQUAL(bb.Bar, 32);
-            UT_EQUAL(bb.Beat, 2);
-            UT_EQUAL(bb.Subdiv, 78);
-            UT_EQUAL(bb.TotalSubdivs, 32 * 4 * 100 + 2 * 100 + 78);
+            UT_EQUAL(bb!.Bar, 32);
+            UT_EQUAL(bb!.Beat, 2);
+            UT_EQUAL(bb!.Subdiv, 78);
+            UT_EQUAL(bb!.TotalSubdivs, 32 * 4 * 100 + 2 * 100 + 78);
 
             // Bad ones.
             bb = BarBeat.Parse("1:2");

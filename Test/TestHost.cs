@@ -17,25 +17,49 @@ using NBagOfTricks;
 using NBagOfTricks.PNUT;
 using NBagOfUis;
 using System.Xml.Linq;
+using NAudio.Gui;
+using System.Text.Json.Serialization;
+using NBagOfTricks.Slog;
 
 namespace AudioLib.Test
 {
     public partial class TestHost : Form
     {
+        /// <summary>Where the files are.</summary>
         readonly string _testFilesDir = @"C:\Dev\repos\TestAudioFiles";
-        ISampleProvider? _prov;
+
+        /// <summary>The current audio provider.</summary>
+        ISampleProvider _provMain = new NullSampleProvider();
+
+        /// <summary>For testing swapping providers.</summary>
         readonly ClipSampleProvider _provSwap;
+
+        /// <summary>Input to the player.</summary>
         readonly SwappableSampleProvider _waveOutSwapper;
+
+        /// <summary>Renders to audio.</summary>
         readonly AudioPlayer _player;
 
+        /// <summary>Test stuff.</summary>
+        readonly TestSettings _settings = new();
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
         public TestHost()
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
 
             AudioSettings.LibSettings = new();
+            // Must do this first before initializing.
+            _settings = (TestSettings)Settings.Load(".", typeof(TestSettings));
+            AudioSettings.LibSettings = _settings.AudioSettings;
 
             Location = new(20, 20);
+
+            Globals.SelectionMode = WaveSelectionMode.Sample;
+            Globals.BPM = 100;
 
             // Time bar.
             timeBar.SnapMsec = 10;
@@ -44,70 +68,43 @@ namespace AudioLib.Test
             timeBar.BackColor = Color.Salmon;
 
             // Wave viewers.
-            WaveSelectionMode sel = WaveSelectionMode.Sample;
-
             wv1.DrawColor = Color.Red;
             wv1.BackColor = Color.Cyan;
-            wv1.SelectionMode = sel;
             wv1.ViewerChangeEvent += ProcessViewerChangeEvent;
             sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
 
             wv2.DrawColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;
-            wv2.SelectionMode = sel;
-            wv1.BPM = 100;
             wv2.ViewerChangeEvent += ProcessViewerChangeEvent;
 
-            // Play.
+            // Create reader.
+            // var sampleChannel = new SampleChannel(_audioFileReader, false);
+            // sampleChannel.PreVolumeMeter += SampleChannel_PreVolumeMeter;
+            // var postVolumeMeter = new MeteringSampleProvider(sampleChannel);
+            // //postVolumeMeter.StreamVolume += PostVolumeMeter_StreamVolume;
+            // _waveOutSwapper.SetInput(postVolumeMeter);
+            // _audioFileReader.Position = 0; // rewind
             _waveOutSwapper = new();
             _provSwap = new ClipSampleProvider(Path.Join(_testFilesDir, "test.wav"), StereoCoercion.Mono);
 
             var postVolumeMeter = new MeteringSampleProvider(_waveOutSwapper, _waveOutSwapper.WaveFormat.SampleRate / 10);
             postVolumeMeter.StreamVolume += (object? sender, StreamVolumeEventArgs e) =>
             {
-//TODO1                timeBar.Current = new(1000.0f * _waveOutSwapper.GetPosition() / _waveOutSwapper.WaveFormat.SampleRate);
-                // timeBar.Current = _reader.CurrentTime;
+                // Get the position of the source provider.
+                long pos = _provMain.GetPosition();
+                if(pos >= 0)
+                {
+                    timeBar.Current = new(1000.0f * pos / _waveOutSwapper.WaveFormat.SampleRate);
+                }
             };
-
 
             _player = new("Microsoft Sound Mapper", 200, postVolumeMeter) { Volume = 0.5 };
             _player.PlaybackStopped += (_, __) =>
             {
                 LogLine("player finished");
                 this.InvokeIfRequired(_ => chkPlay.Checked = false);
-                _prov?.Rewind();
+                _provMain?.SetPosition(0);
             };
-
-
-
-            //var sampleChannel = new SampleChannel(_audioFileReader, false);
-            //sampleChannel.PreVolumeMeter += SampleChannel_PreVolumeMeter;
-            //var postVolumeMeter = new MeteringSampleProvider(sampleChannel);
-            //postVolumeMeter.StreamVolume += PostVolumeMeter_StreamVolume;
-            //void PostVolumeMeter_StreamVolume(object? sender, StreamVolumeEventArgs e)
-            //{
-            //    if (_audioFileReader is not null)
-            //    {
-            //        timeBar.Current = _audioFileReader.CurrentTime;
-            //    }
-            //}
-            //
-            //// For playing.
-            //_waveOutSwapper.SetInput(postVolumeMeter);
-            //
-            //timeBar.CurrentTimeChanged += (_, __) =>
-            //{
-            //    if (_audioFileReader is not null)
-            //    {
-            //        _audioFileReader.CurrentTime = timeBar.Current;
-            //    }
-            //};
-
-
-
-
-
-            chkPlay.Click += (_, __) => Play_Click();
 
             // File openers.
             foreach (var fn in new[] { "ref-stereo.wav", "one-sec.mp3", "ambi_swoosh.flac", "Tracy.m4a",
@@ -115,6 +112,8 @@ namespace AudioLib.Test
             {
                 LoadButton.DropDownItems.Add(fn, null, LoadViewer_Click);
             }
+
+            chkPlay.Click += (_, __) => Play_Click();
 
             btnTest.Click += (_, __) => UnitTests();
 
@@ -151,7 +150,6 @@ namespace AudioLib.Test
                         prov = new ClipSampleProvider(tdata);
                         break;
 
-
                     default: // Audio file.
                         prov = btnClipProvider.Checked ? new ClipSampleProvider(fn, StereoCoercion.Mono) : new AudioFileReader(fn);
                         break;
@@ -166,32 +164,60 @@ namespace AudioLib.Test
 
         void ProcessViewerChangeEvent(object? sender, WaveViewer.ViewerChangeEventArgs e)
         {
-            switch ((sender as WaveViewer)!.Name, e.Change)
+            switch (e.Change)
             {
-                case ("wv1", UiChange.Gain):
+                case Property.Gain when sender == wv1:
                     sldGain.Value = wv1.Gain;
                     break;
 
-                case ("wv2", UiChange.Marker):
+                case Property.Marker when sender == wv2:
                     wv1.Recenter(wv2.Marker);
                     break;
 
                 default:
                     break;
             };
+
+            //switch ((sender as WaveViewer)!.Name, e.Change)
+            //{
+            //    case ("wvData", Property.Gain):
+            //        txtGain.Text = $"{wvData.Gain:0.00}";
+            //        break;
+
+            //    case ("wvData", Property.Marker):
+            //        txtMarker.Text = wvData.Marker.ToString();
+            //        break;
+
+            //    case ("wvData", Property.SelStart):
+            //        txtSelStart.Text = wvData.SelStart.ToString();
+            //        break;
+
+            //    case ("wvData", Property.SelLength):
+            //        txtSelLength.Text = wvData.SelLength.ToString();
+            //        break;
+
+            //    case ("wvNav", Property.Marker):
+            //        wvData.Recenter(wvNav.Marker);
+            //        break;
+
+            //    default:
+            //        break;
+            //};
+
         }
 
         // Helper to manage resources.
         void SetProvider(ISampleProvider? prov)
         {
-            if (_prov is AudioFileReader)
+            // Clean up?
+            if (_provMain is AudioFileReader)
             {
-                (_prov as AudioFileReader)!.Dispose();
+                (_provMain as AudioFileReader)!.Dispose();
             }
-            _prov = prov;
 
-            ShowWave(prov);
-            _waveOutSwapper.SetInput(prov);
+            _provMain = prov;
+            ShowWave(_provMain);
+            _waveOutSwapper.SetInput(_provMain);
         }
 
         // Boilerplate helper.
@@ -202,19 +228,20 @@ namespace AudioLib.Test
                 return;
             }
 
-            var tm = new AudioTime();//TODO1 prov.TotalTime();
-            //int sclen = prov.SamplesPerChannel();
+            AudioTime tm = prov.GetTotalTime();
 
-            // If it's stereo split into two monos, one viewer per.
+            // If it's stereo split into two monos, one viewer per. This is not really how to do things.
             if (prov.WaveFormat.Channels == 2) // stereo
             {
-                prov.Rewind();
+                // Data.
+                prov.SetPosition(0);
                 wv1.Init(new ClipSampleProvider(prov, StereoCoercion.Left));
                 //wv1.SelStart = sclen / 3;
                 //wv1.SelLength = sclen / 4;
                 //wv1.Marker = 2 * sclen / 3;
 
-                prov.Rewind();
+                // Thumbnail.
+                prov.SetPosition(0);
                 wv2.Init(new ClipSampleProvider(prov, StereoCoercion.Right), true); // simple
                 //wv2.SelStart = sclen / 4;
                 //wv1.SelLength = sclen / 4;
@@ -222,15 +249,17 @@ namespace AudioLib.Test
             }
             else // mono
             {
+                // Data.
                 wv1.Init(new ClipSampleProvider(prov, StereoCoercion.None));
                 //wv1.SelStart = sclen / 10;
                 //wv1.SelLength = 9 * sclen / 10;
                 //wv1.Marker = sclen / 4;
 
+                // Thumbnail.
                 wv2.Init(new ClipSampleProvider(Array.Empty<float>()), true); // simple);
             }
 
-            prov.Rewind();
+            prov.SetPosition(0);
             lblInfo.Text = prov.GetInfoString();
 
             timeBar.Length = tm;
@@ -240,7 +269,7 @@ namespace AudioLib.Test
 
         void Play_Click()
         {
-            if (_prov is null)
+            if (_provMain is null)
             {
                 LogLine("open a file first please");
             }
@@ -261,13 +290,13 @@ namespace AudioLib.Test
         // Swap test for SwappableSampleProvider.
         void Swap_Click(object? sender, EventArgs args)
         {
-            if (_prov is null)
+            if (_provMain is null)
             {
                 LogLine("open a file first please");
             }
             else
             {
-                var newProv = btnSwap.Checked ? _provSwap : _prov;
+                var newProv = btnSwap.Checked ? _provSwap : _provMain;
                 _waveOutSwapper.SetInput(newProv); // For listen.
                 ShowWave(newProv);
                 lblInfo.Text = newProv.GetInfoString();
@@ -304,7 +333,7 @@ namespace AudioLib.Test
             if (btnRunBars.Checked)
             {
                 // Update time bar. Ticks are 100 msec.
-                timeBar.IncrementCurrent(10); // not-real time for testing
+                timeBar.IncrementCurrent(10); // not-realtime for testing
                 if (timeBar.Current >= timeBar.Marker2) // done/reset
                 {
                     timeBar.Current = timeBar.Marker1;
@@ -312,11 +341,16 @@ namespace AudioLib.Test
             }
         }
 
-        void Settings_Click(object? sender, EventArgs args)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Settings_Click(object sender, EventArgs e)
         {
-            using Form f = new() { ClientSize = new(450, 450) };
-            f.Controls.Add(new PropertyGrid() { Dock = DockStyle.Fill, SelectedObject = AudioSettings.LibSettings });
-            f.ShowDialog();
+            _settings.Edit("howdy!", 400);
+            _settings.Save();
+            LogLine("You better restart!");
         }
 
         void LogLine(string s)
@@ -351,4 +385,26 @@ namespace AudioLib.Test
             base.Dispose(disposing);
         }
     }
+
+
+    public class TestSettings : Settings
+    {
+        [DisplayName("Background Color")]
+        [Description("The color used for overall background.")]
+        [Browsable(true)]
+        [JsonConverter(typeof(JsonColorConverter))]
+        public Color BackColor { get; set; } = Color.AliceBlue;
+
+        [DisplayName("Ignore Me")]
+        [Description("I do nothing.")]
+        [Browsable(true)]
+        public bool IgnoreMe { get; set; } = true;
+
+        [DisplayName("Midi Settings")]
+        [Description("Edit midi settings.")]
+        [Browsable(true)]
+        [TypeConverter(typeof(ExpandableObjectConverter))]
+        public AudioSettings AudioSettings { get; set; } = new();
+    }
+
 }

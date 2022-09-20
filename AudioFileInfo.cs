@@ -48,7 +48,7 @@ namespace AudioLib
         {
             var ls = new List<string>
             {
-                $"======== mp3 =========== File:{fileName} ================="
+                $"============= mp3 file:{fileName} ================="
             };
 
             using (var rd = new Mp3FileReader(fileName))
@@ -85,7 +85,7 @@ namespace AudioLib
         {
             var ls = new List<string>
             {
-                $"======== wav =========== File:{fileName} ================="
+                $"============= wav file:{fileName} ================="
             };
 
             using (var rd = new WaveFileReader(fileName))
@@ -121,7 +121,7 @@ namespace AudioLib
         {
             var ls = new List<string>
             {
-                $"======== sf2 =========== File:{fileName} ================="
+                $"============= sf file:{fileName} ================="
             };
 
             SoundFont sf = new(fileName);
@@ -165,7 +165,7 @@ namespace AudioLib
         {
             var ls = new List<string>
             {
-                $"======== mfr =========== File:{fileName} ================="
+                $"============= mfr file:{fileName} ================="
             };
 
             MediaFoundationReader mfr = new(fileName);

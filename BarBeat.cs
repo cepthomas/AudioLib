@@ -151,9 +151,9 @@ namespace AudioLib
                 int p1 = -1;
                 int p2 = -1;
 
-                bool ok = int.TryParse(parts[0], out p0);
-                ok |= int.TryParse(parts[1], out p1);
-                ok |= int.TryParse(parts[2], out p2);
+                int.TryParse(parts[0], out p0);
+                int.TryParse(parts[1], out p1);
+                int.TryParse(parts[2], out p2);
 
                 if (p0 >= 0 && p1 >= 0 && p1 < 4 && p2 >= 0 && p2 < 100)
                 {

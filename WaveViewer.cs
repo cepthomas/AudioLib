@@ -19,9 +19,9 @@ namespace AudioLib
     public partial class WaveViewer : UserControl
     {
         #region Fields
-        /// <summary>Simple display only.</summary>
-        ViewerMode _mode = ViewerMode.Normal;
-        enum ViewerMode { Normal, Simple }
+        /// <summary>Function set.</summary>
+        ViewerMode _viewMode = ViewerMode.Full;
+        enum ViewerMode { Full, Thumbnail }
 
         /// <summary>For drawing text.</summary>
         readonly Font _textFont = new("Calibri", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -67,8 +67,6 @@ namespace AudioLib
 
         #region Backing fields
         float _gain = 1.0f;
-        float _bpm = 0;
-        WaveSelectionMode _selectionMode = WaveSelectionMode.Time;
         int _visibleStart = 0;
         int _selStart = 0;
         int _selLength = 0;
@@ -90,12 +88,6 @@ namespace AudioLib
 
         /// <summary>For styling.</summary>
         public Color MarkColor { set { _penMark.Color = value; _brushMark.Color = value; Invalidate(); } }
-
-        /// <summary>Global mode.</summary>
-        public WaveSelectionMode SelectionMode { get { return _selectionMode; } set { _selectionMode = value; Invalidate(); } }
-
-        /// <summary>Global tempo if using Beat selection mode.</summary>
-        public float BPM { set { _bpm = value; Invalidate(); } }
 
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
@@ -132,7 +124,11 @@ namespace AudioLib
         #region Events
         /// <summary>Value changed by user.</summary>
         public event EventHandler<ViewerChangeEventArgs>? ViewerChangeEvent;
-        public class ViewerChangeEventArgs { public UiChange Change { get; set; } }
+        public class ViewerChangeEventArgs
+        {
+            public Property Change { get; set; } = Property.Marker;
+            public string Text { get; set; } = "";
+        }
         #endregion
 
         #region Lifecycle
@@ -157,7 +153,7 @@ namespace AudioLib
         /// <param name="simple">If true simple display only.</param>
         public void Init(ISampleProvider prov, bool simple = false)
         {
-            _mode = simple ? ViewerMode.Simple : ViewerMode.Normal;
+            _viewMode = simple ? ViewerMode.Thumbnail : ViewerMode.Full;
             // _simple = simple;
             _vals = prov.ReadAll();
             _max = _vals.Length > 0 ? _vals.Max() : 0;
@@ -167,7 +163,7 @@ namespace AudioLib
             _selLength = 0;
             _marker = 0;
 
-            if(_mode == ViewerMode.Simple)
+            if(_viewMode == ViewerMode.Thumbnail)
             {
                 FitGain();
             }
@@ -207,6 +203,14 @@ namespace AudioLib
         }
 
         /// <summary>
+        /// Go to unity gain.
+        /// </summary>
+        public void ResetGain()
+        {
+            Gain = 1.0f;
+        }
+
+        /// <summary>
         /// Pan to new center location.
         /// </summary>
         /// <param name="sample">Center around this.</param>
@@ -216,6 +220,104 @@ namespace AudioLib
             _visibleStart = sample - VisibleLength / 2;
             CheckSel();
             Invalidate();
+        }
+
+        /// <summary>
+        /// Owner is updating a property. This does syntax checking.
+        /// </summary>
+        /// <param name="change">The property</param>
+        /// <param name="val">The new value</param>
+        /// <returns>True if valid.</returns>
+        public bool UpdateProperty(Property change, string val)//TODO1 a lot of repetitive code.
+        {
+            bool ok = false;
+
+            switch (change, Globals.SelectionMode)
+            {
+                case (Property.Marker, WaveSelectionMode.Sample):
+                    if (int.TryParse(val, out int marker))
+                    {
+                        _marker = marker;
+                        ok = true;
+                    }
+                    break;
+
+                case (Property.Marker, WaveSelectionMode.Time):
+                    var time = AudioTime.Parse(val);
+                    if (time is not null)
+                    {
+                        _marker = time.ToSample();
+                        ok = true;
+                    }
+                    break;
+
+                case (Property.Marker, WaveSelectionMode.Beat):
+                    var bb = BarBeat.Parse(val);
+                    if (bb is not null)
+                    {
+                        _marker = bb.ToSample(Globals.BPM);
+                        ok = true;
+                    }
+                    break;
+
+                case (Property.SelStart, WaveSelectionMode.Sample):
+                    if (int.TryParse(val, out int selstart))
+                    {
+                        _selStart = selstart;
+                        ok = true;
+                    }
+                    break;
+
+                case (Property.SelStart, WaveSelectionMode.Time):
+                    time = AudioTime.Parse(val);
+                    if (time is not null)
+                    {
+                        _selStart = time.ToSample();
+                        ok = true;
+                    }
+                    break;
+
+                case (Property.SelStart, WaveSelectionMode.Beat):
+                    bb = BarBeat.Parse(val);
+                    if (bb is not null)
+                    {
+                        _selStart = bb.ToSample(Globals.BPM);
+                        ok = true;
+                    }
+                    break;
+
+                case (Property.SelLength, WaveSelectionMode.Sample):
+                    if (int.TryParse(val, out int sellen))
+                    {
+                        _selLength = sellen;
+                        ok = true;
+                    }
+                    break;
+
+                case (Property.SelLength, WaveSelectionMode.Time):
+                    time = AudioTime.Parse(val);
+                    if (time is not null)
+                    {
+                        _selLength = time.ToSample();
+                        ok = true;
+                    }
+                    break;
+
+                case (Property.SelLength, WaveSelectionMode.Beat):
+                    bb = BarBeat.Parse(val);
+                    if (bb is not null)
+                    {
+                        _selLength = bb.ToSample(Globals.BPM);
+                        ok = true;
+                    }
+                    break;
+
+                default:
+                    // Later.
+                    break;
+            }
+
+            return ok;
         }
         #endregion
 
@@ -229,7 +331,7 @@ namespace AudioLib
         /// <param name="e"></param>
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            if(_mode == ViewerMode.Normal)
+            if(_viewMode == ViewerMode.Full)
             {
                 HandledMouseEventArgs hme = (HandledMouseEventArgs)e;
                 hme.Handled = true; // This prevents the mouse wheel event from getting back to the parent.
@@ -239,7 +341,7 @@ namespace AudioLib
 
                 switch(ModifierKeys)
                 {
-                    case Keys.None: //  x pan
+                    case Keys.None: // x pan
                         int incr = _samplesPerPixel * PAN_INCREMENT;
                         _visibleStart += wheelDelta > 0 ? incr : -incr; // left or right
                         _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
@@ -252,6 +354,10 @@ namespace AudioLib
                         // Modify the zoom factor.
                         int samplesPerPixelMax = _vals.Length / Width;
                         incr = (int)(ZOOM_RATIO * _samplesPerPixel);
+                        if(incr == 0 && _samplesPerPixel > 1) // close in
+                        {
+                            incr = 1;
+                        }
                         _samplesPerPixel += wheelDelta > 0 ? -incr : incr; // in or out
                         _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, samplesPerPixelMax);
                         Recenter(center);
@@ -260,7 +366,7 @@ namespace AudioLib
                     case Keys.Shift: // y gain
                         _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
                         _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
-                        ViewerChangeEvent?.Invoke(this, new() { Change = UiChange.Gain });
+                        ViewerChangeEvent?.Invoke(this, new() { Change = Property.Gain });
                         Invalidate();
                         break;
                 };
@@ -277,59 +383,55 @@ namespace AudioLib
         {
             var sample = PixelToSample(e.X);
 
-            switch (e.Button, _selectionMode, ModifierKeys, _mode)
+            switch (e.Button, Globals.SelectionMode, ModifierKeys, _viewMode)
             {
-                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.None, ViewerMode.Normal): // sample marker
-                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.None, ViewerMode.Simple):
+                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.None, ViewerMode.Full): // sample marker
+                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.None, ViewerMode.Thumbnail):
                     _marker = Converters.SnapSample(sample, _snap);
                     CheckSel();
-                    ViewerChangeEvent?.Invoke(this, new() { Change = UiChange.Marker });
+                    ViewerChangeEvent?.Invoke(this, new() { Change = Property.Marker });
                     Invalidate();
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.None, ViewerMode.Normal): // time marker TODO1
-                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.None, ViewerMode.Simple):
+                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.None, ViewerMode.Full): // time marker TODO1
+                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.None, ViewerMode.Thumbnail):
+                    
+                    break;
+
+                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.None, ViewerMode.Full): // beat marker TODO1
+                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.None, ViewerMode.Thumbnail):
 
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.None, ViewerMode.Normal): // beat marker TODO1
-                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.None, ViewerMode.Simple):
-
-                    break;
-
-                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.Control, ViewerMode.Normal): // sample sel start
+                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.Control, ViewerMode.Full): // sample sel start
                     _selStart = Converters.SnapSample(sample, _snap);
-                    if (_selLength > 0)
-                    {
-                        var ends = _selStart + _selLength;
-                        _selLength = ends - _selStart;
-                    }
+                    //var ends = _selLength > 0 ? _selStart + _selLength : 0;
                     CheckSel();
-                    ViewerChangeEvent?.Invoke(this, new() { Change = UiChange.SelStart });
+                    ViewerChangeEvent?.Invoke(this, new() { Change = Property.SelStart });
                     Invalidate();
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.Control, ViewerMode.Normal): // time sel start TODO1
+                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.Control, ViewerMode.Full): // time sel start TODO1
 
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.Control, ViewerMode.Normal): // beat sel start TODO1
+                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.Control, ViewerMode.Full): // beat sel start TODO1
 
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.Shift, ViewerMode.Normal): // sample sel end
+                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.Shift, ViewerMode.Full): // sample sel end
                     var sel = Converters.SnapSample(sample, _snap);
                     _selLength = sel - _selStart;
                     CheckSel();
-                    ViewerChangeEvent?.Invoke(this, new() { Change = UiChange.SelLength });
+                    ViewerChangeEvent?.Invoke(this, new() { Change = Property.SelLength });
                     Invalidate();
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.Shift, ViewerMode.Normal): // time sel end TODO1
+                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.Shift, ViewerMode.Full): // time sel end TODO1
 
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.Shift, ViewerMode.Normal): // beat sel end TODO1
+                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.Shift, ViewerMode.Full): // beat sel end TODO1
 
                     break;
             }
@@ -347,7 +449,7 @@ namespace AudioLib
             {
                 var sample = PixelToSample(e.X);
 
-                switch (_selectionMode)
+                switch (Globals.SelectionMode)
                 {
                     case WaveSelectionMode.Sample:
                         sample = Converters.SnapSample(sample, _snap);
@@ -361,7 +463,7 @@ namespace AudioLib
                         break;
 
                     case WaveSelectionMode.Beat:
-                        var bb = new BarBeat(sample, _bpm);
+                        var bb = new BarBeat(sample, Globals.BPM);
                         bb.Snap(_snap);
                         toolTip.SetToolTip(this, bb.ToString());
                         break;
@@ -387,7 +489,7 @@ namespace AudioLib
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if(_mode == ViewerMode.Normal)
+            if(_viewMode == ViewerMode.Full)
             {
                 switch (e.KeyCode)
                 {
@@ -475,8 +577,8 @@ namespace AudioLib
             }
             else
             {
-                // Draw everything from bottom up. Simple mode only gets the basics.
-                if(_mode == ViewerMode.Normal)
+                // Draw everything from bottom up. Thumbnail mode only gets the basics.
+                if(_viewMode == ViewerMode.Full)
                 {
                     // Y grid lines.
                     _penGrid.Width = 1;
@@ -510,19 +612,13 @@ namespace AudioLib
                     }
 
                     // X grid lines.
-                    switch (_selectionMode)
+                    switch (Globals.SelectionMode)
                     {
-                        case WaveSelectionMode.Sample: // TODO1 paint sample - whole increments
-
+                        case WaveSelectionMode.Sample:
                             // TODO1 simplify/refactor this::::
-                            // 1919 - 6789  len = 4870
-                            //>> sampincr = 487  digits = 3
-                            // round sampincr to 400
-                            // gran = 10^(digits-1)
-                            // sampincr = Clamp(sampincr, gran, false);
+
 
                             int sampincr = VisibleLength / X_NUM_LINES;
-
                             // Round to a reasonable value.
                             var digits1 = MathUtils.NumDigits(sampincr);
                             var gran1 = Math.Pow(10, digits1 - 1);
@@ -531,23 +627,63 @@ namespace AudioLib
                             // Start outside visible.
                             var digits2 = MathUtils.NumDigits(VisibleStart);
                             var gran2 = Math.Pow(10, digits2 - 1);
+                            //var start = VisibleStart;
                             var start = Converters.Clamp(VisibleStart, (int)gran2, false);
+                            auxInfo = $"gran1:{gran1} sampincr:{sampincr} gran2:{gran2} start:{start}";
 
-                            auxInfo = $"gran1:{gran1} sampincr{sampincr} gran2:{gran2} start:{start}";
-
-                            for (int xs = start; xs < VisibleLength; xs += sampincr)
+                            for (int xs = start; xs < VisibleStart + VisibleLength; xs += sampincr)
                             {
-                                float xGrid = MathUtils.Map(xs, start, VisibleLength, 0, Width);
+                                float xGrid = MathUtils.Map(xs, VisibleStart, VisibleStart + VisibleLength, 0, Width);
                                 pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
                                 pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
                             }
+
+
+                            //// fixed markers, variable values.
+                            //int sampincr = VisibleLength / X_NUM_LINES;
+                            //// Round to a reasonable value.
+                            //var digits1 = MathUtils.NumDigits(sampincr);
+                            //var gran1 = Math.Pow(10, digits1 - 1);
+                            //sampincr = Converters.Clamp(sampincr, (int)gran1, false);
+
+                            //// Start outside visible.
+                            //var digits2 = MathUtils.NumDigits(VisibleStart);
+                            //var gran2 = Math.Pow(10, digits2 - 1);
+                            //var start = VisibleStart;
+                            ////var start = Converters.Clamp(VisibleStart, (int)gran2, false);
+                            //auxInfo = $"gran1:{gran1} sampincr:{sampincr} gran2:{gran2} start:{start}";
+
+                            //for (int xs = start; xs < start + VisibleLength; xs += sampincr)
+                            //{
+                            //    float xGrid = MathUtils.Map(xs, start, start + VisibleLength, 0, Width);
+                            //    pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
+                            //    pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
+                            //}
+
+                            //int sampincr = VisibleLength / X_NUM_LINES;
+                            //// Round to a reasonable value.
+                            //var digits1 = MathUtils.NumDigits(sampincr);
+                            //var gran1 = Math.Pow(10, digits1 - 1);
+                            //sampincr = Converters.Clamp(sampincr, (int)gran1, false);
+
+                            //// Start outside visible.
+                            //var digits2 = MathUtils.NumDigits(VisibleStart);
+                            //var gran2 = Math.Pow(10, digits2 - 1);
+                            //var start = Converters.Clamp(VisibleStart, (int)gran2, false);
+                            //auxInfo = $"gran1:{gran1} sampincr:{sampincr} gran2:{gran2} start:{start}";
+
+                            //for (int xs = start; xs < start + VisibleLength; xs += sampincr)
+                            //{
+                            //    float xGrid = MathUtils.Map(xs, start, start + VisibleLength, 0, Width);
+                            //    pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
+                            //    pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
+                            //}
                             break;
 
                         case WaveSelectionMode.Time: // TODO1 paint time
                             //AudioTime tstart = Converters.SampleToTime(VisibleStart, snap);
                             //AudioTime tend = Converters.SampleToTime(VisibleStart + VisibleLength, snap);
                             //AudioTime tlen = tend - tstart;
-
 
                             //// anywhere from 10 msec to MaxClipSize (10 min)
                             //// 0.01 -> 600.0
@@ -562,8 +698,6 @@ namespace AudioLib
                             //   - Show in waveform.
                             //   - Subsequent selections are by beat using snap.
                             // 123:2.456.
-
-
                             break;
                     }
 
@@ -607,7 +741,7 @@ namespace AudioLib
                 }
 
                 // Selection and markers.
-                if (_mode == ViewerMode.Normal && _selStart > 0)
+                if (_viewMode == ViewerMode.Full && _selStart > 0)
                 {
                     int x = SampleToPixel(_selStart);
                     if (x >= 0)
@@ -617,7 +751,7 @@ namespace AudioLib
                     }
                 }
 
-                if (_mode == ViewerMode.Normal && _selLength > 0)
+                if (_viewMode == ViewerMode.Full && _selLength > 0)
                 {
                     int x = SampleToPixel(_selStart + _selLength);
                     if (x >= 0)

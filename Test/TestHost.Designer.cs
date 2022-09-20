@@ -314,7 +314,6 @@
         private TimeBar timeBar;
         private WaveViewer wv1;
         private WaveViewer wv2;
-        //private System.Windows.Forms.RichTextBox txtInfo;
         private NBagOfUis.TextViewer txtInfo;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton btnRunBars;
