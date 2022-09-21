@@ -35,8 +35,8 @@ namespace AudioLib
         /// <summary>The number of samples per channel or -1 if unknown.</summary>
         public int SamplesPerChannel { get { return _vals.Length; } }
 
-        /// <summary>The total time or AudioTime.Zero if unknown.</summary>
-        public AudioTime TotalTime { get { return new((float)SamplesPerChannel / WaveFormat.SampleRate); } }
+        /// <summary>The total time in msec.</summary>
+        public int TotalTime { get { return (int)((float)SamplesPerChannel / WaveFormat.SampleRate / 1000.0f); } }
 
         /// <summary>The total time or AudioTime.Zero if unknown.</summary>
         public long Position

@@ -170,16 +170,16 @@ namespace AudioLib
         /// Agnostic property.
         /// </summary>
         /// <param name="prov"></param>
-        /// <returns>The duration or AudioTime.Zero if unknown.</returns>
-        public static AudioTime GetTotalTime(this ISampleProvider prov)
+        /// <returns>The duration in msec.</returns>
+        public static int GetTotalTime(this ISampleProvider prov)
         {
-            AudioTime tm = AudioTime.Zero; // default
+            int msec = -1;
             switch (prov)
             {
-                case ClipSampleProvider csp: tm = csp.TotalTime; break;
-                case AudioFileReader afr: tm = new((int)afr.Length * 1000 / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels / AudioLibDefs.SAMPLE_RATE); break;
+                case ClipSampleProvider csp: msec = csp.TotalTime; break;
+                case AudioFileReader afr: msec = (int)((float)afr.Length * 1000 / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels / AudioLibDefs.SAMPLE_RATE); break;
             }
-            return tm;
+            return msec;
         }
 
         /// <summary>

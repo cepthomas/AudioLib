@@ -55,6 +55,12 @@ namespace AudioLib
 
         /// <summary>Stream buffer size.</summary>
         public const int READ_BUFF_SIZE = SAMPLE_RATE;
+
+        /// <summary>Standard formatting.</summary>
+        public const string TS_FORMAT = @"mm\.ss\.fff";
+
+        /// <summary>Max clip size in minutes. Can be overriden in settings.</summary>
+        public const int MAX_CLIP_SIZE = 10;
     }
     #endregion
 }

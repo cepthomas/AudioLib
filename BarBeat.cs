@@ -1,249 +1,173 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Windows.Forms;
-using NBagOfTricks;
 
 
 namespace AudioLib
 {
-    /// <summary>Container for musical time. Internally 0-based but traditional 1-based for the user.</summary>
-    public class BarBeat// : IComparable
+    /// <summary>Converters for musical time. 0-based not traditional 1-based.</summary>
+    public static class BarBeat
     {
-        #region Fields
-        /// <summary>For hashing.</summary>
-        readonly int _id;
-
-        /// <summary>Increment for unique value.</summary>
-        static int _all_ids = 1;
-
-        /// <summary>Constant.</summary>
+        #region Constants
         const int SUBDIVS_PER_BEAT = 100;
-
-        /// <summary>Constant.</summary>
         const int BEATS_PER_BAR = 4;
-
-        /// <summary>Constant.</summary>
         const int SUBDIVS_PER_BAR = SUBDIVS_PER_BEAT * BEATS_PER_BAR;
         #endregion
 
-        #region Properties
-        /// <summary>Common unit.</summary>
-        public static readonly BarBeat Zero = new();
-
-        /// <summary>0 to N.</summary>
-        public int Bar { get { return TotalSubdivs / SUBDIVS_PER_BAR; } }
-
-        /// <summary>0 to 3.</summary>
-        public int Beat { get { return (TotalSubdivs - Bar * SUBDIVS_PER_BAR) / SUBDIVS_PER_BEAT; } }
-
-        /// <summary>0 to BEAT_PARTS-1.</summary>
-        public int Subdiv { get { return TotalSubdivs % SUBDIVS_PER_BEAT; } }
- 
-        /// <summary>Primary value.</summary>
-        public int TotalSubdivs { get; private set; } = 0;
+        #region Constants
+        /// <summary>User sets this for calculations.</summary>
+        public static float BPM { get; set; }
         #endregion
 
-        #region Constructors
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        public BarBeat()
+        #region Types
+        /// <summary>Convenience container for internal use.</summary>
+        struct BarBeatDesc
         {
-            TotalSubdivs = 0;
-            _id = _all_ids++;
-        }
-
-        /// <summary>
-        /// Constructor from total subdivs.
-        /// </summary>
-        /// <param name="subdivs">Total subdivs.</param>
-        public BarBeat(int subdivs)
-        {
-            TotalSubdivs = subdivs;
-            _id = _all_ids++;
-        }
-
-        /// <summary>
-        /// Constructor from discrete elements. 0-based.
-        /// </summary>
-        /// <param name="bar"></param>
-        /// <param name="beat"></param>
-        /// <param name="subdiv"></param>
-        public BarBeat(int bar, int beat, int subdiv)
-        {
-            TotalSubdivs = bar * SUBDIVS_PER_BAR + beat * SUBDIVS_PER_BEAT + subdiv;
-            _id = _all_ids++;
-        }
-
-        /// <summary>
-        /// Constructor from samples.
-        /// </summary>
-        /// <param name="sample"></param>
-        /// <param name="bpm"></param>
-        public BarBeat(int sample, float bpm)
-        {
-            // Convert then snap.
-            float minPerBeat = 1.0f / bpm;
-            float secPerBeat = minPerBeat * 60;
-            float smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
-            float beats = sample / smplPerBeat;
-
-            TotalSubdivs = (int)Math.Round(beats * SUBDIVS_PER_BEAT);
-            _id = _all_ids++;
+            public int bar;
+            public int beat;
+            public int subdiv;
+            public BarBeatDesc(int bar, int beat, int subdiv) { this.bar = bar; this.beat = beat; this.subdiv = subdiv; }
+            public BarBeatDesc() { bar = -1; beat = -1; subdiv = -1; }
+            public bool Valid() { return bar >= 0 && bar < 1000 && beat >= 0 && beat < BEATS_PER_BAR && subdiv >= 0 && subdiv < SUBDIVS_PER_BEAT; }
         }
         #endregion
 
         #region Public functions
         /// <summary>
-        /// Snap bar or beat or none.
+        /// 
         /// </summary>
-        /// <param name="snap"></param>
-        public void Snap(SnapType snap)
-        {
-            switch (snap)
-            {
-                case SnapType.None:
-                    // no adjust
-                    break;
-
-                case SnapType.Coarse: // at bar
-                    TotalSubdivs = Converters.Clamp(TotalSubdivs, BEATS_PER_BAR * SUBDIVS_PER_BEAT, true);
-                    break;
-
-                case SnapType.Fine: // at beat
-                    TotalSubdivs = Converters.Clamp(TotalSubdivs, SUBDIVS_PER_BEAT, true);
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// Convert to samples
-        /// </summary>
-        /// <param name="bpm"></param>
+        /// <param name="subdiv"></param>
         /// <returns></returns>
-        public int ToSample(float bpm)
+        public static int SubdivToSample(int subdiv)
         {
-            float minPerBeat = 1.0f / bpm;
+            float minPerBeat = 1.0f / BPM;
             float secPerBeat = minPerBeat * 60;
             float smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
             float smplPerSubdiv = smplPerBeat / SUBDIVS_PER_BEAT;
-            var res = (int)(smplPerSubdiv * TotalSubdivs);
-            return res;
+            var sample = (int)(smplPerSubdiv * subdiv);
+            return sample;
         }
 
         /// <summary>
-        /// Convert from string form. 123.3.99
+        /// 
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        public static int SampleToSubdiv(int sample)
+        {
+            float minPerBeat = 1.0f / BPM;
+            float secPerBeat = minPerBeat * 60;
+            float smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
+            float beats = sample / smplPerBeat;
+            var subdiv = (int)Math.Round(beats * SUBDIVS_PER_BEAT);
+            return subdiv;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <param name="snap"></param>
+        /// <returns></returns>
+        public static int SnapSample(int sample, SnapType snap)
+        {
+            var subdiv = SampleToSubdiv(sample);
+
+            subdiv = snap switch
+            {
+                SnapType.Coarse => Converters.Clamp(subdiv, BEATS_PER_BAR * SUBDIVS_PER_BEAT, true),
+                SnapType.Fine => Converters.Clamp(subdiv, SUBDIVS_PER_BEAT, true),
+                _ => subdiv, // none
+            };
+
+            return SubdivToSample(subdiv);
+        }
+
+        /// <summary>
+        /// 
         /// </summary>
         /// <param name="input"></param>
-        /// <returns>Object or null if invalid input.</returns>
-        public static BarBeat? Parse(string input)
+        /// <returns></returns>
+        public static int TextToSample(string input)
         {
-            BarBeat? bb = null;
+            int sample = -1;
+
+            var subdiv = TextToSubdiv(input);
+
+            if (subdiv >= 0)
+            {
+                sample = SubdivToSample(subdiv);
+            }
+
+            return sample;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static int TextToSubdiv(string input)
+        {
+            int subdiv = -1;
+
+            var bb = TextToBarBeat(input);
+
+            if (bb.Valid())
+            {
+                subdiv = bb.bar * SUBDIVS_PER_BAR + bb.beat * SUBDIVS_PER_BEAT + bb.subdiv;
+            }
+
+            return subdiv;
+        }
+
+        /// <summary>
+        /// Human readable.
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        public static string Format(int sample)
+        {
+            var bb = SampleToBarBeat(sample);
+            return $"{bb.bar}.{bb.beat:0}.{bb.subdiv:00}";
+        }
+        #endregion
+
+        #region Private functions
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        static BarBeatDesc SampleToBarBeat(int sample)
+        {
+            var subdiv = SampleToSubdiv(sample);
+
+            int bar = subdiv / SUBDIVS_PER_BAR;
+            int beat = (subdiv - (bar * SUBDIVS_PER_BAR)) / SUBDIVS_PER_BEAT;
+            int ssubdiv = subdiv % SUBDIVS_PER_BEAT;
+
+            return new(bar, beat, ssubdiv);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        static BarBeatDesc TextToBarBeat(string input)
+        {
+            BarBeatDesc bb = new();
 
             var parts = input.Split(".");
             if (parts.Length == 3)
             {
-                int p0 = -1;
-                int p1 = -1;
-                int p2 = -1;
-
-                int.TryParse(parts[0], out p0);
-                int.TryParse(parts[1], out p1);
-                int.TryParse(parts[2], out p2);
-
-                if (p0 >= 0 && p1 >= 0 && p1 < 4 && p2 >= 0 && p2 < 100)
-                {
-                    bb = new BarBeat(p0, p1, p2);
-                }
+                if (int.TryParse(parts[0], out int bar)) bb.bar = bar;
+                if (int.TryParse(parts[1], out int beat)) bb.beat = beat;
+                if (int.TryParse(parts[2], out int subdiv)) bb.subdiv = subdiv;
             }
 
             return bb;
         }
-
-        /// <summary>
-        /// Make readable. 1-based.
-        /// </summary>
-        /// <returns></returns>
-        public override string ToString()
-        {
-            // 123.3.99
-            return $"{Bar}.{Beat}.{Subdiv:00}";
-            //return $"{Bar + 1}.{Beat + 1}.{Subdiv:00}";
-        }
         #endregion
-
-        //#region Standard IComparable stuff
-        //public override bool Equals(object? obj)
-        //{
-        //    return obj is not null && obj is BarBeat tm && tm.TotalSubdivs == TotalSubdivs;
-        //}
-
-        //public override int GetHashCode()
-        //{
-        //    return _id;
-        //}
-
-        //public int CompareTo(object? obj)
-        //{
-        //    if (obj is null)
-        //    {
-        //        throw new ArgumentException("Object is null");
-        //    }
-
-        //    BarBeat? other = obj as BarBeat;
-        //    if (other is not null)
-        //    {
-        //        return TotalSubdivs.CompareTo(other.TotalSubdivs);
-        //    }
-        //    else
-        //    {
-        //        throw new ArgumentException("Object is not a BarSpan");
-        //    }
-        //}
-
-        //public static bool operator ==(BarBeat a, BarBeat b)
-        //{
-        //    return a.TotalSubdivs == b.TotalSubdivs;
-        //}
-
-        //public static bool operator !=(BarBeat a, BarBeat b)
-        //{
-        //    return !(a == b);
-        //}
-
-        //public static BarBeat operator +(BarBeat a, BarBeat b)
-        //{
-        //    return new BarBeat(a.TotalSubdivs + b.TotalSubdivs);
-        //}
-
-        //public static BarBeat operator -(BarBeat a, BarBeat b)
-        //{
-        //    return new BarBeat(a.TotalSubdivs - b.TotalSubdivs);
-        //}
-
-        //public static bool operator <(BarBeat a, BarBeat b)
-        //{
-        //    return a.TotalSubdivs < b.TotalSubdivs;
-        //}
-
-        //public static bool operator >(BarBeat a, BarBeat b)
-        //{
-        //    return a.TotalSubdivs > b.TotalSubdivs;
-        //}
-
-        //public static bool operator <=(BarBeat a, BarBeat b)
-        //{
-        //    return a.TotalSubdivs <= b.TotalSubdivs;
-        //}
-
-        //public static bool operator >=(BarBeat a, BarBeat b)
-        //{
-        //    return a.TotalSubdivs >= b.TotalSubdivs;
-        //}
-        //#endregion
     }
 }

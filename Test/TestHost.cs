@@ -1,25 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data;
 using System.Drawing;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using System.IO;
 using System.Windows.Forms;
-using System.Diagnostics;
-using System.Drawing.Design;
-using AudioLib;
+using System.Text.Json.Serialization;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 using NBagOfTricks.PNUT;
 using NBagOfUis;
-using System.Xml.Linq;
-using NAudio.Gui;
-using System.Text.Json.Serialization;
-using NBagOfTricks.Slog;
+using AudioLib;
+
 
 namespace AudioLib.Test
 {
@@ -177,37 +170,10 @@ namespace AudioLib.Test
                 default:
                     break;
             };
-
-            //switch ((sender as WaveViewer)!.Name, e.Change)
-            //{
-            //    case ("wvData", Property.Gain):
-            //        txtGain.Text = $"{wvData.Gain:0.00}";
-            //        break;
-
-            //    case ("wvData", Property.Marker):
-            //        txtMarker.Text = wvData.Marker.ToString();
-            //        break;
-
-            //    case ("wvData", Property.SelStart):
-            //        txtSelStart.Text = wvData.SelStart.ToString();
-            //        break;
-
-            //    case ("wvData", Property.SelLength):
-            //        txtSelLength.Text = wvData.SelLength.ToString();
-            //        break;
-
-            //    case ("wvNav", Property.Marker):
-            //        wvData.Recenter(wvNav.Marker);
-            //        break;
-
-            //    default:
-            //        break;
-            //};
-
         }
 
         // Helper to manage resources.
-        void SetProvider(ISampleProvider? prov)
+        void SetProvider(ISampleProvider prov)
         {
             // Clean up?
             if (_prov is AudioFileReader)
@@ -228,7 +194,7 @@ namespace AudioLib.Test
                 return;
             }
 
-            AudioTime tm = prov.GetTotalTime();
+            int tm = prov.GetTotalTime();
 
             // If it's stereo split into two monos, one viewer per. This is not really how to do things.
             if (prov.WaveFormat.Channels == 2) // stereo
@@ -262,9 +228,9 @@ namespace AudioLib.Test
             prov.SetPosition(0);
             lblInfo.Text = prov.GetInfoString();
 
-            timeBar.Length = tm.ToTimeSpan();
-            //timeBar.Marker1 = new AudioTime(msec / 3);
-            //timeBar.Marker2 = new AudioTime(msec / 2);
+            timeBar.Length = new(0, 0, 0, 0, tm);
+            timeBar.Marker1 = new(0, 0, 0, 0, tm / 3);
+            timeBar.Marker2 = new(0, 0, 0, 0, tm / 2);
         }
 
         void Play_Click()
@@ -378,14 +344,13 @@ namespace AudioLib.Test
                 components.Dispose();
             }
 
-            SetProvider(null);
+            SetProvider(new NullSampleProvider());
 
             _player?.Dispose();
 
             base.Dispose(disposing);
         }
     }
-
 
     public class TestSettings : Settings
     {

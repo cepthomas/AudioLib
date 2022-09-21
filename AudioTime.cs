@@ -1,228 +1,153 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Windows.Forms;
-using NBagOfTricks;
 
 
 namespace AudioLib
 {
-    public class AudioTime// : IComparable
+    /// <summary>Converters for audio time.</summary>
+    public static class AudioTime
     {
-        #region Fields
-        /// <summary>For hashing.</summary>
-        readonly int _id;
-
-        /// <summary>Increment for unique value.</summary>
-        static int _all_ids = 1;
+        #region Constants
+        internal const int MSEC_PER_SECOND = 1000;
+        internal const int SEC_PER_MINUTE = 60;
         #endregion
 
-        #region Properties
-        /// <summary>Common unit.</summary>
-        public static readonly AudioTime Zero = new();
-
-        /// <summary>Minutes part of time.</summary>
-        public int Minutes { get { return TotalMilliseconds / 60000 % 60; } }
-
-        /// <summary>Seconds part of time.</summary>
-        public int Seconds { get { return TotalMilliseconds / 1000 % 60; } }
-
-        /// <summary>Milliseconds part of time.</summary>
-        public int Milliseconds { get { return TotalMilliseconds % 1000; } }
- 
-        /// <summary>Primary value.</summary>
-        public int TotalMilliseconds { get; private set; } = 0;
-        #endregion
-
-        #region Constructors
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        public AudioTime()
+        #region Types
+        /// <summary>Convenience container for internal use.</summary>
+        struct TimeDesc
         {
-            _id = _all_ids++;
-        }
-
-        /// <summary>
-        /// Constructor from milliseconds.
-        /// </summary>
-        /// <param name="msec"></param>
-        public AudioTime(float msec)
-        {
-            TotalMilliseconds = (int)(Math.Round(msec));
-            _id = _all_ids++;
-        }
-
-        /// <summary>
-        /// Constructor from discrete elements.
-        /// </summary>
-        /// <param name="min"></param>
-        /// <param name="sec"></param>
-        /// <param name="msec"></param>
-        public AudioTime(int min, int sec, int msec)
-        {
-            TotalMilliseconds = min * 60 * 1000 + sec * 1000 + msec;
-            _id = _all_ids++;
-        }
-
-        /// <summary>
-        /// Constructor from sample.
-        /// </summary>
-        /// <param name="sample"></param>
-        public AudioTime(int sample)
-        {
-            double msec = 1000D * sample / AudioLibDefs.SAMPLE_RATE;
-            TotalMilliseconds = (int)Math.Round(msec);
-            _id = _all_ids++;
+            public int min;
+            public int sec;
+            public int msec;
+            public TimeDesc(int min, int sec, int msec) { this.min = min; this.sec = sec; this.msec = msec; }
+            public TimeDesc() { min = -1; sec = -1; msec = -1; }
+            public bool Valid() { return min >= 0 && min < AudioLibDefs.MAX_CLIP_SIZE && sec >= 0 && sec < AudioTime.SEC_PER_MINUTE && msec >= 0 && msec < AudioTime.MSEC_PER_SECOND; }
         }
         #endregion
 
         #region Public functions
         /// <summary>
-        /// Snap to neighbor.
+        /// 
         /// </summary>
-        /// <param name="snap"></param>
-        public void Snap(SnapType snap)
-        {
-            TotalMilliseconds = snap switch
-            {
-                SnapType.Coarse => Converters.Clamp(TotalMilliseconds, 1000, true), // second
-                SnapType.Fine => Converters.Clamp(TotalMilliseconds, 100, true), // tenth second
-                _ => TotalMilliseconds, // none
-            };
-        }
-
-        /// <summary>
-        /// Convert to equivalent sample.
-        /// </summary>
+        /// <param name="msec"></param>
         /// <returns></returns>
-        public int ToSample()
+        public static int MsecToSample(float msec)
         {
-            double sample = (double)AudioLibDefs.SAMPLE_RATE * TotalMilliseconds / 1000D;
+            double sample = (double)AudioLibDefs.SAMPLE_RATE * msec / MSEC_PER_SECOND;
             return (int)sample;
         }
 
         /// <summary>
-        /// Convert to equivalent TimeSpan.
+        /// 
         /// </summary>
+        /// <param name="sample"></param>
         /// <returns></returns>
-        public TimeSpan ToTimeSpan()
+        public static int SampleToMsec(int sample)
         {
-            return new(0, 0, 0, 0, TotalMilliseconds);
+            double msec = (double)MSEC_PER_SECOND * sample / AudioLibDefs.SAMPLE_RATE;
+            return (int)Math.Round(msec);
         }
 
         /// <summary>
-        /// Convert from string form. mm.ss.fff
+        /// 
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <param name="snap"></param>
+        /// <returns></returns>
+        public static int SnapSample(int sample, SnapType snap)
+        {
+            var tmsec = SampleToMsec(sample);
+
+            tmsec = snap switch
+            {
+                SnapType.Coarse => Converters.Clamp(tmsec, MSEC_PER_SECOND, true), // second
+                SnapType.Fine => Converters.Clamp(tmsec, MSEC_PER_SECOND / 10, true), // tenth second
+                _ => tmsec, // none
+            };
+
+            return MsecToSample(tmsec);
+        }
+
+        /// <summary>
+        /// 
         /// </summary>
         /// <param name="input"></param>
-        /// <returns>Object or null if invalid input.</returns>
-        public static AudioTime? Parse(string input)
+        /// <returns></returns>
+        public static int TextToSample(string input)
         {
-            AudioTime? tm = null;
+            int sample = -1;
 
-            var parts = input.Split(".");
-            if(parts.Length == 3)
+            int msec = TextToMsec(input);
+
+            if (msec >= 0)
             {
-                int p0 = -1;
-                int p1 = -1;
-                int p2 = -1;
-
-                int.TryParse(parts[0], out p0);
-                int.TryParse(parts[1], out p1);
-                int.TryParse(parts[2], out p2);
-
-                if(p0 >= 0 && p0 < 60 && p1 >= 0 && p1 < 60 && p2 >= 0 && p2 < 1000)
-                {
-                    tm = new AudioTime(p0, p1, p2);
-                }
+                sample = MsecToSample(msec);
             }
 
-            return tm;
+            return sample;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static int TextToMsec(string input)
+        {
+            int tmsec = -1;
+
+            var tm = TextToTime(input);
+
+            if (tm.Valid())
+            {
+                tmsec = tm.min * SEC_PER_MINUTE * MSEC_PER_SECOND + tm.sec * MSEC_PER_SECOND + tm.msec;
+            }
+
+            return tmsec;
         }
 
         /// <summary>
         /// Human readable.
         /// </summary>
         /// <returns></returns>
-        public override string ToString()
+        public static string Format(int sample)
         {
-            // TS_FORMAT = @"mm\:ss\.fff";
-            return $"{Minutes:00}.{Seconds:00}.{Milliseconds:000}";
+            var tm = SampleToTime(sample);
+            return $"{tm.min:00}.{tm.sec:00}.{tm.msec:000}";
         }
         #endregion
 
-        //#region Standard IComparable stuff
-        //public override bool Equals(object? obj)
-        //{
-        //    return obj is not null && obj is AudioTime tm && tm.TotalMilliseconds == TotalMilliseconds;
-        //}
+        #region Private functions
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        static TimeDesc SampleToTime(int sample)
+        {
+            var tmsec = SampleToMsec(sample);
+            return new(tmsec / (SEC_PER_MINUTE * MSEC_PER_SECOND) % SEC_PER_MINUTE, tmsec / MSEC_PER_SECOND % SEC_PER_MINUTE, tmsec % MSEC_PER_SECOND);
+        }
 
-        //public override int GetHashCode()
-        //{
-        //    return _id;
-        //}
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        static TimeDesc TextToTime(string input)
+        {
+            TimeDesc tm = new();
 
-        //public int CompareTo(object? obj)
-        //{
-        //    if (obj is null)
-        //    {
-        //        throw new ArgumentException("Object is null");
-        //    }
+            var parts = input.Split(".");
+            if (parts.Length == 3)
+            {
+                if (int.TryParse(parts[0], out int min)) tm.min = min;
+                if (int.TryParse(parts[1], out int sec)) tm.sec = sec;
+                if (int.TryParse(parts[2], out int msec)) tm.msec = msec;
+            }
 
-        //    AudioTime? other = obj as AudioTime;
-        //    if (other is not null)
-        //    {
-        //        return TotalMilliseconds.CompareTo(other.TotalMilliseconds);
-        //    }
-        //    else
-        //    {
-        //        throw new ArgumentException("Object is not a BarSpan");
-        //    }
-        //}
-
-        //public static bool operator ==(AudioTime a, AudioTime b)
-        //{
-        //    return a.TotalMilliseconds == b.TotalMilliseconds;
-        //}
-
-        //public static bool operator !=(AudioTime a, AudioTime b)
-        //{
-        //    return !(a == b);
-        //}
-
-        //public static AudioTime operator +(AudioTime a, AudioTime b)
-        //{
-        //    return new AudioTime(a.TotalMilliseconds + b.TotalMilliseconds);
-        //}
-
-        //public static AudioTime operator -(AudioTime a, AudioTime b)
-        //{
-        //    return new AudioTime(a.TotalMilliseconds - b.TotalMilliseconds);
-        //}
-
-        //public static bool operator <(AudioTime a, AudioTime b)
-        //{
-        //    return a.TotalMilliseconds < b.TotalMilliseconds;
-        //}
-
-        //public static bool operator >(AudioTime a, AudioTime b)
-        //{
-        //    return a.TotalMilliseconds > b.TotalMilliseconds;
-        //}
-
-        //public static bool operator <=(AudioTime a, AudioTime b)
-        //{
-        //    return a.TotalMilliseconds <= b.TotalMilliseconds;
-        //}
-
-        //public static bool operator >=(AudioTime a, AudioTime b)
-        //{
-        //    return a.TotalMilliseconds >= b.TotalMilliseconds;
-        //}
-        //#endregion
+            return tm;
+        }
+        #endregion
     }
 }

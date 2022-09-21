@@ -174,11 +174,11 @@ namespace AudioLib
 
             // Text.
             _format.Alignment = StringAlignment.Center;
-            pe.Graphics.DrawString(_current.ToString(), FontLarge, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_current.ToString(AudioLibDefs.TS_FORMAT), FontLarge, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Near;
-            pe.Graphics.DrawString(_marker1.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_marker1.ToString(AudioLibDefs.TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Far;
-            pe.Graphics.DrawString(_marker2.ToString(), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(_marker2.ToString(AudioLibDefs.TS_FORMAT), FontSmall, Brushes.Black, ClientRectangle, _format);
         }
         #endregion
 
@@ -250,7 +250,7 @@ namespace AudioLib
                 if (e.X != _lastXPos)
                 {
                     TimeSpan ts = GetTimeFromMouse(e.X);
-                    _toolTip.SetToolTip(this, ts.ToString());
+                    _toolTip.SetToolTip(this, ts.ToString(AudioLibDefs.TS_FORMAT));
                     _lastXPos = e.X;
                 }
             }

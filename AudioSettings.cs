@@ -40,7 +40,7 @@ namespace AudioLib
         [DisplayName("Max Clip Size")]
         [Description("Limit clips to this many minutes. Has a direct effect on memory usage.")]
         [Browsable(true)]
-        public int MaxClipSize { get; set; } = 10;
+        public int MaxClipSize { get; set; } = AudioLibDefs.MAX_CLIP_SIZE;
         #endregion
     }
 

@@ -96,9 +96,9 @@ namespace AudioLib
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int Length { get { return _vals.Length; } }
 
-        /// <summary>Length of the clip.</summary>
+        /// <summary>Length of the clip in msec.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public AudioTime TotalTime { get { return new((float)Length / AudioLibDefs.SAMPLE_RATE); } }
+        public int TotalTime { get { return (int)((float)Length / AudioLibDefs.SAMPLE_RATE / 1000.0f); } }
 
         /// <summary>Selection start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -243,19 +243,19 @@ namespace AudioLib
                     break;
 
                 case (Property.Marker, WaveSelectionMode.Time):
-                    var time = AudioTime.Parse(val);
-                    if (time is not null)
+                    int sample = AudioTime.TextToSample(val);
+                    if (sample >= 0)
                     {
-                        _marker = time.ToSample();
+                        _marker = sample;
                         ok = true;
                     }
                     break;
 
                 case (Property.Marker, WaveSelectionMode.Beat):
-                    var bb = BarBeat.Parse(val);
-                    if (bb is not null)
+                    sample = BarBeat.TextToSample(val);
+                    if (sample >= 0)
                     {
-                        _marker = bb.ToSample(Globals.BPM);
+                        _marker = sample;
                         ok = true;
                     }
                     break;
@@ -269,19 +269,19 @@ namespace AudioLib
                     break;
 
                 case (Property.SelStart, WaveSelectionMode.Time):
-                    time = AudioTime.Parse(val);
-                    if (time is not null)
+                    sample = AudioTime.TextToSample(val);
+                    if (sample >= 0)
                     {
-                        _selStart = time.ToSample();
+                        _selStart = sample;
                         ok = true;
                     }
                     break;
 
                 case (Property.SelStart, WaveSelectionMode.Beat):
-                    bb = BarBeat.Parse(val);
-                    if (bb is not null)
+                    sample = BarBeat.TextToSample(val);
+                    if (sample >= 0)
                     {
-                        _selStart = bb.ToSample(Globals.BPM);
+                        _selStart = sample;
                         ok = true;
                     }
                     break;
@@ -295,19 +295,19 @@ namespace AudioLib
                     break;
 
                 case (Property.SelLength, WaveSelectionMode.Time):
-                    time = AudioTime.Parse(val);
-                    if (time is not null)
+                    sample = AudioTime.TextToSample(val);
+                    if (sample >= 0)
                     {
-                        _selLength = time.ToSample();
+                        _selLength = sample;
                         ok = true;
                     }
                     break;
 
                 case (Property.SelLength, WaveSelectionMode.Beat):
-                    bb = BarBeat.Parse(val);
-                    if (bb is not null)
+                    sample = BarBeat.TextToSample(val);
+                    if (sample >= 0)
                     {
-                        _selLength = bb.ToSample(Globals.BPM);
+                        _selLength = sample;
                         ok = true;
                     }
                     break;
@@ -457,15 +457,16 @@ namespace AudioLib
                         break;
 
                     case WaveSelectionMode.Time:
-                        var tm = new AudioTime(sample);
-                        tm.Snap(_snap);
-                        toolTip.SetToolTip(this, tm.ToString());
+                        sample = AudioTime.SnapSample(sample, _snap);
+                        //var tm = new AudioTime(sample);
+                        //tm.Snap(_snap);
+                        toolTip.SetToolTip(this, AudioTime.Format(sample));
                         break;
 
                     case WaveSelectionMode.Beat:
-                        var bb = new BarBeat(sample, Globals.BPM);
-                        bb.Snap(_snap);
-                        toolTip.SetToolTip(this, bb.ToString());
+//                        var bb = new BarBeat(sample, Globals.BPM);
+//                        bb.Snap(_snap);
+//                        toolTip.SetToolTip(this, bb.ToString());
                         break;
                 }
 
