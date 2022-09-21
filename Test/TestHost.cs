@@ -29,7 +29,7 @@ namespace AudioLib.Test
         readonly string _testFilesDir = @"C:\Dev\repos\TestAudioFiles";
 
         /// <summary>The current audio provider.</summary>
-        ISampleProvider _provMain = new NullSampleProvider();
+        ISampleProvider _prov = new NullSampleProvider();
 
         /// <summary>For testing swapping providers.</summary>
         readonly ClipSampleProvider _provSwap;
@@ -91,10 +91,10 @@ namespace AudioLib.Test
             postVolumeMeter.StreamVolume += (object? sender, StreamVolumeEventArgs e) =>
             {
                 // Get the position of the source provider.
-                long pos = _provMain.GetPosition();
+                long pos = _prov.GetPosition();
                 if(pos >= 0)
                 {
-                    timeBar.Current = new(1000.0f * pos / _waveOutSwapper.WaveFormat.SampleRate);
+                    timeBar.Current = new(0, 0, 0, 0, (int)(1000 * pos / _waveOutSwapper.WaveFormat.SampleRate));
                 }
             };
 
@@ -103,7 +103,7 @@ namespace AudioLib.Test
             {
                 LogLine("player finished");
                 this.InvokeIfRequired(_ => chkPlay.Checked = false);
-                _provMain?.SetPosition(0);
+                _prov?.SetPosition(0);
             };
 
             // File openers.
@@ -210,20 +210,20 @@ namespace AudioLib.Test
         void SetProvider(ISampleProvider? prov)
         {
             // Clean up?
-            if (_provMain is AudioFileReader)
+            if (_prov is AudioFileReader)
             {
-                (_provMain as AudioFileReader)!.Dispose();
+                (_prov as AudioFileReader)!.Dispose();
             }
 
-            _provMain = prov;
-            ShowWave(_provMain);
-            _waveOutSwapper.SetInput(_provMain);
+            _prov = prov;
+            ShowWave(_prov);
+            _waveOutSwapper.SetInput(_prov);
         }
 
         // Boilerplate helper.
         void ShowWave(ISampleProvider? prov)
         {
-            if(prov is null)
+            if (prov is null)
             {
                 return;
             }
@@ -262,14 +262,14 @@ namespace AudioLib.Test
             prov.SetPosition(0);
             lblInfo.Text = prov.GetInfoString();
 
-            timeBar.Length = tm;
+            timeBar.Length = tm.ToTimeSpan();
             //timeBar.Marker1 = new AudioTime(msec / 3);
             //timeBar.Marker2 = new AudioTime(msec / 2);
         }
 
         void Play_Click()
         {
-            if (_provMain is null)
+            if (_prov is null)
             {
                 LogLine("open a file first please");
             }
@@ -290,13 +290,13 @@ namespace AudioLib.Test
         // Swap test for SwappableSampleProvider.
         void Swap_Click(object? sender, EventArgs args)
         {
-            if (_provMain is null)
+            if (_prov is null)
             {
                 LogLine("open a file first please");
             }
             else
             {
-                var newProv = btnSwap.Checked ? _provSwap : _provMain;
+                var newProv = btnSwap.Checked ? _provSwap : _prov;
                 _waveOutSwapper.SetInput(newProv); // For listen.
                 ShowWave(newProv);
                 lblInfo.Text = newProv.GetInfoString();

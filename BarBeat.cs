@@ -11,7 +11,7 @@ using NBagOfTricks;
 namespace AudioLib
 {
     /// <summary>Container for musical time. Internally 0-based but traditional 1-based for the user.</summary>
-    public class BarBeat : IComparable
+    public class BarBeat// : IComparable
     {
         #region Fields
         /// <summary>For hashing.</summary>
@@ -176,74 +176,74 @@ namespace AudioLib
         }
         #endregion
 
-        #region Standard IComparable stuff
-        public override bool Equals(object? obj)
-        {
-            return obj is not null && obj is BarBeat tm && tm.TotalSubdivs == TotalSubdivs;
-        }
+        //#region Standard IComparable stuff
+        //public override bool Equals(object? obj)
+        //{
+        //    return obj is not null && obj is BarBeat tm && tm.TotalSubdivs == TotalSubdivs;
+        //}
 
-        public override int GetHashCode()
-        {
-            return _id;
-        }
+        //public override int GetHashCode()
+        //{
+        //    return _id;
+        //}
 
-        public int CompareTo(object? obj)
-        {
-            if (obj is null)
-            {
-                throw new ArgumentException("Object is null");
-            }
+        //public int CompareTo(object? obj)
+        //{
+        //    if (obj is null)
+        //    {
+        //        throw new ArgumentException("Object is null");
+        //    }
 
-            BarBeat? other = obj as BarBeat;
-            if (other is not null)
-            {
-                return TotalSubdivs.CompareTo(other.TotalSubdivs);
-            }
-            else
-            {
-                throw new ArgumentException("Object is not a BarSpan");
-            }
-        }
+        //    BarBeat? other = obj as BarBeat;
+        //    if (other is not null)
+        //    {
+        //        return TotalSubdivs.CompareTo(other.TotalSubdivs);
+        //    }
+        //    else
+        //    {
+        //        throw new ArgumentException("Object is not a BarSpan");
+        //    }
+        //}
 
-        public static bool operator ==(BarBeat a, BarBeat b)
-        {
-            return a.TotalSubdivs == b.TotalSubdivs;
-        }
+        //public static bool operator ==(BarBeat a, BarBeat b)
+        //{
+        //    return a.TotalSubdivs == b.TotalSubdivs;
+        //}
 
-        public static bool operator !=(BarBeat a, BarBeat b)
-        {
-            return !(a == b);
-        }
+        //public static bool operator !=(BarBeat a, BarBeat b)
+        //{
+        //    return !(a == b);
+        //}
 
-        public static BarBeat operator +(BarBeat a, BarBeat b)
-        {
-            return new BarBeat(a.TotalSubdivs + b.TotalSubdivs);
-        }
+        //public static BarBeat operator +(BarBeat a, BarBeat b)
+        //{
+        //    return new BarBeat(a.TotalSubdivs + b.TotalSubdivs);
+        //}
 
-        public static BarBeat operator -(BarBeat a, BarBeat b)
-        {
-            return new BarBeat(a.TotalSubdivs - b.TotalSubdivs);
-        }
+        //public static BarBeat operator -(BarBeat a, BarBeat b)
+        //{
+        //    return new BarBeat(a.TotalSubdivs - b.TotalSubdivs);
+        //}
 
-        public static bool operator <(BarBeat a, BarBeat b)
-        {
-            return a.TotalSubdivs < b.TotalSubdivs;
-        }
+        //public static bool operator <(BarBeat a, BarBeat b)
+        //{
+        //    return a.TotalSubdivs < b.TotalSubdivs;
+        //}
 
-        public static bool operator >(BarBeat a, BarBeat b)
-        {
-            return a.TotalSubdivs > b.TotalSubdivs;
-        }
+        //public static bool operator >(BarBeat a, BarBeat b)
+        //{
+        //    return a.TotalSubdivs > b.TotalSubdivs;
+        //}
 
-        public static bool operator <=(BarBeat a, BarBeat b)
-        {
-            return a.TotalSubdivs <= b.TotalSubdivs;
-        }
+        //public static bool operator <=(BarBeat a, BarBeat b)
+        //{
+        //    return a.TotalSubdivs <= b.TotalSubdivs;
+        //}
 
-        public static bool operator >=(BarBeat a, BarBeat b)
-        {
-            return a.TotalSubdivs >= b.TotalSubdivs;
-        }
-        #endregion
+        //public static bool operator >=(BarBeat a, BarBeat b)
+        //{
+        //    return a.TotalSubdivs >= b.TotalSubdivs;
+        //}
+        //#endregion
     }
 }

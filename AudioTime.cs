@@ -11,7 +11,7 @@ using NBagOfTricks;
 
 namespace AudioLib
 {
-    public class AudioTime : IComparable
+    public class AudioTime// : IComparable
     {
         #region Fields
         /// <summary>For hashing.</summary>
@@ -107,6 +107,15 @@ namespace AudioLib
         }
 
         /// <summary>
+        /// Convert to equivalent TimeSpan.
+        /// </summary>
+        /// <returns></returns>
+        public TimeSpan ToTimeSpan()
+        {
+            return new(0, 0, 0, 0, TotalMilliseconds);
+        }
+
+        /// <summary>
         /// Convert from string form. mm.ss.fff
         /// </summary>
         /// <param name="input"></param>
@@ -146,74 +155,74 @@ namespace AudioLib
         }
         #endregion
 
-        #region Standard IComparable stuff
-        public override bool Equals(object? obj)
-        {
-            return obj is not null && obj is AudioTime tm && tm.TotalMilliseconds == TotalMilliseconds;
-        }
+        //#region Standard IComparable stuff
+        //public override bool Equals(object? obj)
+        //{
+        //    return obj is not null && obj is AudioTime tm && tm.TotalMilliseconds == TotalMilliseconds;
+        //}
 
-        public override int GetHashCode()
-        {
-            return _id;
-        }
+        //public override int GetHashCode()
+        //{
+        //    return _id;
+        //}
 
-        public int CompareTo(object? obj)
-        {
-            if (obj is null)
-            {
-                throw new ArgumentException("Object is null");
-            }
+        //public int CompareTo(object? obj)
+        //{
+        //    if (obj is null)
+        //    {
+        //        throw new ArgumentException("Object is null");
+        //    }
 
-            AudioTime? other = obj as AudioTime;
-            if (other is not null)
-            {
-                return TotalMilliseconds.CompareTo(other.TotalMilliseconds);
-            }
-            else
-            {
-                throw new ArgumentException("Object is not a BarSpan");
-            }
-        }
+        //    AudioTime? other = obj as AudioTime;
+        //    if (other is not null)
+        //    {
+        //        return TotalMilliseconds.CompareTo(other.TotalMilliseconds);
+        //    }
+        //    else
+        //    {
+        //        throw new ArgumentException("Object is not a BarSpan");
+        //    }
+        //}
 
-        public static bool operator ==(AudioTime a, AudioTime b)
-        {
-            return a.TotalMilliseconds == b.TotalMilliseconds;
-        }
+        //public static bool operator ==(AudioTime a, AudioTime b)
+        //{
+        //    return a.TotalMilliseconds == b.TotalMilliseconds;
+        //}
 
-        public static bool operator !=(AudioTime a, AudioTime b)
-        {
-            return !(a == b);
-        }
+        //public static bool operator !=(AudioTime a, AudioTime b)
+        //{
+        //    return !(a == b);
+        //}
 
-        public static AudioTime operator +(AudioTime a, AudioTime b)
-        {
-            return new AudioTime(a.TotalMilliseconds + b.TotalMilliseconds);
-        }
+        //public static AudioTime operator +(AudioTime a, AudioTime b)
+        //{
+        //    return new AudioTime(a.TotalMilliseconds + b.TotalMilliseconds);
+        //}
 
-        public static AudioTime operator -(AudioTime a, AudioTime b)
-        {
-            return new AudioTime(a.TotalMilliseconds - b.TotalMilliseconds);
-        }
+        //public static AudioTime operator -(AudioTime a, AudioTime b)
+        //{
+        //    return new AudioTime(a.TotalMilliseconds - b.TotalMilliseconds);
+        //}
 
-        public static bool operator <(AudioTime a, AudioTime b)
-        {
-            return a.TotalMilliseconds < b.TotalMilliseconds;
-        }
+        //public static bool operator <(AudioTime a, AudioTime b)
+        //{
+        //    return a.TotalMilliseconds < b.TotalMilliseconds;
+        //}
 
-        public static bool operator >(AudioTime a, AudioTime b)
-        {
-            return a.TotalMilliseconds > b.TotalMilliseconds;
-        }
+        //public static bool operator >(AudioTime a, AudioTime b)
+        //{
+        //    return a.TotalMilliseconds > b.TotalMilliseconds;
+        //}
 
-        public static bool operator <=(AudioTime a, AudioTime b)
-        {
-            return a.TotalMilliseconds <= b.TotalMilliseconds;
-        }
+        //public static bool operator <=(AudioTime a, AudioTime b)
+        //{
+        //    return a.TotalMilliseconds <= b.TotalMilliseconds;
+        //}
 
-        public static bool operator >=(AudioTime a, AudioTime b)
-        {
-            return a.TotalMilliseconds >= b.TotalMilliseconds;
-        }
-        #endregion
+        //public static bool operator >=(AudioTime a, AudioTime b)
+        //{
+        //    return a.TotalMilliseconds >= b.TotalMilliseconds;
+        //}
+        //#endregion
     }
 }

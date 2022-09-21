@@ -122,7 +122,7 @@ namespace AudioLib
         #endregion
 
         #region Events
-        /// <summary>Value changed by user.</summary>
+        /// <summary>Value changed by user. Notify owner for display.</summary>
         public event EventHandler<ViewerChangeEventArgs>? ViewerChangeEvent;
         public class ViewerChangeEventArgs
         {
