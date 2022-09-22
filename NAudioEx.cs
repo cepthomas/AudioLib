@@ -15,7 +15,7 @@ namespace AudioLib
 {
     /// <summary>
     /// Extensions to enhance core NAudio for this application.
-    /// TODO1 A lot of these are kind of clunky but the alternative is to add some new functionality
+    /// TODO A lot of these are kind of clunky but the alternative is to add some new functionality
     /// to ISampleprovider. Maybe I'll branch NAudio some day.
     /// </summary>
     public static class NAudioEx

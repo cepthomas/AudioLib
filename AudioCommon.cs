@@ -15,23 +15,32 @@ namespace AudioLib
     public enum StereoCoercion { None, Left, Right, Mono }
 
     /// <summary>How to select.</summary>
-    public enum WaveSelectionMode { Beat, Time, Sample };
+    public enum WaveSelectionMode { Bar, Time, Sample };
 
     /// <summary>How to snap.</summary>
     public enum SnapType { None, Fine, Coarse };
 
     /// <summary>Notification type.</summary>
-    public enum Property { Gain, Marker, SelStart, SelLength }
+    public enum Property { None, Gain, Marker, SelStart, SelLength }
+
+    /// <summary>Abstraction of selection mode.</summary>
+    public interface IConverterOps
+    {
+        WaveSelectionMode SelectionMode { get; }
+        int SnapSample(int sample, SnapType snap);
+        int TextToSample(string input);
+        string Format(int sample);
+    }
     #endregion
 
     #region Globals
     public static class Globals
     {
         /// <summary>Global mode.</summary>
-        public static WaveSelectionMode SelectionMode { get; set; } = WaveSelectionMode.Time;
+        public static IConverterOps ConverterOps { get; set; } = new SampleOps();
 
         /// <summary>Global tempo if using Beat selection mode.</summary>
-        public static float BPM  { get; set; } = 100.0f;
+        public static float BPM { get; set; } = 100.0f;
     }
     #endregion
 

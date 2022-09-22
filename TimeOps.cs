@@ -5,11 +5,15 @@ using System.Collections.Generic;
 namespace AudioLib
 {
     /// <summary>Converters for audio time.</summary>
-    public static class TimeOps
+    public class TimeOps : IConverterOps
     {
         #region Constants
         internal const int MSEC_PER_SECOND = 1000;
         internal const int SEC_PER_MINUTE = 60;
+        #endregion
+
+        #region Properties
+        public WaveSelectionMode SelectionMode { get { return WaveSelectionMode.Time; } }
         #endregion
 
         #region Types
@@ -29,32 +33,10 @@ namespace AudioLib
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="msec"></param>
-        /// <returns></returns>
-        public static int MsecToSample(float msec)
-        {
-            double sample = (double)AudioLibDefs.SAMPLE_RATE * msec / MSEC_PER_SECOND;
-            return (int)sample;
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
-        public static int SampleToMsec(int sample)
-        {
-            double msec = (double)MSEC_PER_SECOND * sample / AudioLibDefs.SAMPLE_RATE;
-            return (int)Math.Round(msec);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
         /// <param name="sample"></param>
         /// <param name="snap"></param>
         /// <returns></returns>
-        public static int SnapSample(int sample, SnapType snap)
+        public int SnapSample(int sample, SnapType snap)
         {
             var tmsec = SampleToMsec(sample);
 
@@ -73,7 +55,7 @@ namespace AudioLib
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static int TextToSample(string input)
+        public int TextToSample(string input)
         {
             int sample = -1;
 
@@ -88,11 +70,56 @@ namespace AudioLib
         }
 
         /// <summary>
+        /// Human readable.
+        /// </summary>
+        /// <returns></returns>
+        public string Format(int sample)
+        {
+            var tm = SampleToTime(sample);
+            return $"{tm.min:00}.{tm.sec:00}.{tm.msec:000}";
+        }
+        #endregion
+
+        #region Private functions
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="msec"></param>
+        /// <returns></returns>
+        int MsecToSample(float msec)
+        {
+            double sample = (double)AudioLibDefs.SAMPLE_RATE * msec / MSEC_PER_SECOND;
+            return (int)sample;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        int SampleToMsec(int sample)
+        {
+            double msec = (double)MSEC_PER_SECOND * sample / AudioLibDefs.SAMPLE_RATE;
+            return (int)Math.Round(msec);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sample"></param>
+        /// <returns></returns>
+        TimeDesc SampleToTime(int sample)
+        {
+            var tmsec = SampleToMsec(sample);
+            return new(tmsec / (SEC_PER_MINUTE * MSEC_PER_SECOND) % SEC_PER_MINUTE, tmsec / MSEC_PER_SECOND % SEC_PER_MINUTE, tmsec % MSEC_PER_SECOND);
+        }
+
+        /// <summary>
         /// 
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        public static int TextToMsec(string input)
+        int TextToMsec(string input)
         {
             int tmsec = -1;
 
@@ -107,34 +134,11 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Human readable.
-        /// </summary>
-        /// <returns></returns>
-        public static string Format(int sample)
-        {
-            var tm = SampleToTime(sample);
-            return $"{tm.min:00}.{tm.sec:00}.{tm.msec:000}";
-        }
-        #endregion
-
-        #region Private functions
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
-        static TimeDesc SampleToTime(int sample)
-        {
-            var tmsec = SampleToMsec(sample);
-            return new(tmsec / (SEC_PER_MINUTE * MSEC_PER_SECOND) % SEC_PER_MINUTE, tmsec / MSEC_PER_SECOND % SEC_PER_MINUTE, tmsec % MSEC_PER_SECOND);
-        }
-
-        /// <summary>
-        /// 
+        /// Parser.
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        static TimeDesc TextToTime(string input)
+        TimeDesc TextToTime(string input)
         {
             TimeDesc tm = new();
 

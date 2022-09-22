@@ -51,8 +51,9 @@ namespace AudioLib.Test
 
             Location = new(20, 20);
 
-            Globals.SelectionMode = WaveSelectionMode.Sample;
-            Globals.BPM = 100;
+            Globals.ConverterOps = new SampleOps();
+            //Globals.SelectionMode = WaveSelectionMode.Sample;
+            //Globals.BPM = 100;
 
             // Time bar.
             timeBar.SnapMsec = 10;

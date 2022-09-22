@@ -15,19 +15,21 @@ namespace AudioLib.Test
         public override void RunSuite()
         {
             // Sample <-> sample.
-            int sout = SampleOps.SnapSample(1234567, SnapType.None);
+            SampleOps ops = new();
+
+            int sout = ops.SnapSample(1234567, SnapType.None);
             UT_EQUAL(sout, 1234567);
 
-            sout = SampleOps.SnapSample(1234367, SnapType.Fine); // round down
+            sout = ops.SnapSample(1234367, SnapType.Fine); // round down
             UT_EQUAL(sout, 1234000);
 
-            sout = SampleOps.SnapSample(1234567, SnapType.Fine); // round up
+            sout = ops.SnapSample(1234567, SnapType.Fine); // round up
             UT_EQUAL(sout, 1235000);
 
-            sout = SampleOps.SnapSample(1234567, SnapType.Coarse); // round down
+            sout = ops.SnapSample(1234567, SnapType.Coarse); // round down
             UT_EQUAL(sout, 1230000);
 
-            sout = SampleOps.SnapSample(1235567, SnapType.Coarse); // round up
+            sout = ops.SnapSample(1235567, SnapType.Coarse); // round up
             UT_EQUAL(sout, 1240000);
         }
     }
@@ -37,114 +39,118 @@ namespace AudioLib.Test
         public override void RunSuite()
         {
             // AudioTime <-> sample.
+            TimeOps ops = new();
+
             int sample1 = 25354545;
             int sample2 = 1904788;
             int errmax = 25; // Roundtrip conversion error max.
 
-            UT_EQUAL(TimeOps.Format(sample1), "09.34.933");
-            int sout = TimeOps.TextToSample("9.34.933");
+            UT_EQUAL(ops.Format(sample1), "09.34.933");
+            int sout = ops.TextToSample("9.34.933");
             int err = Math.Abs(sample1 - sout);
             Debug.WriteLine($"AudioTime error:{err}");
             UT_LESS(err, errmax);
 
-            UT_EQUAL(TimeOps.Format(sample2), "00.43.192");
-            sout = TimeOps.TextToSample("00.43.192");
+            UT_EQUAL(ops.Format(sample2), "00.43.192");
+            sout = ops.TextToSample("00.43.192");
             err = Math.Abs(sample2 - sout);
             Debug.WriteLine($"AudioTime error:{err}");
             UT_LESS(err, errmax);
 
-            sout = TimeOps.SnapSample(sample1, SnapType.Fine); // round down
-            UT_EQUAL(TimeOps.Format(sout), "09.34.900");
+            sout = ops.SnapSample(sample1, SnapType.Fine); // round down
+            UT_EQUAL(ops.Format(sout), "09.34.900");
 
-            sout = TimeOps.SnapSample(sample2, SnapType.Fine); // round up
-            UT_EQUAL(TimeOps.Format(sout), "00.43.200");
+            sout = ops.SnapSample(sample2, SnapType.Fine); // round up
+            UT_EQUAL(ops.Format(sout), "00.43.200");
 
-            sout = TimeOps.SnapSample(sample1, SnapType.Coarse); // round up
-            UT_EQUAL(TimeOps.Format(sout), "09.35.000");
+            sout = ops.SnapSample(sample1, SnapType.Coarse); // round up
+            UT_EQUAL(ops.Format(sout), "09.35.000");
 
-            sout = TimeOps.SnapSample(sample2, SnapType.Coarse); // round down
-            UT_EQUAL(TimeOps.Format(sout), "00.43.000");
+            sout = ops.SnapSample(sample2, SnapType.Coarse); // round down
+            UT_EQUAL(ops.Format(sout), "00.43.000");
 
             // Parsing.
             // Good ones.
-            sout = TimeOps.TextToSample("8.47.123");
+            sout = ops.TextToSample("8.47.123");
             UT_EQUAL(sout, 23246124);
-            sout = TimeOps.TextToMsec("7.47.123");
-            UT_EQUAL(sout, 467123);
+            sout = ops.TextToSample("7.47.123");
+            UT_EQUAL(sout, 20600124);
 
             // Bad ones.
-            sout = TimeOps.TextToSample("1:2");
+            sout = ops.TextToSample("1:2");
             UT_EQUAL(sout, -1);
-            sout = TimeOps.TextToSample("1.2");
+            sout = ops.TextToSample("1.2");
             UT_EQUAL(sout, -1);
-            sout = TimeOps.TextToSample("1.2.9999");
+            sout = ops.TextToSample("1.2.9999");
             UT_EQUAL(sout, -1);
-            sout = TimeOps.TextToSample("dsdsd");
+            sout = ops.TextToSample("dsdsd");
             UT_EQUAL(sout, -1);
         }
     }
 
-    public class CONVERT_BARBEAT : TestSuite
+    public class CONVERT_BAR : TestSuite
     {
         public override void RunSuite()
         {
-            // BarBeat <-> sample.
+            // Bar <-> sample.
             int sample1 = 80126934;
             int sample2 = 9055612;
             int errmax = 100; // Roundtrip conversion error max.
 
-            BarBeatOps.BPM = 76.58f;
+            BarOps ops = new();
 
-            UT_EQUAL(BarBeatOps.Format(sample1), "579.3.02");
-            int sout = BarBeatOps.TextToSample("579.3.02");
+            Globals.BPM = 76.58f;
+
+            UT_EQUAL(ops.Format(sample1), "579.3.02");
+            int sout = ops.TextToSample("579.3.02");
             int err = Math.Abs(sample1 - sout);
-            Debug.WriteLine($"BarBeat error:{err}");
+            Debug.WriteLine($"Bar error:{err}");
             UT_LESS(err, errmax);
 
-            BarBeatOps.BPM = 117.02f;
+            Globals.BPM = 117.02f;
 
-            UT_EQUAL(BarBeatOps.Format(sample2), "100.0.49");
-            sout = BarBeatOps.TextToSample("100.0.49");
+            UT_EQUAL(ops.Format(sample2), "100.0.49");
+            sout = ops.TextToSample("100.0.49");
             err = Math.Abs(sample2 - sout);
-            Debug.WriteLine($"BarBeat error:{err}");
+            Debug.WriteLine($"Bar error:{err}");
             UT_LESS(err, errmax);
 
-            sout = BarBeatOps.TextToSample("421.2.49");
-            sout = BarBeatOps.SnapSample(sout, SnapType.Fine); // round beat down
-            UT_EQUAL(BarBeatOps.Format(sout), "421.2.00");
+            sout = ops.TextToSample("421.2.49");
+            sout = ops.SnapSample(sout, SnapType.Fine); // round beat down
+            UT_EQUAL(ops.Format(sout), "421.2.00");
 
-            sout = BarBeatOps.TextToSample("421.2.51");
-            sout = BarBeatOps.SnapSample(sout, SnapType.Fine); // round beat up
-            UT_EQUAL(BarBeatOps.Format(sout), "421.3.00");
+            sout = ops.TextToSample("421.2.51");
+            sout = ops.SnapSample(sout, SnapType.Fine); // round beat up
+            UT_EQUAL(ops.Format(sout), "421.3.00");
 
-            sout = BarBeatOps.TextToSample("421.3.99");
-            sout = BarBeatOps.SnapSample(sout, SnapType.Fine); // round beat up
-            UT_EQUAL(BarBeatOps.Format(sout), "422.0.00");
+            sout = ops.TextToSample("421.3.99");
+            sout = ops.SnapSample(sout, SnapType.Fine); // round beat up
+            UT_EQUAL(ops.Format(sout), "422.0.00");
 
-            sout = BarBeatOps.TextToSample("421.3.88");
-            sout = BarBeatOps.SnapSample(sout, SnapType.Coarse); // round bar up
-            UT_EQUAL(BarBeatOps.Format(sout), "422.0.00");
+            sout = ops.TextToSample("421.3.88");
+            sout = ops.SnapSample(sout, SnapType.Coarse); // round bar up
+            UT_EQUAL(ops.Format(sout), "422.0.00");
 
-            sout = BarBeatOps.TextToSample("421.1.48");
-            sout = BarBeatOps.SnapSample(sout, SnapType.Coarse); // round bar down
-            UT_EQUAL(BarBeatOps.Format(sout), "421.0.00");
+            sout = ops.TextToSample("421.1.48");
+            sout = ops.SnapSample(sout, SnapType.Coarse); // round bar down
+            UT_EQUAL(ops.Format(sout), "421.0.00");
 
             // Parsing.
             // Good one.
-            sout = BarBeatOps.TextToSample("32.2.78");
-            UT_EQUAL(BarBeatOps.Format(sout), "32.2.78");
+            sout = ops.TextToSample("32.2.78");
+            UT_EQUAL(ops.Format(sout), "32.2.78");
 
             // Bad ones.
-            sout = BarBeatOps.TextToSample("1:2");
+            sout = ops.TextToSample("1:2");
             UT_EQUAL(sout, -1);
 
-            sout = BarBeatOps.TextToSample("1.2");
+            sout = ops.TextToSample("1.2");
             UT_EQUAL(sout, -1);
 
-            sout = BarBeatOps.TextToSample("1.2.9999");
+            sout = ops.TextToSample("1.2.9999");
             UT_EQUAL(sout, -1);
 
-            sout = BarBeatOps.TextToSample("dsdsd");
+            sout = ops.TextToSample("dsdsd");
             UT_EQUAL(sout, -1);
         }
     }

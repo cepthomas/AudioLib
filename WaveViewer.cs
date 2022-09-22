@@ -9,6 +9,7 @@ using System.ComponentModel;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
+using static AudioLib.Globals;
 
 
 // TODO make mouse etc commands configurable.
@@ -228,96 +229,32 @@ namespace AudioLib
         /// <param name="change">The property</param>
         /// <param name="val">The new value</param>
         /// <returns>True if valid.</returns>
-        public bool UpdateProperty(Property change, string val)//TODO1 a lot of repetitive code.
+        public bool UpdateProperty(Property change, string val)
         {
             bool ok = false;
 
-            switch (change, Globals.SelectionMode)
+            int sample = ConverterOps.TextToSample(val);
+            if (sample >= 0)
             {
-                case (Property.Marker, WaveSelectionMode.Sample):
-                    int sample = SampleOps.TextToSample(val);
-                    if (sample >= 0)
-                    {
+                switch (change)
+                {
+                    case Property.Marker:
                         _marker = sample;
-                        ok = true;
-                    }
-                    break;
+                        break;
 
-                case (Property.Marker, WaveSelectionMode.Time):
-                    sample = TimeOps.TextToSample(val);
-                    if (sample >= 0)
-                    {
-                        _marker = sample;
-                        ok = true;
-                    }
-                    break;
-
-                case (Property.Marker, WaveSelectionMode.Beat):
-                    sample = BarBeatOps.TextToSample(val);
-                    if (sample >= 0)
-                    {
-                        _marker = sample;
-                        ok = true;
-                    }
-                    break;
-
-                case (Property.SelStart, WaveSelectionMode.Sample):
-                    sample = SampleOps.TextToSample(val);
-                    if (sample >= 0)
-                    {
+                    case Property.SelStart:
                         _selStart = sample;
-                        ok = true;
-                    }
-                    break;
+                        break;
 
-                case (Property.SelStart, WaveSelectionMode.Time):
-                    sample = TimeOps.TextToSample(val);
-                    if (sample >= 0)
-                    {
-                        _selStart = sample;
-                        ok = true;
-                    }
-                    break;
-
-                case (Property.SelStart, WaveSelectionMode.Beat):
-                    sample = BarBeatOps.TextToSample(val);
-                    if (sample >= 0)
-                    {
-                        _selStart = sample;
-                        ok = true;
-                    }
-                    break;
-
-                case (Property.SelLength, WaveSelectionMode.Sample):
-                    sample = SampleOps.TextToSample(val);
-                    if (sample >= 0)
-                    {
+                    case Property.SelLength:
                         _selLength = sample;
-                        ok = true;
-                    }
-                    break;
+                        break;
 
-                case (Property.SelLength, WaveSelectionMode.Time):
-                    sample = TimeOps.TextToSample(val);
-                    if (sample >= 0)
-                    {
-                        _selLength = sample;
-                        ok = true;
-                    }
-                    break;
-
-                case (Property.SelLength, WaveSelectionMode.Beat):
-                    sample = BarBeatOps.TextToSample(val);
-                    if (sample >= 0)
-                    {
-                        _selLength = sample;
-                        ok = true;
-                    }
-                    break;
-
-                default:
-                    // Later.
-                    break;
+                    default:
+                        // Later.
+                        break;
+                }
+                ok = true;
             }
 
             return ok;
@@ -387,102 +324,38 @@ namespace AudioLib
             var sample = PixelToSample(e.X);
             Property changed = Property.None;
 
-            switch (e.Button, Globals.SelectionMode, ModifierKeys, _viewMode)//TODO1 a lot of repetitive code.
+            sample = ConverterOps.SnapSample(sample, _snap);
+            if (sample >= 0)
             {
-                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.None, ViewerMode.Full): // sample marker
-                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.None, ViewerMode.Thumbnail):
-                    sample = SampleOps.SnapSample(sample, _snap);
-                    if (sample >= 0)
-                    {
+                switch (e.Button, ModifierKeys, _viewMode)
+                {
+                    case (MouseButtons.Left, Keys.None, ViewerMode.Full):
+                    case (MouseButtons.Left, Keys.None, ViewerMode.Thumbnail):
                         _marker = sample;
                         changed = Property.Marker;
-                    }
-                    break;
+                        break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.None, ViewerMode.Full): // time marker
-                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.None, ViewerMode.Thumbnail):
-                    sample = TimeOps.SnapSample(sample, _snap);
-                    if (sample >= 0)
-                    {
-                        _marker = sample;
-                        changed = Property.Marker;
-                    }
-                    break;
-
-                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.None, ViewerMode.Full): // beat marker
-                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.None, ViewerMode.Thumbnail):
-                    sample = BarBeatOps.SnapSample(sample, _snap);
-                    if (sample >= 0)
-                    {
-                        _marker = sample;
-                        changed = Property.Marker;
-                    }
-                    break;
-
-                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.Control, ViewerMode.Full): // sample sel start
-                    sample = SampleOps.SnapSample(sample, _snap);
-                    if (sample >= 0)
-                    {
+                    case (MouseButtons.Left, Keys.Control, ViewerMode.Full):
                         _selStart = sample;
                         changed = Property.SelStart;
-                    }
-                    break;
+                        break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.Control, ViewerMode.Full): // time sel start TODO1
-                    sample = TimeOps.SnapSample(sample, _snap);
-                    if (sample >= 0)
-                    {
-                        _selStart = sample;
-                        changed = Property.SelStart;
-                    }
-                    break;
-
-                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.Control, ViewerMode.Full): // beat sel start
-                    sample = BarBeatOps.SnapSample(sample, _snap);
-                    if (sample >= 0)
-                    {
-                        _selStart = sample;
-                        changed = Property.SelStart;
-                    }
-                    break;
-
-                case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.Shift, ViewerMode.Full): // sample sel end
-                    sample = SampleOps.SnapSample(sample, _snap);
-                    if (sample >= 0)
-                    {
+                    case (MouseButtons.Left, Keys.Shift, ViewerMode.Full):
                         _selLength = sample - _selStart;
                         changed = Property.SelLength;
-                    }
-                    break;
+                        break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.Shift, ViewerMode.Full): // time sel end
-                    sample = TimeOps.SnapSample(sample, _snap);
-                    if (sample >= 0)
-                    {
-                        _selLength = sample - _selStart;
-                        changed = Property.SelLength;
-                    }
-                    break;
+                    default:
+                        // Nada.
+                        break;
+                }
 
-                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.Shift, ViewerMode.Full): // beat sel end
-                    sample = BarBeatOps.SnapSample(sample, _snap);
-                    if (sample >= 0)
-                    {
-                        _selLength = sample - _selStart;
-                        changed = Property.SelLength;
-                    }
-                    break;
-
-                default:
-                    // Nada.
-                    break;
-            }
-
-            if(changed != Property.None)
-            {
-                CheckSel();
-                ViewerChangeEvent?.Invoke(this, new() { Change = changed });
-                Invalidate();
+                if (changed != Property.None)
+                {
+                    CheckSel();
+                    ViewerChangeEvent?.Invoke(this, new() { Change = changed });
+                    Invalidate();
+                }
             }
 
             base.OnMouseDown(e);
@@ -497,28 +370,9 @@ namespace AudioLib
             if (e.X != _lastXPos)
             {
                 var sample = PixelToSample(e.X);
-
-                switch (Globals.SelectionMode)
-                {
-                    case WaveSelectionMode.Sample:
-                        sample = SampleOps.SnapSample(sample, _snap);
-                        toolTip.SetToolTip(this, sample.ToString());
-                        break;
-
-                    case WaveSelectionMode.Time:
-                        sample = TimeOps.SnapSample(sample, _snap);
-                        toolTip.SetToolTip(this, TimeOps.Format(sample));
-                        break;
-
-                    case WaveSelectionMode.Beat:
-//                        var bb = new BarBeat(sample, Globals.BPM);
-//                        bb.Snap(_snap);
-//                        toolTip.SetToolTip(this, bb.ToString());
-                        break;
-                }
-
+                sample = ConverterOps.SnapSample(sample, _snap);
+                toolTip.SetToolTip(this, ConverterOps.Format(sample));
                 _lastXPos = e.X;
-
                 // need this for anything other than tooltip: Invalidate();
             }
 
@@ -613,7 +467,7 @@ namespace AudioLib
         {
             const int Y_NUM_LINES = 5;
             const float Y_SPACING = 0.25f;
-            const int X_NUM_LINES = 10; // approx
+            const int X_NUM_LINES = 10; // approximately
             var auxInfo = "";
 
             // Setup.
@@ -659,76 +513,53 @@ namespace AudioLib
                         }
                     }
 
+                    // Local func.
+                    int RoundGranular(int val)
+                    {
+                        var numdigits = MathUtils.NumDigits(val);
+                        var granularity = Math.Pow(10, numdigits - 1);
+                        return Converters.Clamp(val, (int)granularity, false);
+                    }
+
+
                     // X grid lines.
-                    switch (Globals.SelectionMode)
+                    switch (ConverterOps.SelectionMode)
                     {
                         case WaveSelectionMode.Sample:
-                            // TODO1 simplify/refactor this::::
-
-
-                            int sampincr = VisibleLength / X_NUM_LINES;
-                            // Round to a reasonable value.
-                            var digits1 = MathUtils.NumDigits(sampincr);
-                            var gran1 = Math.Pow(10, digits1 - 1);
-                            sampincr = Converters.Clamp(sampincr, (int)gran1, false);
-
-                            // Start outside visible.
-                            var digits2 = MathUtils.NumDigits(VisibleStart);
-                            var gran2 = Math.Pow(10, digits2 - 1);
-                            //var start = VisibleStart;
-                            var start = Converters.Clamp(VisibleStart, (int)gran2, false);
-                            auxInfo = $"gran1:{gran1} sampincr:{sampincr} gran2:{gran2} start:{start}";
-
-                            for (int xs = start; xs < VisibleStart + VisibleLength; xs += sampincr)
                             {
-                                float xGrid = MathUtils.Map(xs, VisibleStart, VisibleStart + VisibleLength, 0, Width);
-                                pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
-                                pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
+                                // Calc the x increment and round to a reasonable value.
+                                int sampincr = RoundGranular(VisibleLength / X_NUM_LINES);
+
+                                // Determine the start value.
+                                var start = RoundGranular(VisibleStart);
+
+                                for (int xs = start; xs < VisibleStart + VisibleLength; xs += sampincr)
+                                {
+                                    float xGrid = MathUtils.Map(xs, VisibleStart, VisibleStart + VisibleLength, 0, Width);
+                                    pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
+                                    pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
+                                }
                             }
-
-
-                            //// fixed markers, variable values.
-                            //int sampincr = VisibleLength / X_NUM_LINES;
-                            //// Round to a reasonable value.
-                            //var digits1 = MathUtils.NumDigits(sampincr);
-                            //var gran1 = Math.Pow(10, digits1 - 1);
-                            //sampincr = Converters.Clamp(sampincr, (int)gran1, false);
-
-                            //// Start outside visible.
-                            //var digits2 = MathUtils.NumDigits(VisibleStart);
-                            //var gran2 = Math.Pow(10, digits2 - 1);
-                            //var start = VisibleStart;
-                            ////var start = Converters.Clamp(VisibleStart, (int)gran2, false);
-                            //auxInfo = $"gran1:{gran1} sampincr:{sampincr} gran2:{gran2} start:{start}";
-
-                            //for (int xs = start; xs < start + VisibleLength; xs += sampincr)
-                            //{
-                            //    float xGrid = MathUtils.Map(xs, start, start + VisibleLength, 0, Width);
-                            //    pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
-                            //    pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
-                            //}
-
-                            //int sampincr = VisibleLength / X_NUM_LINES;
-                            //// Round to a reasonable value.
-                            //var digits1 = MathUtils.NumDigits(sampincr);
-                            //var gran1 = Math.Pow(10, digits1 - 1);
-                            //sampincr = Converters.Clamp(sampincr, (int)gran1, false);
-
-                            //// Start outside visible.
-                            //var digits2 = MathUtils.NumDigits(VisibleStart);
-                            //var gran2 = Math.Pow(10, digits2 - 1);
-                            //var start = Converters.Clamp(VisibleStart, (int)gran2, false);
-                            //auxInfo = $"gran1:{gran1} sampincr:{sampincr} gran2:{gran2} start:{start}";
-
-                            //for (int xs = start; xs < start + VisibleLength; xs += sampincr)
-                            //{
-                            //    float xGrid = MathUtils.Map(xs, start, start + VisibleLength, 0, Width);
-                            //    pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
-                            //    pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
-                            //}
                             break;
 
                         case WaveSelectionMode.Time: // TODO1 paint time
+                            {
+                                // Calc the x increment and round to a reasonable value.
+                                int sampincr = RoundGranular(VisibleLength / X_NUM_LINES);
+
+                                // Determine the start value.
+                                var start = RoundGranular(VisibleStart);
+
+                                for (int xs = start; xs < VisibleStart + VisibleLength; xs += sampincr)
+                                {
+                                    float xGrid = MathUtils.Map(xs, VisibleStart, VisibleStart + VisibleLength, 0, Width);
+                                    pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
+                                    pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
+                                }
+
+                            }
+
+
                             //AudioTime tstart = Converters.SampleToTime(VisibleStart, snap);
                             //AudioTime tend = Converters.SampleToTime(VisibleStart + VisibleLength, snap);
                             //AudioTime tlen = tend - tstart;
@@ -740,7 +571,10 @@ namespace AudioLib
                             //int sincr = VisibleLength / X_NUM_LINES;
                             break;
 
-                        case WaveSelectionMode.Beat: // TODO1 paint beat
+                        case WaveSelectionMode.Bar: // TODO1 paint beat
+                            {
+
+                            }
                             // - Beats mode:
                             //   - Establish timing by select two samples and identify corresponding number of beats.
                             //   - Show in waveform.

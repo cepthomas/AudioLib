@@ -13,7 +13,7 @@ namespace AudioLib
     /// <summary>
     /// Functions to convert between the various time representation.
     /// There will be a certain inaccuracy with these conversions. Small-ish for AudioTime and msec conversions,
-    /// worse for BarBeat. Such is the nature of things.
+    /// worse for Bar. Such is the nature of things.
     /// 44.1 samples per msec == 0.0227 msec per sample
     /// </summary>
     public static class Converters
