@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace AudioLib
 {
     /// <summary>Converters for musical time. 0-based not traditional 1-based.</summary>
-    public static class BarBeat
+    public static class BarBeatOps
     {
         #region Constants
         const int SUBDIVS_PER_BEAT = 100;

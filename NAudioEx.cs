@@ -157,7 +157,6 @@ namespace AudioLib
         public static long GetPosition(this ISampleProvider prov)
         {
             long pos = -1;
-
             switch (prov)
             {
                 case ClipSampleProvider csp: pos = csp.Position; break;
@@ -189,7 +188,7 @@ namespace AudioLib
         /// <returns>The number of samples per channel or -1 if unknown.</returns>
         public static int GetSamplesPerChannel(this ISampleProvider prov)
         {
-            int num = -1; // default
+            int num = -1;
             switch (prov)
             {
                 case ClipSampleProvider csp: num = csp.SamplesPerChannel; break;

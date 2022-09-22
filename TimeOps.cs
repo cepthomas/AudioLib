@@ -5,7 +5,7 @@ using System.Collections.Generic;
 namespace AudioLib
 {
     /// <summary>Converters for audio time.</summary>
-    public static class AudioTime
+    public static class TimeOps
     {
         #region Constants
         internal const int MSEC_PER_SECOND = 1000;
@@ -21,7 +21,7 @@ namespace AudioLib
             public int msec;
             public TimeDesc(int min, int sec, int msec) { this.min = min; this.sec = sec; this.msec = msec; }
             public TimeDesc() { min = -1; sec = -1; msec = -1; }
-            public bool Valid() { return min >= 0 && min < AudioLibDefs.MAX_CLIP_SIZE && sec >= 0 && sec < AudioTime.SEC_PER_MINUTE && msec >= 0 && msec < AudioTime.MSEC_PER_SECOND; }
+            public bool Valid() { return min >= 0 && min < AudioLibDefs.MAX_CLIP_SIZE && sec >= 0 && sec < TimeOps.SEC_PER_MINUTE && msec >= 0 && msec < TimeOps.MSEC_PER_SECOND; }
         }
         #endregion
 

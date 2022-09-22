@@ -223,7 +223,7 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Owner is updating a property. This does syntax checking.
+        /// Owner is updating a property. This does conversion and syntax checking for the client.
         /// </summary>
         /// <param name="change">The property</param>
         /// <param name="val">The new value</param>
@@ -235,15 +235,16 @@ namespace AudioLib
             switch (change, Globals.SelectionMode)
             {
                 case (Property.Marker, WaveSelectionMode.Sample):
-                    if (int.TryParse(val, out int marker))
+                    int sample = SampleOps.TextToSample(val);
+                    if (sample >= 0)
                     {
-                        _marker = marker;
+                        _marker = sample;
                         ok = true;
                     }
                     break;
 
                 case (Property.Marker, WaveSelectionMode.Time):
-                    int sample = AudioTime.TextToSample(val);
+                    sample = TimeOps.TextToSample(val);
                     if (sample >= 0)
                     {
                         _marker = sample;
@@ -252,7 +253,7 @@ namespace AudioLib
                     break;
 
                 case (Property.Marker, WaveSelectionMode.Beat):
-                    sample = BarBeat.TextToSample(val);
+                    sample = BarBeatOps.TextToSample(val);
                     if (sample >= 0)
                     {
                         _marker = sample;
@@ -261,15 +262,16 @@ namespace AudioLib
                     break;
 
                 case (Property.SelStart, WaveSelectionMode.Sample):
-                    if (int.TryParse(val, out int selstart))
+                    sample = SampleOps.TextToSample(val);
+                    if (sample >= 0)
                     {
-                        _selStart = selstart;
+                        _selStart = sample;
                         ok = true;
                     }
                     break;
 
                 case (Property.SelStart, WaveSelectionMode.Time):
-                    sample = AudioTime.TextToSample(val);
+                    sample = TimeOps.TextToSample(val);
                     if (sample >= 0)
                     {
                         _selStart = sample;
@@ -278,7 +280,7 @@ namespace AudioLib
                     break;
 
                 case (Property.SelStart, WaveSelectionMode.Beat):
-                    sample = BarBeat.TextToSample(val);
+                    sample = BarBeatOps.TextToSample(val);
                     if (sample >= 0)
                     {
                         _selStart = sample;
@@ -287,15 +289,16 @@ namespace AudioLib
                     break;
 
                 case (Property.SelLength, WaveSelectionMode.Sample):
-                    if (int.TryParse(val, out int sellen))
+                    sample = SampleOps.TextToSample(val);
+                    if (sample >= 0)
                     {
-                        _selLength = sellen;
+                        _selLength = sample;
                         ok = true;
                     }
                     break;
 
                 case (Property.SelLength, WaveSelectionMode.Time):
-                    sample = AudioTime.TextToSample(val);
+                    sample = TimeOps.TextToSample(val);
                     if (sample >= 0)
                     {
                         _selLength = sample;
@@ -304,7 +307,7 @@ namespace AudioLib
                     break;
 
                 case (Property.SelLength, WaveSelectionMode.Beat):
-                    sample = BarBeat.TextToSample(val);
+                    sample = BarBeatOps.TextToSample(val);
                     if (sample >= 0)
                     {
                         _selLength = sample;
@@ -382,58 +385,104 @@ namespace AudioLib
         protected override void OnMouseDown(MouseEventArgs e)
         {
             var sample = PixelToSample(e.X);
+            Property changed = Property.None;
 
-            switch (e.Button, Globals.SelectionMode, ModifierKeys, _viewMode)
+            switch (e.Button, Globals.SelectionMode, ModifierKeys, _viewMode)//TODO1 a lot of repetitive code.
             {
                 case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.None, ViewerMode.Full): // sample marker
                 case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.None, ViewerMode.Thumbnail):
-                    _marker = Converters.SnapSample(sample, _snap);
-                    CheckSel();
-                    ViewerChangeEvent?.Invoke(this, new() { Change = Property.Marker });
-                    Invalidate();
+                    sample = SampleOps.SnapSample(sample, _snap);
+                    if (sample >= 0)
+                    {
+                        _marker = sample;
+                        changed = Property.Marker;
+                    }
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.None, ViewerMode.Full): // time marker TODO1
+                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.None, ViewerMode.Full): // time marker
                 case (MouseButtons.Left, WaveSelectionMode.Time, Keys.None, ViewerMode.Thumbnail):
-                    
+                    sample = TimeOps.SnapSample(sample, _snap);
+                    if (sample >= 0)
+                    {
+                        _marker = sample;
+                        changed = Property.Marker;
+                    }
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.None, ViewerMode.Full): // beat marker TODO1
+                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.None, ViewerMode.Full): // beat marker
                 case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.None, ViewerMode.Thumbnail):
-
+                    sample = BarBeatOps.SnapSample(sample, _snap);
+                    if (sample >= 0)
+                    {
+                        _marker = sample;
+                        changed = Property.Marker;
+                    }
                     break;
 
                 case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.Control, ViewerMode.Full): // sample sel start
-                    _selStart = Converters.SnapSample(sample, _snap);
-                    //var ends = _selLength > 0 ? _selStart + _selLength : 0;
-                    CheckSel();
-                    ViewerChangeEvent?.Invoke(this, new() { Change = Property.SelStart });
-                    Invalidate();
+                    sample = SampleOps.SnapSample(sample, _snap);
+                    if (sample >= 0)
+                    {
+                        _selStart = sample;
+                        changed = Property.SelStart;
+                    }
                     break;
 
                 case (MouseButtons.Left, WaveSelectionMode.Time, Keys.Control, ViewerMode.Full): // time sel start TODO1
-
+                    sample = TimeOps.SnapSample(sample, _snap);
+                    if (sample >= 0)
+                    {
+                        _selStart = sample;
+                        changed = Property.SelStart;
+                    }
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.Control, ViewerMode.Full): // beat sel start TODO1
-
+                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.Control, ViewerMode.Full): // beat sel start
+                    sample = BarBeatOps.SnapSample(sample, _snap);
+                    if (sample >= 0)
+                    {
+                        _selStart = sample;
+                        changed = Property.SelStart;
+                    }
                     break;
 
                 case (MouseButtons.Left, WaveSelectionMode.Sample, Keys.Shift, ViewerMode.Full): // sample sel end
-                    var sel = Converters.SnapSample(sample, _snap);
-                    _selLength = sel - _selStart;
-                    CheckSel();
-                    ViewerChangeEvent?.Invoke(this, new() { Change = Property.SelLength });
-                    Invalidate();
+                    sample = SampleOps.SnapSample(sample, _snap);
+                    if (sample >= 0)
+                    {
+                        _selLength = sample - _selStart;
+                        changed = Property.SelLength;
+                    }
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.Shift, ViewerMode.Full): // time sel end TODO1
-
+                case (MouseButtons.Left, WaveSelectionMode.Time, Keys.Shift, ViewerMode.Full): // time sel end
+                    sample = TimeOps.SnapSample(sample, _snap);
+                    if (sample >= 0)
+                    {
+                        _selLength = sample - _selStart;
+                        changed = Property.SelLength;
+                    }
                     break;
 
-                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.Shift, ViewerMode.Full): // beat sel end TODO1
-
+                case (MouseButtons.Left, WaveSelectionMode.Beat, Keys.Shift, ViewerMode.Full): // beat sel end
+                    sample = BarBeatOps.SnapSample(sample, _snap);
+                    if (sample >= 0)
+                    {
+                        _selLength = sample - _selStart;
+                        changed = Property.SelLength;
+                    }
                     break;
+
+                default:
+                    // Nada.
+                    break;
+            }
+
+            if(changed != Property.None)
+            {
+                CheckSel();
+                ViewerChangeEvent?.Invoke(this, new() { Change = changed });
+                Invalidate();
             }
 
             base.OnMouseDown(e);
@@ -452,15 +501,13 @@ namespace AudioLib
                 switch (Globals.SelectionMode)
                 {
                     case WaveSelectionMode.Sample:
-                        sample = Converters.SnapSample(sample, _snap);
+                        sample = SampleOps.SnapSample(sample, _snap);
                         toolTip.SetToolTip(this, sample.ToString());
                         break;
 
                     case WaveSelectionMode.Time:
-                        sample = AudioTime.SnapSample(sample, _snap);
-                        //var tm = new AudioTime(sample);
-                        //tm.Snap(_snap);
-                        toolTip.SetToolTip(this, AudioTime.Format(sample));
+                        sample = TimeOps.SnapSample(sample, _snap);
+                        toolTip.SetToolTip(this, TimeOps.Format(sample));
                         break;
 
                     case WaveSelectionMode.Beat:
