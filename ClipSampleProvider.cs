@@ -140,7 +140,7 @@ namespace AudioLib
         }
         #endregion
 
-        #region Private
+        #region Private functions
         /// <summary>
         /// Common buff loader. Coerces stereo to mono per client request.
         /// </summary>
