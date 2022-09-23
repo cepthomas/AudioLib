@@ -33,8 +33,8 @@ namespace AudioLib
         {
             int snapped = snap switch
             {
-                SnapType.Coarse => Converters.Clamp(sample, SAMPLE_COARSE_RESOLUTION, true),
-                SnapType.Fine => Converters.Clamp(sample, SAMPLE_FINE_RESOLUTION, true),
+                SnapType.Coarse => MathUtils.Clamp(sample, SAMPLE_COARSE_RESOLUTION, true),
+                SnapType.Fine => MathUtils.Clamp(sample, SAMPLE_FINE_RESOLUTION, true),
                 _ => sample,
             };
             return snapped;

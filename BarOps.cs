@@ -1,3 +1,4 @@
+using NBagOfTricks;
 using System;
 using System.Collections.Generic;
 
@@ -43,8 +44,8 @@ namespace AudioLib
 
             subdiv = snap switch
             {
-                SnapType.Coarse => Converters.Clamp(subdiv, BEATS_PER_BAR * SUBDIVS_PER_BEAT, true),
-                SnapType.Fine => Converters.Clamp(subdiv, SUBDIVS_PER_BEAT, true),
+                SnapType.Coarse => MathUtils.Clamp(subdiv, BEATS_PER_BAR * SUBDIVS_PER_BEAT, true),
+                SnapType.Fine => MathUtils.Clamp(subdiv, SUBDIVS_PER_BEAT, true),
                 _ => subdiv, // none
             };
 

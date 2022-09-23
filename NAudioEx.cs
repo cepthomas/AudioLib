@@ -137,7 +137,7 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Agnostic position setter.
+        /// Agnostic stream position setter.
         /// </summary>
         /// <param name="prov"></param>
         /// <param name="pos"></param>
@@ -151,7 +151,7 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Agnostic position getter.
+        /// Agnostic stream position getter.
         /// </summary>
         /// <param name="prov"></param>
         public static long GetPosition(this ISampleProvider prov)
@@ -179,6 +179,22 @@ namespace AudioLib
                 case AudioFileReader afr: msec = (int)((float)afr.Length * 1000 / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels / AudioLibDefs.SAMPLE_RATE); break;
             }
             return msec;
+        }
+
+        /// <summary>
+        /// Agnostic property.
+        /// </summary>
+        /// <param name="prov"></param>
+        /// <returns>The duration in msec.</returns>
+        public static TimeSpan GetCurrentTime(this ISampleProvider prov)
+        {
+            TimeSpan ts = new();
+            switch (prov)
+            {
+                case ClipSampleProvider csp: ts = csp.CurrentTime; break;
+                case AudioFileReader afr: ts = afr.CurrentTime; break;
+            }
+            return ts;
         }
 
         /// <summary>

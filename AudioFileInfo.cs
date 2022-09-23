@@ -29,8 +29,8 @@ namespace AudioLib
             string sinfo = fi.Extension.ToLower() switch
             {
                 ".wav"  => GetInfoWav(fileName, verbose),
-                ".m4a"  => GetInfoWav(fileName, verbose),
-                ".flac" => GetInfoWav(fileName, verbose),
+                ".m4a"  => GetInfoOther(fileName, verbose),
+                ".flac" => GetInfoOther(fileName, verbose),
                 ".mp3"  => GetInfoMp3(fileName, verbose),
                 ".sf2"  => GetInfoSf(fileName, verbose),
                 _ => GetInfoOther(fileName, verbose),

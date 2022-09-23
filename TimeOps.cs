@@ -1,3 +1,4 @@
+using NBagOfTricks;
 using System;
 using System.Collections.Generic;
 
@@ -42,8 +43,8 @@ namespace AudioLib
 
             tmsec = snap switch
             {
-                SnapType.Coarse => Converters.Clamp(tmsec, MSEC_PER_SECOND, true), // second
-                SnapType.Fine => Converters.Clamp(tmsec, MSEC_PER_SECOND / 10, true), // tenth second
+                SnapType.Coarse => MathUtils.Clamp(tmsec, MSEC_PER_SECOND, true), // second
+                SnapType.Fine => MathUtils.Clamp(tmsec, MSEC_PER_SECOND / 10, true), // tenth second
                 _ => tmsec, // none
             };
 
@@ -78,15 +79,13 @@ namespace AudioLib
             var tm = SampleToTime(sample);
             return $"{tm.min:00}.{tm.sec:00}.{tm.msec:000}";
         }
-        #endregion
 
-        #region Private functions
         /// <summary>
         /// 
         /// </summary>
         /// <param name="msec"></param>
         /// <returns></returns>
-        int MsecToSample(float msec)
+        public int MsecToSample(float msec)
         {
             double sample = (double)AudioLibDefs.SAMPLE_RATE * msec / MSEC_PER_SECOND;
             return (int)sample;
@@ -97,12 +96,14 @@ namespace AudioLib
         /// </summary>
         /// <param name="sample"></param>
         /// <returns></returns>
-        int SampleToMsec(int sample)
+        public int SampleToMsec(int sample)
         {
             double msec = (double)MSEC_PER_SECOND * sample / AudioLibDefs.SAMPLE_RATE;
             return (int)Math.Round(msec);
         }
+        #endregion
 
+        #region Private functions
         /// <summary>
         /// 
         /// </summary>

@@ -38,12 +38,15 @@ namespace AudioLib
         /// <summary>The total time in msec.</summary>
         public int TotalTime { get { return (int)((float)SamplesPerChannel / WaveFormat.SampleRate / 1000.0f); } }
 
-        /// <summary>The total time or AudioTime.Zero if unknown.</summary>
+        /// <summary>The current stream position.</summary>
         public long Position
         {
            get { return _position; }
            set { _position = _vals.Length > 0 ? (long)MathUtils.Constrain(value, 0, _vals.Length - 1) : 0; }
         }
+
+        /// <summary>The current time.</summary>
+        public TimeSpan CurrentTime { get { return TimeSpan.FromSeconds((double)Position / WaveFormat.AverageBytesPerSecond); } }
 
         /// <summary>Selection start sample.</summary>
         public int SelStart { get; set; } = 0;

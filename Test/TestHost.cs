@@ -6,12 +6,16 @@ using System.Text;
 using System.IO;
 using System.Windows.Forms;
 using System.Text.Json.Serialization;
+using System.Diagnostics;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 using NBagOfTricks.PNUT;
 using NBagOfUis;
 using AudioLib;
+
+
+//TODO1 need something like timebar that does three flavors.
 
 
 namespace AudioLib.Test
@@ -49,11 +53,33 @@ namespace AudioLib.Test
             _settings = (TestSettings)Settings.Load(".", typeof(TestSettings));
             AudioSettings.LibSettings = _settings.AudioSettings;
 
-            Location = new(20, 20);
+            WindowState = FormWindowState.Normal;
+            StartPosition = FormStartPosition.Manual;
+            Location = new(200, 10);
+            Size = new(1000, 700);
 
-            Globals.ConverterOps = new SampleOps();
-            //Globals.SelectionMode = WaveSelectionMode.Sample;
-            //Globals.BPM = 100;
+            // The rest of the controls.
+            txtInfo.WordWrap = true;
+            txtInfo.BackColor = _settings.BackColor;
+            txtInfo.MatchColors.Add("! ", Color.LightPink);
+            txtInfo.MatchColors.Add("ERR", Color.LightPink);
+            txtInfo.MatchColors.Add("WRN", Color.Plum);
+            txtInfo.Prompt = "> ";
+
+            cmbSelMode.Items.Add(WaveSelectionMode.Time);
+            cmbSelMode.Items.Add(WaveSelectionMode.Bar);
+            cmbSelMode.Items.Add(WaveSelectionMode.Sample);
+            cmbSelMode.SelectedIndexChanged += (_, __) =>
+            {
+                switch (cmbSelMode.SelectedItem)
+                {
+                    case WaveSelectionMode.Time: Globals.ConverterOps = new TimeOps(); break;
+                    case WaveSelectionMode.Bar: Globals.ConverterOps = new BarOps(); break;
+                    case WaveSelectionMode.Sample: Globals.ConverterOps = new SampleOps(); break;
+                }
+                wv1.Invalidate();
+            };
+            cmbSelMode.SelectedItem = WaveSelectionMode.Sample;
 
             // Time bar.
             timeBar.SnapMsec = 10;
@@ -72,30 +98,16 @@ namespace AudioLib.Test
             wv2.ViewerChangeEvent += ProcessViewerChangeEvent;
 
             // Create reader.
-            // var sampleChannel = new SampleChannel(_audioFileReader, false);
-            // sampleChannel.PreVolumeMeter += SampleChannel_PreVolumeMeter;
-            // var postVolumeMeter = new MeteringSampleProvider(sampleChannel);
-            // //postVolumeMeter.StreamVolume += PostVolumeMeter_StreamVolume;
-            // _waveOutSwapper.SetInput(postVolumeMeter);
-            // _audioFileReader.Position = 0; // rewind
             _waveOutSwapper = new();
             _provSwap = new ClipSampleProvider(Path.Join(_testFilesDir, "test.wav"), StereoCoercion.Mono);
 
-            var postVolumeMeter = new MeteringSampleProvider(_waveOutSwapper, _waveOutSwapper.WaveFormat.SampleRate / 10);
-            postVolumeMeter.StreamVolume += (object? sender, StreamVolumeEventArgs e) =>
-            {
-                // Get the position of the source provider.
-                long pos = _prov.GetPosition();
-                if(pos >= 0)
-                {
-                    timeBar.Current = new(0, 0, 0, 0, (int)(1000 * pos / _waveOutSwapper.WaveFormat.SampleRate));
-                }
-            };
+            var postVolumeMeter = new MeteringSampleProvider(_waveOutSwapper, _waveOutSwapper.WaveFormat.SampleRate / 10); // update every tenth second
+            postVolumeMeter.StreamVolume += (object? sender, StreamVolumeEventArgs e) => timeBar.Current = _prov.GetCurrentTime();
 
             _player = new("Microsoft Sound Mapper", 200, postVolumeMeter) { Volume = 0.5 };
             _player.PlaybackStopped += (_, __) =>
             {
-                LogLine("player finished");
+                LogLine("Player finished");
                 this.InvokeIfRequired(_ => chkPlay.Checked = false);
                 _prov?.SetPosition(0);
             };
@@ -152,12 +164,14 @@ namespace AudioLib.Test
             }
             catch (Exception e)
             {
-                LogLine("!!! " + e.Message);
+                LogLine("ERR " + e.Message);
             }
         }
 
         void ProcessViewerChangeEvent(object? sender, WaveViewer.ViewerChangeEventArgs e)
         {
+            LogLine($"{(sender as WaveViewer)!.Name} change: {e.Change}");
+
             switch (e.Change)
             {
                 case Property.Gain when sender == wv1:
@@ -227,7 +241,8 @@ namespace AudioLib.Test
             }
 
             prov.SetPosition(0);
-            lblInfo.Text = prov.GetInfoString();
+
+            LogLine($"Show {prov.GetInfoString()}");
 
             timeBar.Length = new(0, 0, 0, 0, tm);
             timeBar.Marker1 = new(0, 0, 0, 0, tm / 3);
@@ -266,7 +281,7 @@ namespace AudioLib.Test
                 var newProv = btnSwap.Checked ? _provSwap : _prov;
                 _waveOutSwapper.SetInput(newProv); // For listen.
                 ShowWave(newProv);
-                lblInfo.Text = newProv.GetInfoString();
+                LogLine($"Swapped");
             }
         }
 
@@ -281,17 +296,15 @@ namespace AudioLib.Test
 
             files.ForEach(f =>
             {
-                string s = AudioFileInfo.GetFileInfo(Path.Join(_testFilesDir, f), verbose);
-                txtInfo.AppendText(s + Environment.NewLine);
+                LogLine(AudioFileInfo.GetFileInfo(Path.Join(_testFilesDir, f), verbose));
             });
 
-            string s = AudioFileInfo.GetFileInfo(@"C:\Users\cepth\OneDrive\Audio\SoundFonts\FluidR3 GM.sf2", verbose);
-            txtInfo.AppendText(s + Environment.NewLine);
+            LogLine(AudioFileInfo.GetFileInfo(@"C:\Users\cepth\OneDrive\Audio\SoundFonts\FluidR3 GM.sf2", verbose));
         }
 
         void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
         {
-            LogLine($"Current time:{timeBar.Current}");
+            LogLine($"Current timebar:{timeBar.Current}");
             wv1.Marker = (int)timeBar.Current.TotalMilliseconds;
         }
 
@@ -308,11 +321,6 @@ namespace AudioLib.Test
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         void Settings_Click(object sender, EventArgs e)
         {
             _settings.Edit("howdy!", 400);
@@ -322,15 +330,11 @@ namespace AudioLib.Test
 
         void LogLine(string s)
         {
-            this.InvokeIfRequired(_ => { txtInfo.AppendText(s + Environment.NewLine); });
+            this.InvokeIfRequired(_ => { txtInfo.AppendLine(s); });
         }
 
         void UnitTests()
         {
-            // Run pnut tests from cmd line.
-            Size stxt = txtInfo.Size;
-            txtInfo.Size = new Size(stxt.Width, Height - 200);
-
             TestRunner runner = new(OutputFormat.Readable);
             var cases = new[] { "CONVERT" };
             runner.RunSuites(cases);
@@ -372,5 +376,4 @@ namespace AudioLib.Test
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public AudioSettings AudioSettings { get; set; } = new();
     }
-
 }

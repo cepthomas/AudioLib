@@ -115,7 +115,7 @@ namespace AudioLib
 
         /// <summary>Visible start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int VisibleStart { get { return _visibleStart; } } // set { _visibleStart = value; Invalidate(); } }
+        public int VisibleStart { get { return _visibleStart; } set { _visibleStart = value; Invalidate(); } }
 
         /// <summary>Visible length in samples. Always positive.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -128,7 +128,6 @@ namespace AudioLib
         public class ViewerChangeEventArgs
         {
             public Property Change { get; set; } = Property.Marker;
-            public string Text { get; set; } = "";
         }
         #endregion
 
@@ -476,181 +475,161 @@ namespace AudioLib
             if (_vals is null || _vals.Length == 0)
             {
                 pe.Graphics.DrawString("No data", _textFont, _textBrush, ClientRectangle, _format);
+                return;
             }
-            else
+
+            // Draw everything from bottom up. Thumbnail mode only gets the basics.
+            if(_viewMode == ViewerMode.Full)
             {
-                // Draw everything from bottom up. Thumbnail mode only gets the basics.
-                if(_viewMode == ViewerMode.Full)
+                // Y grid lines.
+                _penGrid.Width = 1;
+                for (int i = -Y_NUM_LINES; i <= Y_NUM_LINES; i++)
                 {
-                    // Y grid lines.
-                    _penGrid.Width = 1;
-                    for (int i = -Y_NUM_LINES; i <= Y_NUM_LINES; i++)
-                    {
-                        float val = i * Y_SPACING;
-                        float yGrid = MathUtils.Map(val, -Y_NUM_LINES * Y_SPACING, Y_NUM_LINES * Y_SPACING, 0, Height);
+                    float val = i * Y_SPACING;
+                    float yGrid = MathUtils.Map(val, -Y_NUM_LINES * Y_SPACING, Y_NUM_LINES * Y_SPACING, 0, Height);
 
-                        // Some special treatments.
-                        switch (i)
+                    // Some special treatments.
+                    switch (i)
+                    {
+                        case 0:
+                            // Origin is a bit thicker.
+                            _penGrid.Width = 5;
+                            pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
+                            _penGrid.Width = 1;
+                            pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
+                            break;
+                            
+                        case Y_NUM_LINES:
+                        case -Y_NUM_LINES:
+                            // No label.
+                            break;
+                            
+                        default:
+                            // The main lines.
+                            pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
+                            pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
+                            break;
+                    }
+                }
+
+                // X grid lines.
+                // Calc the x increment and fit to a fine or coarse set.
+                int sampincr = RoundGranular(VisibleLength / X_NUM_LINES);
+                HashSet<int> set = new();
+
+                // Try coarse.
+                for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
+                {
+                    set.Add(ConverterOps.SnapSample(incr, SnapType.Coarse));
+                }
+                if (set.Count < 5)
+                {
+                    // Try fine.
+                    for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
+                    {
+                        set.Add(ConverterOps.SnapSample(incr, SnapType.Fine));
+                    }
+                }
+                var list = set.OrderBy(x => x).ToList();
+
+                // Shorten if too long.
+                if (list.Count > 10)
+                {
+                    int prune = list.Count / 10 + 1;
+                    List<int> newList = new();
+                    for (int i = 0; i < list.Count; i++)
+                    {
+                        if (i % prune == 0)
                         {
-                            case 0:
-                                // Origin is a bit thicker.
-                                _penGrid.Width = 5;
-                                pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
-                                _penGrid.Width = 1;
-                                pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
-                                break;
-                            
-                            case Y_NUM_LINES:
-                            case -Y_NUM_LINES:
-                                // No label.
-                                break;
-                            
-                            default:
-                                // The main lines.
-                                pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
-                                pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
-                                break;
+                            newList.Add(list[i]);
                         }
                     }
-
-                    // Local func.
-                    int RoundGranular(int val)
-                    {
-                        var numdigits = MathUtils.NumDigits(val);
-                        var granularity = Math.Pow(10, numdigits - 1);
-                        return Converters.Clamp(val, (int)granularity, false);
-                    }
-
-
-                    // X grid lines.
-                    switch (ConverterOps.SelectionMode)
-                    {
-                        case WaveSelectionMode.Sample:
-                            {
-                                // Calc the x increment and round to a reasonable value.
-                                int sampincr = RoundGranular(VisibleLength / X_NUM_LINES);
-
-                                // Determine the start value.
-                                var start = RoundGranular(VisibleStart);
-
-                                for (int xs = start; xs < VisibleStart + VisibleLength; xs += sampincr)
-                                {
-                                    float xGrid = MathUtils.Map(xs, VisibleStart, VisibleStart + VisibleLength, 0, Width);
-                                    pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
-                                    pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
-                                }
-                            }
-                            break;
-
-                        case WaveSelectionMode.Time: // TODO1 paint time
-                            {
-                                // Calc the x increment and round to a reasonable value.
-                                int sampincr = RoundGranular(VisibleLength / X_NUM_LINES);
-
-                                // Determine the start value.
-                                var start = RoundGranular(VisibleStart);
-
-                                for (int xs = start; xs < VisibleStart + VisibleLength; xs += sampincr)
-                                {
-                                    float xGrid = MathUtils.Map(xs, VisibleStart, VisibleStart + VisibleLength, 0, Width);
-                                    pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
-                                    pe.Graphics.DrawString($"{xs}", _textFont, _textBrush, xGrid, 10, _format);
-                                }
-
-                            }
-
-
-                            //AudioTime tstart = Converters.SampleToTime(VisibleStart, snap);
-                            //AudioTime tend = Converters.SampleToTime(VisibleStart + VisibleLength, snap);
-                            //AudioTime tlen = tend - tstart;
-
-                            //// anywhere from 10 msec to MaxClipSize (10 min)
-                            //// 0.01 -> 600.0
-                            //AudioTime incr = tlen / X_NUM_LINES;
-
-                            //int sincr = VisibleLength / X_NUM_LINES;
-                            break;
-
-                        case WaveSelectionMode.Bar: // TODO1 paint beat
-                            {
-
-                            }
-                            // - Beats mode:
-                            //   - Establish timing by select two samples and identify corresponding number of beats.
-                            //   - Show in waveform.
-                            //   - Subsequent selections are by beat using snap.
-                            // 123:2.456.
-                            break;
-                    }
-
-                    // Show info.
-                    var sinfo1 = $"Gain:{_gain:0.00}  Snap:{_snap}";
-                    var sinfo2 = $"VisStart:{_visibleStart}  Mark:{Marker}  SPP:{_samplesPerPixel}  VisLength:{VisibleLength}";
-                    var sinfo3 = $"VisStart:{_visibleStart / 44100f}  Mark:{Marker / 44100f}  VisLength:{VisibleLength / 44100f}";
-                    pe.Graphics.DrawString(sinfo1, _textFont, _textBrush, Width / 2, Height - 20, _format);
-                    pe.Graphics.DrawString(auxInfo, _textFont, _textBrush, Width / 2, Height - 40, _format);
+                    list = newList;
                 }
 
-                // Then the data - for all modes.
-                if (_samplesPerPixel > 0)
+                // Show them.
+                for (int xs = 1; xs < list.Count; xs++)
                 {
-                    var peaks = PeakProvider.GetPeaks(_vals, _visibleStart, _samplesPerPixel, Width);
-
-                    for (int i = 0; i < peaks.Count; i++)
-                    {
-                        // +1 => 0  -1 => Height
-                        int max = (int)MathUtils.Map(peaks[i].max * _gain, 1.0f, -1.0f, 0, Height);
-                        int min = (int)MathUtils.Map(peaks[i].min * _gain, 1.0f, -1.0f, 0, Height);
-
-                        // Make sure there's always at least one dot.
-                        if (max == min)
-                        {
-                            if (max > 0) { min--; }
-                            else { max++; }
-                        }
-
-                        pe.Graphics.DrawLine(_penDraw, i, max, i, min);
-                    }
+                    float xGrid = MathUtils.Map(list[xs], VisibleStart, VisibleStart + VisibleLength, 0, Width);
+                    pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
+                    pe.Graphics.DrawString($"{ConverterOps.Format(list[xs])}", _textFont, _textBrush, xGrid, 10, _format);
                 }
-                else // Not enough data - just show what we have.
+
+                // Show info.
+                var sinfo1 = $"Gain:{_gain:0.00}  Snap:{_snap}";
+                var sinfo2 = $"VisStart:{_visibleStart}  Mark:{Marker}  SPP:{_samplesPerPixel}  VisLength:{VisibleLength}";
+                var sinfo3 = $"VisStart:{_visibleStart / 44100f}  Mark:{Marker / 44100f}  VisLength:{VisibleLength / 44100f}";
+                pe.Graphics.DrawString(sinfo1, _textFont, _textBrush, Width / 2, Height - 20, _format);
+                pe.Graphics.DrawString(auxInfo, _textFont, _textBrush, Width / 2, Height - 40, _format);
+            }
+
+            // Then the data - for all modes.
+            if (_samplesPerPixel > 0)
+            {
+                var peaks = PeakProvider.GetPeaks(_vals, _visibleStart, _samplesPerPixel, Width);
+
+                for (int i = 0; i < peaks.Count; i++)
                 {
-                    for (int i = 0; i < _vals.Length; i++)
-                    {
-                        // +1 => 0  -1 => Height
-                        int yVal = (int)MathUtils.Map(_vals[i] * _gain, 1.0f, -1.0f, 0, Height);
-                        pe.Graphics.DrawRectangle(_penDraw, i, yVal, 1, 1);
-                    }
-                }
+                    // +1 => 0  -1 => Height
+                    int max = (int)MathUtils.Map(peaks[i].max * _gain, 1.0f, -1.0f, 0, Height);
+                    int min = (int)MathUtils.Map(peaks[i].min * _gain, 1.0f, -1.0f, 0, Height);
 
-                // Selection and markers.
-                if (_viewMode == ViewerMode.Full && _selStart > 0)
-                {
-                    int x = SampleToPixel(_selStart);
-                    if (x >= 0)
+                    // Make sure there's always at least one dot.
+                    if (max == min)
                     {
-                        pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
-                        pe.Graphics.DrawRectangle(_penMark, x, 10, 10, 10);
+                        if (max > 0) { min--; }
+                        else { max++; }
                     }
-                }
 
-                if (_viewMode == ViewerMode.Full && _selLength > 0)
-                {
-                    int x = SampleToPixel(_selStart + _selLength);
-                    if (x >= 0)
-                    {
-                        pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
-                        pe.Graphics.DrawRectangle(_penMark, x - 10, 10, 10, 10);
-                    }
+                    pe.Graphics.DrawLine(_penDraw, i, max, i, min);
                 }
+            }
+            else // Not enough data - just show what we have.
+            {
+                for (int i = 0; i < _vals.Length; i++)
+                {
+                    // +1 => 0  -1 => Height
+                    int yVal = (int)MathUtils.Map(_vals[i] * _gain, 1.0f, -1.0f, 0, Height);
+                    pe.Graphics.DrawRectangle(_penDraw, i, yVal, 1, 1);
+                }
+            }
 
-                if (_marker > 0)
+            // Selection and markers.
+            if (_viewMode == ViewerMode.Full && _selStart > 0)
+            {
+                int x = SampleToPixel(_selStart);
+                if (x >= 0)
                 {
-                    int x = SampleToPixel(_marker);
-                    if (x >= 0)
-                    {
-                        pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
-                    }
+                    pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
+                    pe.Graphics.DrawRectangle(_penMark, x, 10, 10, 10);
                 }
+            }
+
+            if (_viewMode == ViewerMode.Full && _selLength > 0)
+            {
+                int x = SampleToPixel(_selStart + _selLength);
+                if (x >= 0)
+                {
+                    pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
+                    pe.Graphics.DrawRectangle(_penMark, x - 10, 10, 10, 10);
+                }
+            }
+
+            if (_marker > 0)
+            {
+                int x = SampleToPixel(_marker);
+                if (x >= 0)
+                {
+                    pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
+                }
+            }
+
+            // Local func.
+            int RoundGranular(int val)
+            {
+                var numdigits = MathUtils.NumDigits(val);
+                var granularity = Math.Pow(10, numdigits - 1);
+                return MathUtils.Clamp(val, (int)granularity, false);
             }
         }
         #endregion

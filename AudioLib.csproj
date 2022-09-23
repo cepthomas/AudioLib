@@ -44,9 +44,7 @@
         <Compile Update="TimeBar.cs">
             <SubType>UserControl</SubType>
         </Compile>
-        <Compile Update="WaveViewer.cs">
-            <SubType>UserControl</SubType>
-        </Compile>
+        <Compile Update="WaveViewer.cs" />
     </ItemGroup>
 
 </Project>
