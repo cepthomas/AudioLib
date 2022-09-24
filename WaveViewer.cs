@@ -75,9 +75,12 @@ namespace AudioLib
         readonly Pen _penDraw = new(Color.Black, 1);
         readonly Pen _penGrid = new(Color.LightGray, 1);
         readonly Pen _penMark = new(Color.Red, 1);
+        readonly SolidBrush _brushMark = new(Color.White);
+        #endregion
+
+        #region Designer fields
         readonly ToolTip toolTip;
         readonly IContainer components;
-        readonly SolidBrush _brushMark = new(Color.White);
         #endregion
 
         #region Properties
@@ -181,6 +184,7 @@ namespace AudioLib
         {
            if (disposing)
            {
+                toolTip.Dispose();
                 _brushMark.Dispose();
                 _penDraw.Dispose();
                 _penGrid.Dispose();
@@ -695,14 +699,14 @@ namespace AudioLib
             return pixel;
         }
 
-        /// <summary>
-        /// Helper.
-        /// </summary>
-        /// <returns></returns>
-        int MouseX()
-        {
-            return PointToClient(MousePosition).X;
-        }
+        ///// <summary>
+        ///// Helper.
+        ///// </summary>
+        ///// <returns></returns>
+        //int MouseX()
+        //{
+        //    return PointToClient(MousePosition).X;
+        //}
         #endregion
     }
 }

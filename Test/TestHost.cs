@@ -77,14 +77,14 @@ namespace AudioLib.Test
                     case WaveSelectionMode.Sample: Globals.ConverterOps = new SampleOps(); break;
                 }
                 wv1.Invalidate();
+                progBar.Invalidate();
             };
             cmbSelMode.SelectedItem = WaveSelectionMode.Sample;
 
-            // Time bar.
-            timeBar.SnapMsec = 10;
-            timeBar.CurrentTimeChanged += TimeBar_CurrentTimeChanged;
-            timeBar.ProgressColor = Color.CornflowerBlue;
-            timeBar.BackColor = Color.Salmon;
+            // Progress bar.
+            progBar.CurrentChanged += ProgBar_CurrentChanged;
+            progBar.ProgressColor = Color.CornflowerBlue;
+            progBar.BackColor = Color.Salmon;
 
             // Wave viewers.
             wv1.DrawColor = Color.Red;
@@ -215,11 +215,11 @@ namespace AudioLib.Test
             {
                 case ClipSampleProvider csp:
                     csp.ClipProgress += Csp_ClipProgress;
-                    timeBar.Length = csp.TotalTime;
+                    //progBar.Length = csp.SamplesPerChannel;
                     break;
 
                 case AudioFileReader afr:
-                    timeBar.Length = afr.TotalTime;
+                    //progBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
                     break;
             }
 
@@ -230,7 +230,7 @@ namespace AudioLib.Test
 
         void Csp_ClipProgress(object? sender, ClipSampleProvider.ClipProgressEventArgs e)
         {
-            timeBar.Current = e.CurrentTime;
+            progBar.Current = (int)e.Position;
         }
 
         // Boilerplate helper.
@@ -245,11 +245,8 @@ namespace AudioLib.Test
                         wv2.Init(new NullSampleProvider());
 
                         csp.Rewind();
-                        var tm = csp.TotalTime;
                         LogLine($"Show {csp.GetInfoString()}");
-                        timeBar.Length = tm;
-                        //timeBar.Marker1 = tm / 3;
-                        //timeBar.Marker2 = tm / 2;
+                        progBar.Length = csp.SamplesPerChannel;
                     }
                     break;
                 case AudioFileReader afr:
@@ -271,11 +268,8 @@ namespace AudioLib.Test
                         }
 
                         afr.Rewind();
-                        var tm = afr.TotalTime;
                         LogLine($"Show {afr.GetInfoString()}");
-                        timeBar.Length = tm;
-                        //timeBar.Marker1 = tm / 3;
-                        //timeBar.Marker2 = tm / 2;
+                        progBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
                     }
                     break;
 
@@ -342,22 +336,17 @@ namespace AudioLib.Test
             LogLine(AudioFileInfo.GetFileInfo(@"C:\Users\cepth\OneDrive\Audio\SoundFonts\FluidR3 GM.sf2", verbose));
         }
 
-        void TimeBar_CurrentTimeChanged(object? sender, EventArgs e)
+        void ProgBar_CurrentChanged(object? sender, EventArgs e)
         {
-            LogLine($"Current timebar:{timeBar.Current}");
-            wv1.Marker = (int)timeBar.Current.TotalMilliseconds;
+            LogLine($"Current timebar:{progBar.Current}");
         }
 
         void Timer1_Tick(object? sender, EventArgs args)
         {
             if (btnRunBars.Checked)
             {
-                // Update time bar. Ticks are 100 msec.
-                timeBar.IncrementCurrent(10); // not-realtime for testing
-                if (timeBar.Current >= timeBar.Marker2) // done/reset
-                {
-                    timeBar.Current = timeBar.Marker1;
-                }
+                // Update progress bar.
+                progBar.Current += 1000; // not-realtime for testing
             }
         }
 

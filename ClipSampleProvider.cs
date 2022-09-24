@@ -35,8 +35,8 @@ namespace AudioLib
         /// <summary>Overall gain applied to all samples.</summary>
         public float Gain { get; set; } = 1.0f;
 
-        ///// <summary>The number of samples per channel.</summary>
-        //public int SamplesPerChannel { get { return _vals.Length; } }
+        /// <summary>The number of samples per channel.</summary>
+        public int SamplesPerChannel { get { return _vals.Length; } }
 
         /// <summary>The total time.</summary>
         public TimeSpan TotalTime { get { return TimeSpan.FromMilliseconds((int)(1000.0f * _vals.Length / WaveFormat.SampleRate)); } }

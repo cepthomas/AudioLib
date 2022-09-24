@@ -18,7 +18,7 @@
             this.components = new System.ComponentModel.Container();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.txtInfo = new NBagOfUis.TextViewer();
-            this.timeBar = new AudioLib.TimeBar();
+            this.progBar = new AudioLib.ProgressBar();
             this.wv1 = new AudioLib.WaveViewer();
             this.wv2 = new AudioLib.WaveViewer();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
@@ -63,19 +63,17 @@
             this.txtInfo.TabIndex = 29;
             this.txtInfo.WordWrap = true;
             // 
-            // timeBar
+            // progBar
             // 
-            this.timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.timeBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.timeBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.timeBar.Location = new System.Drawing.Point(6, 44);
-            this.timeBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.timeBar.MarkerColor = System.Drawing.Color.Black;
-            this.timeBar.Name = "timeBar";
-            this.timeBar.ProgressColor = System.Drawing.Color.Orange;
-            this.timeBar.Size = new System.Drawing.Size(341, 48);
-            this.timeBar.SnapMsec = 0;
-            this.timeBar.TabIndex = 24;
+            this.progBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.progBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.progBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.progBar.Location = new System.Drawing.Point(6, 44);
+            this.progBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.progBar.Name = "progBar";
+            this.progBar.ProgressColor = System.Drawing.Color.Orange;
+            this.progBar.Size = new System.Drawing.Size(341, 48);
+            this.progBar.TabIndex = 24;
             // 
             // wv1
             // 
@@ -293,7 +291,7 @@
             this.Controls.Add(this.wv2);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.wv1);
-            this.Controls.Add(this.timeBar);
+            this.Controls.Add(this.progBar);
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "TestHost";
             this.Text = "TestHost";
@@ -306,7 +304,7 @@
 
         #endregion
         private System.Windows.Forms.Timer timer1;
-        private TimeBar timeBar;
+        private ProgressBar progBar;
         private WaveViewer wv1;
         private WaveViewer wv2;
         private NBagOfUis.TextViewer txtInfo;
