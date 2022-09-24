@@ -147,6 +147,7 @@ namespace AudioLib
             {
                 case ClipSampleProvider csp: csp.Position = pos; break;
                 case AudioFileReader afr: afr.Position = pos; break;
+                default: throw new InvalidOperationException($"Unsupported provider.");
             }
         }
 
@@ -161,6 +162,7 @@ namespace AudioLib
             {
                 case ClipSampleProvider csp: pos = csp.Position; break;
                 case AudioFileReader afr: pos = (int)afr.Position; break;
+                default: throw new InvalidOperationException($"Unsupported provider.");
             }
             return pos;
         }
@@ -177,6 +179,7 @@ namespace AudioLib
             {
                 case ClipSampleProvider csp: msec = csp.TotalTime; break;
                 case AudioFileReader afr: msec = (int)((float)afr.Length * 1000 / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels / AudioLibDefs.SAMPLE_RATE); break;
+                default: throw new InvalidOperationException($"Unsupported provider.");
             }
             return msec;
         }
@@ -193,6 +196,7 @@ namespace AudioLib
             {
                 case ClipSampleProvider csp: ts = csp.CurrentTime; break;
                 case AudioFileReader afr: ts = afr.CurrentTime; break;
+                default: throw new InvalidOperationException($"Unsupported provider.");
             }
             return ts;
         }
@@ -209,6 +213,7 @@ namespace AudioLib
             {
                 case ClipSampleProvider csp: num = csp.SamplesPerChannel; break;
                 case AudioFileReader afr: num = (int)afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels; break;
+                default: throw new InvalidOperationException($"Unsupported provider.");
             }
             return num;
         }
@@ -232,12 +237,12 @@ namespace AudioLib
                     ls.Add($"File:{csp.FileName}");
                     ls.Add($"Time:{csp.TotalTime}");
                     break;
-
                 case AudioFileReader afr:
                     ls.Add($"File:{afr.FileName}");
                     ls.Add($"Length:{afr.Length}");
                     ls.Add($"Time:{afr.TotalTime}");
                     break;
+                default: throw new InvalidOperationException($"Unsupported provider.");
             }
 
             // More common stuff.

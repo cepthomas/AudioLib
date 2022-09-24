@@ -160,6 +160,7 @@ namespace AudioLib.Test
                         prov = btnClipProvider.Checked ? new ClipSampleProvider(fn, StereoCoercion.Mono) : new AudioFileReader(fn);
                         break;
                 }
+                
                 SetProvider(prov);
             }
             catch (Exception e)

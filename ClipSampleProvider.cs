@@ -10,7 +10,6 @@ namespace AudioLib
     /// Provider that encapsulates a client supplied audio data subset. When constructed, it reads in the
     /// entire file. Does sample rate conversion if needed.
     /// Mono output only - coerces stereo input per client call. Can be used for splitting stereo files.
-    /// If you need stereo, use AudioFileReader.
     /// </summary>
     public class ClipSampleProvider : ISampleProvider
     {
@@ -54,11 +53,11 @@ namespace AudioLib
         /// <summary>Selection length in samples.</summary>
         public int SelLength { get; set; } = 0;
 
-        /// <summary>Get provider info. Mainly for window header.</summary>
-        public override string ToString()
-        {
-            return "";
-        }
+        ///// <summary>Get provider info. Mainly for window header.</summary>
+        //public override string ToString()
+        //{
+        //    return "";
+        //}
         #endregion
 
         #region Constructors
@@ -84,7 +83,7 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Constructor from a file. Coerces stereo to mono.
+        /// Constructor from a file. Coerces stereo to client's choice.
         /// </summary>
         /// <param name="fn">File to use.</param>
         /// <param name="mode">How to handle stereo files.</param>
@@ -130,14 +129,14 @@ namespace AudioLib
             return numRead;
         }
 
-        /// <summary>
-        /// Go back to the beginning.
-        /// </summary>
-        public void Rewind()
-        {
-            // Is it a specific selection?
-            _position = SelLength > 0 ? SelStart : 0;
-        }
+        ///// <summary>
+        ///// Go back to the beginning.
+        ///// </summary>
+        //public void Rewind()
+        //{
+        //    // Is it a specific selection?
+        //    _position = SelLength > 0 ? SelStart : 0;
+        //}
         #endregion
 
         #region Private functions
@@ -158,7 +157,7 @@ namespace AudioLib
                     RightVolume = mode == StereoCoercion.Mono ? 0.5f : (mode == StereoCoercion.Right ? 1.0f : 0.0f)
                 };
             }
-
+            // else mono, read as is
             _vals = source.ReadAll();
         }
         #endregion
