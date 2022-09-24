@@ -36,12 +36,12 @@
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             this.btnTest = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnClipProvider = new System.Windows.Forms.ToolStripButton();
+            this.btnAfReader = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
-            this.sldGain = new NBagOfUis.Slider();
-            this.chkPlay = new System.Windows.Forms.CheckBox();
             this.cmbSelMode = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.sldGain = new NBagOfUis.Slider();
+            this.chkPlay = new System.Windows.Forms.CheckBox();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -119,7 +119,7 @@
             this.toolStripSeparator7,
             this.btnTest,
             this.toolStripSeparator8,
-            this.btnClipProvider,
+            this.btnAfReader,
             this.toolStripSeparator9,
             this.cmbSelMode,
             this.toolStripSeparator4});
@@ -226,20 +226,33 @@
             this.toolStripSeparator8.Name = "toolStripSeparator8";
             this.toolStripSeparator8.Size = new System.Drawing.Size(6, 28);
             // 
-            // btnClipProvider
+            // btnAfReader
             // 
-            this.btnClipProvider.CheckOnClick = true;
-            this.btnClipProvider.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnClipProvider.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnClipProvider.Name = "btnClipProvider";
-            this.btnClipProvider.Size = new System.Drawing.Size(71, 25);
-            this.btnClipProvider.Text = "clip prov";
-            this.btnClipProvider.ToolTipText = "Select ClipSampleProvider or AudioFileReader";
+            this.btnAfReader.CheckOnClick = true;
+            this.btnAfReader.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnAfReader.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnAfReader.Name = "btnAfReader";
+            this.btnAfReader.Size = new System.Drawing.Size(65, 25);
+            this.btnAfReader.Text = "afr prov";
+            this.btnAfReader.ToolTipText = "Select AudioFileReader";
             // 
             // toolStripSeparator9
             // 
             this.toolStripSeparator9.Name = "toolStripSeparator9";
             this.toolStripSeparator9.Size = new System.Drawing.Size(6, 28);
+            // 
+            // cmbSelMode
+            // 
+            this.cmbSelMode.AutoSize = false;
+            this.cmbSelMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.cmbSelMode.Name = "cmbSelMode";
+            this.cmbSelMode.Size = new System.Drawing.Size(80, 28);
+            this.cmbSelMode.ToolTipText = "Selection mode";
+            // 
+            // toolStripSeparator4
+            // 
+            this.toolStripSeparator4.Name = "toolStripSeparator4";
+            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 28);
             // 
             // sldGain
             // 
@@ -268,18 +281,6 @@
             this.chkPlay.TabIndex = 36;
             this.chkPlay.Text = "play";
             this.chkPlay.UseVisualStyleBackColor = false;
-            // 
-            // cmbSelMode
-            // 
-            this.cmbSelMode.AutoSize = false;
-            this.cmbSelMode.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.cmbSelMode.Name = "cmbSelMode";
-            this.cmbSelMode.Size = new System.Drawing.Size(80, 28);
-            // 
-            // toolStripSeparator4
-            // 
-            this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(6, 28);
             // 
             // TestHost
             // 
@@ -325,7 +326,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripButton btnTest;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
-        private System.Windows.Forms.ToolStripButton btnClipProvider;
+        private System.Windows.Forms.ToolStripButton btnAfReader;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator9;
         private System.Windows.Forms.CheckBox chkPlay;
         private System.Windows.Forms.ToolStripComboBox cmbSelMode;

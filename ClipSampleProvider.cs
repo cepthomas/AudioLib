@@ -17,7 +17,11 @@ namespace AudioLib
         /// <summary>The full buffer from client.</summary>
         float[] _vals = Array.Empty<float>();
 
-        /// <summary>Make this class look like a stream.</summary>
+        /// <summary>For notifications.</summary>
+        int _sampleCount = 0;
+        #endregion
+
+        #region Backing fields
         long _position = 0;
         #endregion
 
@@ -31,13 +35,13 @@ namespace AudioLib
         /// <summary>Overall gain applied to all samples.</summary>
         public float Gain { get; set; } = 1.0f;
 
-        /// <summary>The number of samples per channel or -1 if unknown.</summary>
-        public int SamplesPerChannel { get { return _vals.Length; } }
+        ///// <summary>The number of samples per channel.</summary>
+        //public int SamplesPerChannel { get { return _vals.Length; } }
 
-        /// <summary>The total time in msec.</summary>
-        public int TotalTime { get { return (int)((float)SamplesPerChannel / WaveFormat.SampleRate / 1000.0f); } }
+        /// <summary>The total time.</summary>
+        public TimeSpan TotalTime { get { return TimeSpan.FromMilliseconds((int)(1000.0f * _vals.Length / WaveFormat.SampleRate)); } }
 
-        /// <summary>The current stream position.</summary>
+        /// <summary>Make this class sort of look like a stream. This is actually the index into the buffer aka sample index.</summary>
         public long Position
         {
            get { return _position; }
@@ -45,7 +49,7 @@ namespace AudioLib
         }
 
         /// <summary>The current time.</summary>
-        public TimeSpan CurrentTime { get { return TimeSpan.FromSeconds((double)Position / WaveFormat.AverageBytesPerSecond); } }
+        public TimeSpan CurrentTime { get { return TimeSpan.FromMilliseconds((int)(1000.0f * _position / WaveFormat.SampleRate)); } }
 
         /// <summary>Selection start sample.</summary>
         public int SelStart { get; set; } = 0;
@@ -53,11 +57,22 @@ namespace AudioLib
         /// <summary>Selection length in samples.</summary>
         public int SelLength { get; set; } = 0;
 
-        ///// <summary>Get provider info. Mainly for window header.</summary>
-        //public override string ToString()
-        //{
-        //    return "";
-        //}
+        /// <summary>Number of samples per notification.</summary>
+        public int SamplesPerNotification { get; set; }
+        #endregion
+
+        #region Events
+        /// <summary>Raised periodically to inform the user of play progress.</summary>
+        public event EventHandler<ClipProgressEventArgs>? ClipProgress;
+
+        public class ClipProgressEventArgs : EventArgs
+        {
+            public long Position { get; set; }
+            public TimeSpan CurrentTime { get; set; }
+        }
+
+        // create objects up front giving GC little to do
+        readonly ClipProgressEventArgs _args = new ClipProgressEventArgs() { Position = 0, CurrentTime = TimeSpan.Zero };
         #endregion
 
         #region Constructors
@@ -66,9 +81,12 @@ namespace AudioLib
         /// </summary>
         /// <param name="source">Source provider to use.</param>
         /// <param name="mode">How to handle stereo files.</param>
-        public ClipSampleProvider(ISampleProvider source, StereoCoercion mode)
+        /// <param name="samplesPerNotification">Number of samples between notifications.</param>
+        public ClipSampleProvider(ISampleProvider source, StereoCoercion mode, int samplesPerNotification = 5000)
         {
             FileName = "";
+            SamplesPerNotification = samplesPerNotification;
+
             ReadSource(source, mode);
         }
 
@@ -122,21 +140,21 @@ namespace AudioLib
             for (int n = 0; n < numToRead; n++)
             {
                 buffer[n + offset] = _vals[_position] * Gain;
-                _position++;
                 numRead++;
+                _position++;
+                _sampleCount++;
+            }
+
+            if (_sampleCount >= SamplesPerNotification)
+            {
+                _args.Position = _position;
+                _args.CurrentTime = CurrentTime;
+                ClipProgress?.Invoke(this, _args);
+                _sampleCount = 0;
             }
 
             return numRead;
         }
-
-        ///// <summary>
-        ///// Go back to the beginning.
-        ///// </summary>
-        //public void Rewind()
-        //{
-        //    // Is it a specific selection?
-        //    _position = SelLength > 0 ? SelStart : 0;
-        //}
         #endregion
 
         #region Private functions

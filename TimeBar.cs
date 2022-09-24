@@ -298,7 +298,7 @@ namespace AudioLib
                 msec = MathUtils.Constrain(msec, 0, (int)_length.TotalMilliseconds);
                 msec = DoSnap(msec);
             }
-            return new TimeSpan(msec);
+            return TimeSpan.FromMilliseconds(msec);
         }
 
         /// <summary>
@@ -330,7 +330,7 @@ namespace AudioLib
         /// <returns></returns>
         TimeSpan Constrain(TimeSpan val, TimeSpan lower, TimeSpan upper)
         {
-            return new TimeSpan(0, 0, 0, 0, (int)MathUtils.Constrain(val.TotalMilliseconds, lower.TotalMilliseconds, upper.TotalMilliseconds));
+            return TimeSpan.FromMilliseconds((int)MathUtils.Constrain(val.TotalMilliseconds, lower.TotalMilliseconds, upper.TotalMilliseconds));
         }
 
         /// <summary>

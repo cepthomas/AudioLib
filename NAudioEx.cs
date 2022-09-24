@@ -28,7 +28,12 @@ namespace AudioLib
         public static float[] ReadAll(this ISampleProvider prov)
         {
             prov.Validate(true);
-            prov.SetPosition(0); // rewind
+            prov.Rewind();
+            //switch (prov)
+            //{
+            //    case ClipSampleProvider csp: csp.Position = 0; break;
+            //    case AudioFileReader afr: afr.Position = 0; break;
+            //}
 
             var data = new List<float>(AudioLibDefs.READ_BUFF_SIZE);
             var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
@@ -99,7 +104,12 @@ namespace AudioLib
         /// <param name="exportFileName"></param>
         public static void Export(this ISampleProvider prov, string exportFileName)
         {
-            prov.SetPosition(0); // rewind
+            prov.Rewind();
+            //switch (prov)
+            //{
+            //    case ClipSampleProvider csp: csp.Position = 0; break;
+            //    case AudioFileReader afr: afr.Position = 0; break;
+            //}
 
             List<string> ls = new();
             var vals = new float[AudioLibDefs.READ_BUFF_SIZE];
@@ -136,87 +146,106 @@ namespace AudioLib
             File.WriteAllLines(exportFileName, ls);
         }
 
+
+        ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+        ///////////////////////////////////////////////////////////////////////////////
+
+
         /// <summary>
         /// Agnostic stream position setter.
         /// </summary>
         /// <param name="prov"></param>
-        /// <param name="pos"></param>
-        public static void SetPosition(this ISampleProvider prov, int pos)
+        public static void Rewind(this ISampleProvider prov)//TODO eliminate?
         {
             switch (prov)
             {
-                case ClipSampleProvider csp: csp.Position = pos; break;
-                case AudioFileReader afr: afr.Position = pos; break;
-                default: throw new InvalidOperationException($"Unsupported provider.");
+                case ClipSampleProvider csp: csp.Position = 0; break;
+                case AudioFileReader afr: afr.Position = 0; break;
             }
         }
 
-        /// <summary>
-        /// Agnostic stream position getter.
-        /// </summary>
-        /// <param name="prov"></param>
-        public static long GetPosition(this ISampleProvider prov)
-        {
-            long pos = -1;
-            switch (prov)
-            {
-                case ClipSampleProvider csp: pos = csp.Position; break;
-                case AudioFileReader afr: pos = (int)afr.Position; break;
-                default: throw new InvalidOperationException($"Unsupported provider.");
-            }
-            return pos;
-        }
+        ///// <summary>
+        ///// Agnostic stream position setter.
+        ///// </summary>
+        ///// <param name="prov"></param>
+        ///// <param name="pos"></param>
+        //public static void SetPosition_XXX(this ISampleProvider prov, int pos)
+        //{
+        //    switch (prov)
+        //    {
+        //        case ClipSampleProvider csp: csp.Position = pos; break;
+        //        case AudioFileReader afr: afr.Position = pos; break;
+        //        default: throw new InvalidOperationException($"Unsupported provider.");
+        //    }
+        //}
 
-        /// <summary>
-        /// Agnostic property.
-        /// </summary>
-        /// <param name="prov"></param>
-        /// <returns>The duration in msec.</returns>
-        public static int GetTotalTime(this ISampleProvider prov)
-        {
-            int msec = -1;
-            switch (prov)
-            {
-                case ClipSampleProvider csp: msec = csp.TotalTime; break;
-                case AudioFileReader afr: msec = (int)((float)afr.Length * 1000 / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels / AudioLibDefs.SAMPLE_RATE); break;
-                default: throw new InvalidOperationException($"Unsupported provider.");
-            }
-            return msec;
-        }
+        ///// <summary>
+        ///// Agnostic stream position getter.
+        ///// </summary>
+        ///// <param name="prov"></param>
+        //public static long GetPosition_XXX(this ISampleProvider prov)
+        //{
+        //    long pos = -1;
+        //    switch (prov)
+        //    {
+        //        case ClipSampleProvider csp: pos = csp.Position; break;
+        //        case AudioFileReader afr: pos = (int)afr.Position; break;
+        //        default: throw new InvalidOperationException($"Unsupported provider.");
+        //    }
+        //    return pos;
+        //}
 
-        /// <summary>
-        /// Agnostic property.
-        /// </summary>
-        /// <param name="prov"></param>
-        /// <returns>The duration in msec.</returns>
-        public static TimeSpan GetCurrentTime(this ISampleProvider prov)
-        {
-            TimeSpan ts = new();
-            switch (prov)
-            {
-                case ClipSampleProvider csp: ts = csp.CurrentTime; break;
-                case AudioFileReader afr: ts = afr.CurrentTime; break;
-                default: throw new InvalidOperationException($"Unsupported provider.");
-            }
-            return ts;
-        }
+        ///// <summary>
+        ///// Agnostic property.
+        ///// </summary>
+        ///// <param name="prov"></param>
+        ///// <returns>The duration in msec.</returns>
+        //public static int GetTotalTime_XXX(this ISampleProvider prov)
+        //{
+        //    int msec = -1;
+        //    switch (prov)
+        //    {
+        //        case ClipSampleProvider csp: msec = csp.TotalTime; break;
+        //        case AudioFileReader afr: msec = (int)((float)afr.Length * 1000 / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels / AudioLibDefs.SAMPLE_RATE); break;
+        //        default: throw new InvalidOperationException($"Unsupported provider.");
+        //    }
+        //    return msec;
+        //}
 
-        /// <summary>
-        /// Agnostic property.
-        /// </summary>
-        /// <param name="prov"></param>
-        /// <returns>The number of samples per channel or -1 if unknown.</returns>
-        public static int GetSamplesPerChannel(this ISampleProvider prov)
-        {
-            int num = -1;
-            switch (prov)
-            {
-                case ClipSampleProvider csp: num = csp.SamplesPerChannel; break;
-                case AudioFileReader afr: num = (int)afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels; break;
-                default: throw new InvalidOperationException($"Unsupported provider.");
-            }
-            return num;
-        }
+        ///// <summary>
+        ///// Agnostic property.
+        ///// </summary>
+        ///// <param name="prov"></param>
+        ///// <returns>The duration in msec.</returns>
+        //public static TimeSpan GetCurrentTime_XXX(this ISampleProvider prov)
+        //{
+        //    TimeSpan ts = new();
+        //    switch (prov)
+        //    {
+        //        case ClipSampleProvider csp: ts = csp.CurrentTime; break;
+        //        case AudioFileReader afr: ts = afr.CurrentTime; break;
+        //        default: throw new InvalidOperationException($"Unsupported provider.");
+        //    }
+        //    return ts;
+        //}
+
+        ///// <summary>
+        ///// Agnostic property.
+        ///// </summary>
+        ///// <param name="prov"></param>
+        ///// <returns>The number of samples per channel or -1 if unknown.</returns>
+        //public static int GetSamplesPerChannel_XXX(this ISampleProvider prov)
+        //{
+        //    int num = -1;
+        //    switch (prov)
+        //    {
+        //        case ClipSampleProvider csp: num = csp.SamplesPerChannel; break;
+        //        case AudioFileReader afr: num = (int)afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels; break;
+        //        default: throw new InvalidOperationException($"Unsupported provider.");
+        //    }
+        //    return num;
+        //}
 
         /// <summary>
         /// Get provider info. Mainly for window header.
@@ -246,7 +275,7 @@ namespace AudioLib
             }
 
             // More common stuff.
-            ls.Add($"SamplesPerChannel:{prov.GetSamplesPerChannel()}");
+//>>>            ls.Add($"SamplesPerChannel:{prov.GetSamplesPerChannel()}");
             ls.Add($"Encoding:{prov.WaveFormat.Encoding}");
             ls.Add($"Channels:{prov.WaveFormat.Channels}");
             ls.Add($"SampleRate:{prov.WaveFormat.SampleRate}");

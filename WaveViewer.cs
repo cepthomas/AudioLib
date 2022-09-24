@@ -125,7 +125,7 @@ namespace AudioLib
         #region Events
         /// <summary>Value changed by user. Notify owner for display.</summary>
         public event EventHandler<ViewerChangeEventArgs>? ViewerChangeEvent;
-        public class ViewerChangeEventArgs
+        public class ViewerChangeEventArgs : EventArgs
         {
             public Property Change { get; set; } = Property.Marker;
         }
@@ -467,7 +467,7 @@ namespace AudioLib
             const int Y_NUM_LINES = 5;
             const float Y_SPACING = 0.25f;
             const int X_NUM_LINES = 10; // approximately
-            var auxInfo = "";
+            var auxInfo = "auxInfo";
 
             // Setup.
             pe.Graphics.Clear(BackColor);
@@ -559,8 +559,8 @@ namespace AudioLib
                 var sinfo1 = $"Gain:{_gain:0.00}  Snap:{_snap}";
                 var sinfo2 = $"VisStart:{_visibleStart}  Mark:{Marker}  SPP:{_samplesPerPixel}  VisLength:{VisibleLength}";
                 var sinfo3 = $"VisStart:{_visibleStart / 44100f}  Mark:{Marker / 44100f}  VisLength:{VisibleLength / 44100f}";
-                pe.Graphics.DrawString(sinfo1, _textFont, _textBrush, Width / 2, Height - 20, _format);
-                pe.Graphics.DrawString(auxInfo, _textFont, _textBrush, Width / 2, Height - 40, _format);
+                pe.Graphics.DrawString(sinfo1, _textFont, _textBrush, Width / 2, Height - 10, _format);
+                pe.Graphics.DrawString(auxInfo, _textFont, _textBrush, Width / 2, Height - 22, _format);
             }
 
             // Then the data - for all modes.
