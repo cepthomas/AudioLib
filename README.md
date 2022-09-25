@@ -1,4 +1,4 @@
-# AudioLib
+# AudioLib TODOdoc
 
 WinForms library of various audio components and controls.
 
@@ -19,7 +19,7 @@ Contents:
 - Converters: Between samples, Audio Time, milliseconds, Bar/Beat.
 
 
-# UI TODO get from Wavicler oe v.v.
+# UI TODOdoc get from Wavicler or v.v.
 MouseDown:
 (MouseButtons.Left, Keys.None): // sample marker
 (MouseButtons.Left, Keys.Control): // sample sel start

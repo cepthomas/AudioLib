@@ -20,15 +20,11 @@ namespace AudioLib
     public partial class WaveViewer : UserControl
     {
         #region Fields
-        /// <summary>Function set.</summary>
-        ViewerMode _viewMode = ViewerMode.Full;
-        enum ViewerMode { Full, Thumbnail }
-
         /// <summary>For drawing text.</summary>
         readonly Font _textFont = new("Calibri", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>For drawing text.</summary>
-        readonly Brush _textBrush = Brushes.Black;
+        readonly SolidBrush _textBrush = new(Color.Black);
 
         /// <summary>For drawing text.</summary>
         readonly StringFormat _format = new() { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
@@ -92,6 +88,9 @@ namespace AudioLib
         /// <summary>For styling.</summary>
         public Color MarkColor { set { _penMark.Color = value; Invalidate(); } }
 
+        /// <summary>For styling.</summary>
+        public Color TextColor { set { _textBrush.Color = value; Invalidate(); } }
+
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
@@ -152,25 +151,17 @@ namespace AudioLib
         /// Set everything from data source. Client must do this before setting properties as some are overwritten.
         /// </summary>
         /// <param name="prov">Source</param>
-        /// <param name="simple">If true simple display only.</param>
-        public void Init(ISampleProvider prov, bool simple = false)
+        public void Init(ISampleProvider prov)
         {
-            _viewMode = simple ? ViewerMode.Thumbnail : ViewerMode.Full;
-            // _simple = simple;
             _vals = prov.ReadAll();
             _max = _vals.Length > 0 ? _vals.Max() : 0;
             _min = _vals.Length > 0 ? _vals.Min() : 0;
-
             prov.Rewind();
-            _selStart = 0;
-            _selLength = 0;
-            _marker = 0;
 
-            if(_viewMode == ViewerMode.Thumbnail)
-            {
-                FitGain();
-            }
-            
+            SelStart = 0;
+            SelLength = 0;
+            Marker = 0;
+
             ResetView();
 
             Invalidate();
@@ -273,46 +264,43 @@ namespace AudioLib
         /// <param name="e"></param>
         protected override void OnMouseWheel(MouseEventArgs e)
         {
-            if(_viewMode == ViewerMode.Full)
+            HandledMouseEventArgs hme = (HandledMouseEventArgs)e;
+            hme.Handled = true; // This prevents the mouse wheel event from getting back to the parent.
+
+            // Number of detents the mouse wheel has rotated.
+            int wheelDelta = WHEEL_RESOLUTION * e.Delta / SystemInformation.MouseWheelScrollDelta;
+
+            switch(ModifierKeys)
             {
-                HandledMouseEventArgs hme = (HandledMouseEventArgs)e;
-                hme.Handled = true; // This prevents the mouse wheel event from getting back to the parent.
+                case Keys.None: // x pan
+                    int incr = _samplesPerPixel * PAN_INCREMENT;
+                    _visibleStart += wheelDelta > 0 ? incr : -incr; // left or right
+                    _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
+                    Invalidate();
+                    break;
 
-                // Number of detents the mouse wheel has rotated.
-                int wheelDelta = WHEEL_RESOLUTION * e.Delta / SystemInformation.MouseWheelScrollDelta;
+                case Keys.Control: // x zoom
+                    // Get sample to center about.
+                    int center = _marker;  // Or? PixelToSample(Width / 2), PixelToSample(MouseX());
+                    // Modify the zoom factor.
+                    int samplesPerPixelMax = _vals.Length / Width;
+                    incr = (int)(ZOOM_RATIO * _samplesPerPixel);
+                    if(incr == 0 && _samplesPerPixel > 1) // close in
+                    {
+                        incr = 1;
+                    }
+                    _samplesPerPixel += wheelDelta > 0 ? -incr : incr; // in or out
+                    _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, samplesPerPixelMax);
+                    Recenter(center);
+                    break;
 
-                switch(ModifierKeys)
-                {
-                    case Keys.None: // x pan
-                        int incr = _samplesPerPixel * PAN_INCREMENT;
-                        _visibleStart += wheelDelta > 0 ? incr : -incr; // left or right
-                        _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
-                        Invalidate();
-                        break;
-
-                    case Keys.Control: // x zoom
-                        // Get sample to center about.
-                        int center = _marker;  // Or? PixelToSample(Width / 2), PixelToSample(MouseX());
-                        // Modify the zoom factor.
-                        int samplesPerPixelMax = _vals.Length / Width;
-                        incr = (int)(ZOOM_RATIO * _samplesPerPixel);
-                        if(incr == 0 && _samplesPerPixel > 1) // close in
-                        {
-                            incr = 1;
-                        }
-                        _samplesPerPixel += wheelDelta > 0 ? -incr : incr; // in or out
-                        _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, samplesPerPixelMax);
-                        Recenter(center);
-                        break;
-
-                    case Keys.Shift: // y gain
-                        _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
-                        _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
-                        ViewerChangeEvent?.Invoke(this, new() { Change = Property.Gain });
-                        Invalidate();
-                        break;
-                };
-            }
+                case Keys.Shift: // y gain
+                    _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
+                    _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
+                    ViewerChangeEvent?.Invoke(this, new() { Change = Property.Gain });
+                    Invalidate();
+                    break;
+            };
 
             base.OnMouseWheel(e);
         }
@@ -329,20 +317,19 @@ namespace AudioLib
             sample = ConverterOps.SnapSample(sample, _snap);
             if (sample >= 0)
             {
-                switch (e.Button, ModifierKeys, _viewMode)
+                switch (e.Button, ModifierKeys)
                 {
-                    case (MouseButtons.Left, Keys.None, ViewerMode.Full):
-                    case (MouseButtons.Left, Keys.None, ViewerMode.Thumbnail):
+                    case (MouseButtons.Left, Keys.None):
                         _marker = sample;
                         changed = Property.Marker;
                         break;
 
-                    case (MouseButtons.Left, Keys.Control, ViewerMode.Full):
+                    case (MouseButtons.Left, Keys.Control):
                         _selStart = sample;
                         changed = Property.SelStart;
                         break;
 
-                    case (MouseButtons.Left, Keys.Shift, ViewerMode.Full):
+                    case (MouseButtons.Left, Keys.Shift):
                         _selLength = sample - _selStart;
                         changed = Property.SelLength;
                         break;
@@ -393,56 +380,53 @@ namespace AudioLib
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
-            if(_viewMode == ViewerMode.Full)
+            switch (e.KeyCode)
             {
-                switch (e.KeyCode)
-                {
-                    case Keys.G: // reset gain
-                        _gain = 1.0f;
+                case Keys.G: // reset gain
+                    _gain = 1.0f;
+                    e.Handled = true;
+                    break;
+
+                case Keys.H: // reset to initial full view
+                    ResetView();
+                    e.Handled = true;
+                    break;
+
+                case Keys.M: // go to marker
+                    if (_marker > 0)
+                    {
+                        Recenter(_marker);
                         e.Handled = true;
-                        break;
+                    }
+                    break;
 
-                    case Keys.H: // reset to initial full view
-                        ResetView();
+                case Keys.S: // go to selection
+                    if (_selStart > 0)
+                    {
+                        Recenter(_selStart);
                         e.Handled = true;
-                        break;
+                    }
+                    break;
 
-                    case Keys.M: // go to marker
-                        if (_marker > 0)
-                        {
-                            Recenter(_marker);
-                            e.Handled = true;
-                        }
-                        break;
+                case Keys.F: // snap fine
+                    _snap = SnapType.Fine;
+                    e.Handled = true;
+                    break;
 
-                    case Keys.S: // go to selection
-                        if (_selStart > 0)
-                        {
-                            Recenter(_selStart);
-                            e.Handled = true;
-                        }
-                        break;
+                case Keys.C: // snap coarse
+                    _snap = SnapType.Coarse;
+                    e.Handled = true;
+                    break;
 
-                    case Keys.F: // snap fine
-                        _snap = SnapType.Fine;
-                        e.Handled = true;
-                        break;
+                case Keys.N: // snap none
+                    _snap = SnapType.None;
+                    e.Handled = true;
+                    break;
+            }
 
-                    case Keys.C: // snap coarse
-                        _snap = SnapType.Coarse;
-                        e.Handled = true;
-                        break;
-
-                    case Keys.N: // snap none
-                        _snap = SnapType.None;
-                        e.Handled = true;
-                        break;
-                }
-
-                if(e.Handled)
-                {
-                    Invalidate();
-                }
+            if (e.Handled)
+            {
+                Invalidate();
             }
 
             base.OnKeyDown(e);
@@ -481,90 +465,89 @@ namespace AudioLib
                 return;
             }
 
-            // Draw everything from bottom up. Thumbnail mode only gets the basics.
-            if(_viewMode == ViewerMode.Full)
+            // Draw everything from bottom up.
+
+            // Y grid lines.
+            _penGrid.Width = 1;
+            for (int i = -Y_NUM_LINES; i <= Y_NUM_LINES; i++)
             {
-                // Y grid lines.
-                _penGrid.Width = 1;
-                for (int i = -Y_NUM_LINES; i <= Y_NUM_LINES; i++)
+                float val = i * Y_SPACING;
+                float yGrid = MathUtils.Map(val, -Y_NUM_LINES * Y_SPACING, Y_NUM_LINES * Y_SPACING, 0, Height);
+
+                // Some special treatments.
+                switch (i)
                 {
-                    float val = i * Y_SPACING;
-                    float yGrid = MathUtils.Map(val, -Y_NUM_LINES * Y_SPACING, Y_NUM_LINES * Y_SPACING, 0, Height);
-
-                    // Some special treatments.
-                    switch (i)
-                    {
-                        case 0:
-                            // Origin is a bit thicker.
-                            _penGrid.Width = 5;
-                            pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
-                            _penGrid.Width = 1;
-                            pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
-                            break;
+                    case 0:
+                        // Origin is a bit thicker.
+                        _penGrid.Width = 5;
+                        pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
+                        _penGrid.Width = 1;
+                        pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
+                        break;
                             
-                        case Y_NUM_LINES:
-                        case -Y_NUM_LINES:
-                            // No label.
-                            break;
+                    case Y_NUM_LINES:
+                    case -Y_NUM_LINES:
+                        // No label.
+                        break;
                             
-                        default:
-                            // The main lines.
-                            pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
-                            pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
-                            break;
-                    }
+                    default:
+                        // The main lines.
+                        pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
+                        pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
+                        break;
                 }
+            }
 
-                // X grid lines.
-                // Calc the x increment and fit to a fine or coarse set.
-                int sampincr = RoundGranular(VisibleLength / X_NUM_LINES);
-                HashSet<int> set = new();
+            // X grid lines.
+            // Calc the x increment and fit to a fine or coarse set.
+            int sampincr = RoundGranular(VisibleLength / X_NUM_LINES);
+            HashSet<int> set = new();
 
-                // Try coarse.
+            // Try coarse.
+            for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
+            {
+                set.Add(ConverterOps.SnapSample(incr, SnapType.Coarse));
+            }
+            if (set.Count < 5)
+            {
+                // Try fine.
                 for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
                 {
-                    set.Add(ConverterOps.SnapSample(incr, SnapType.Coarse));
+                    set.Add(ConverterOps.SnapSample(incr, SnapType.Fine));
                 }
-                if (set.Count < 5)
-                {
-                    // Try fine.
-                    for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
-                    {
-                        set.Add(ConverterOps.SnapSample(incr, SnapType.Fine));
-                    }
-                }
-                var list = set.OrderBy(x => x).ToList();
-
-                // Shorten if too long.
-                if (list.Count > 10)
-                {
-                    int prune = list.Count / 10 + 1;
-                    List<int> newList = new();
-                    for (int i = 0; i < list.Count; i++)
-                    {
-                        if (i % prune == 0)
-                        {
-                            newList.Add(list[i]);
-                        }
-                    }
-                    list = newList;
-                }
-
-                // Show them.
-                for (int xs = 1; xs < list.Count; xs++)
-                {
-                    float xGrid = MathUtils.Map(list[xs], VisibleStart, VisibleStart + VisibleLength, 0, Width);
-                    pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
-                    pe.Graphics.DrawString($"{ConverterOps.Format(list[xs])}", _textFont, _textBrush, xGrid, 10, _format);
-                }
-
-                // Show info.
-                var sinfo1 = $"Gain:{_gain:0.00}  Snap:{_snap}";
-                var sinfo2 = $"VisStart:{_visibleStart}  Mark:{Marker}  SPP:{_samplesPerPixel}  VisLength:{VisibleLength}";
-                var sinfo3 = $"VisStart:{_visibleStart / 44100f}  Mark:{Marker / 44100f}  VisLength:{VisibleLength / 44100f}";
-                pe.Graphics.DrawString(sinfo1, _textFont, _textBrush, Width / 2, Height - 10, _format);
-                pe.Graphics.DrawString(auxInfo, _textFont, _textBrush, Width / 2, Height - 22, _format);
             }
+            var list = set.OrderBy(x => x).ToList();
+
+            // Shorten if too long.
+            if (list.Count > 10)
+            {
+                int prune = list.Count / 10 + 1;
+                List<int> newList = new();
+                for (int i = 0; i < list.Count; i++)
+                {
+                    if (i % prune == 0)
+                    {
+                        newList.Add(list[i]);
+                    }
+                }
+                list = newList;
+            }
+
+            // Show them.
+            for (int xs = 1; xs < list.Count; xs++)
+            {
+                float xGrid = MathUtils.Map(list[xs], VisibleStart, VisibleStart + VisibleLength, 0, Width);
+                pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
+                pe.Graphics.DrawString($"{ConverterOps.Format(list[xs])}", _textFont, _textBrush, xGrid, 10, _format);
+            }
+
+            // Show info.
+            var sinfo1 = $"Gain:{_gain:0.00}  Snap:{_snap}";
+            var sinfo2 = $"VisStart:{_visibleStart}  Mark:{Marker}  SPP:{_samplesPerPixel}  VisLength:{VisibleLength}";
+            var sinfo3 = $"VisStart:{_visibleStart / 44100f}  Mark:{Marker / 44100f}  VisLength:{VisibleLength / 44100f}";
+            pe.Graphics.DrawString(sinfo1, _textFont, _textBrush, Width / 2, Height - 10, _format);
+            pe.Graphics.DrawString(auxInfo, _textFont, _textBrush, Width / 2, Height - 22, _format);
+
 
             // Then the data - for all modes.
             if (_samplesPerPixel > 0)
@@ -598,7 +581,7 @@ namespace AudioLib
             }
 
             // Selection and markers.
-            if (_viewMode == ViewerMode.Full && _selStart > 0)
+            if (_selStart > 0)
             {
                 int x = SampleToPixel(_selStart);
                 if (x >= 0)
@@ -608,7 +591,7 @@ namespace AudioLib
                 }
             }
 
-            if (_viewMode == ViewerMode.Full && _selLength > 0)
+            if (_selLength > 0)
             {
                 int x = SampleToPixel(_selStart + _selLength);
                 if (x >= 0)
@@ -752,15 +735,6 @@ namespace AudioLib
 
             return pixel;
         }
-
-        ///// <summary>
-        ///// Helper.
-        ///// </summary>
-        ///// <returns></returns>
-        //int MouseX()
-        //{
-        //    return PointToClient(MousePosition).X;
-        //}
         #endregion
     }
 }

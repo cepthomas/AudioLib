@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
@@ -58,7 +59,7 @@ namespace AudioLib
         public int SelLength { get; set; } = 0;
 
         /// <summary>Number of samples per notification.</summary>
-        public int SamplesPerNotification { get; set; } = 5000;
+        public int SamplesPerNotification { get; set; } = 1000;
         #endregion
 
         #region Events
@@ -72,7 +73,7 @@ namespace AudioLib
         }
 
         // create objects up front giving GC little to do
-        readonly ClipProgressEventArgs _args = new ClipProgressEventArgs() { Position = 0, CurrentTime = TimeSpan.Zero };
+        readonly ClipProgressEventArgs _args = new() { Position = 0, CurrentTime = TimeSpan.Zero };
         #endregion
 
         #region Constructors
@@ -136,14 +137,25 @@ namespace AudioLib
                 numRead++;
                 _position++;
                 _sampleCount++;
+
+                // Check for time to notify. TODO1 doesn't keep up. May need another way to update e.g. using a timer.
+                if (_sampleCount >= SamplesPerNotification)
+                {
+                    _args.Position = _position;
+                    _args.CurrentTime = CurrentTime;
+                    ClipProgress?.Invoke(this, _args);
+                    _sampleCount = 0;
+                    //Debug.WriteLine(">>>>>");
+                }
             }
 
-            if (_sampleCount >= SamplesPerNotification || numRead == 0)
+            if (numRead == 0) // last one
             {
                 _args.Position = _position;
                 _args.CurrentTime = CurrentTime;
                 ClipProgress?.Invoke(this, _args);
                 _sampleCount = 0;
+                //Debug.WriteLine("XXXXX");
             }
 
             return numRead;

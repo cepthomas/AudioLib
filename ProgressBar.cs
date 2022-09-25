@@ -21,17 +21,19 @@ namespace AudioLib
         readonly StringFormat _format = new() { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
 
         /// <summary>For drawing text.</summary>
-        readonly Brush _textBrush = Brushes.Black;
+        readonly SolidBrush _textBrush = new(Color.Black);
 
         /// <summary>For drawing markers.</summary>
-        readonly Pen _penMark = new(Color.Red, 1);
+        readonly Pen _penMark = new(Color.Red, 2);
+
+        /// <summary>For drawing progress.</summary>
+        readonly Pen _penProgress = new(Color.LightGray, 2);
 
         /// <summary>How to snap.</summary>
         readonly SnapType _snap = SnapType.Fine;
         #endregion
 
         #region Backing fields
-        readonly SolidBrush _brushProgress = new(Color.LightGray);
         int _selStart = 0;
         int _selLength = 0;
         int _length = 0;
@@ -47,7 +49,7 @@ namespace AudioLib
         #region Properties
         /// <summary>Where we be now in samples.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int Current { get { return _current; } set { _current = value; Invalidate(); } }
+        public int Current { get { return _current; } set { _current = value; Invalidate(); } } // Refresh
 
         /// <summary>Total length in samples.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -62,10 +64,13 @@ namespace AudioLib
         public int SelLength { get { return _selLength; } set { _selLength = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
-        public Color ProgressColor { get { return _brushProgress.Color; } set { _brushProgress.Color = value; } }
+        public Color ProgressColor { set { _penProgress.Color = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
         public Color MarkColor { set { _penMark.Color = value; Invalidate(); } }
+
+        /// <summary>For styling.</summary>
+        public Color TextColor { set { _textBrush.Color = value; Invalidate(); } }
 
         /// <summary>Big font.</summary>
         public Font FontLarge { get; set; } = new("Microsoft Sans Serif", 20, FontStyle.Regular, GraphicsUnit.Point, 0);
@@ -105,7 +110,9 @@ namespace AudioLib
             if (disposing)
             {
                 toolTip.Dispose();
-                _brushProgress.Dispose();
+                _textBrush.Dispose();
+                _penMark.Dispose();
+                _penProgress.Dispose();
                 _format.Dispose();
             }
             base.Dispose(disposing);
@@ -146,7 +153,7 @@ namespace AudioLib
 
             // Draw the progress.
             int x = SampleToPixel(_current);
-            pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
+            pe.Graphics.DrawLine(_penProgress, x, 0, x, Height);
             //int dstart = SampleToPixel(_start);
             //int dend = SampleToPixel(_current);
             //pe.Graphics.FillRectangle(_brushProgress, dstart, 0, dend, Height);

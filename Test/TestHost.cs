@@ -80,16 +80,18 @@ namespace AudioLib.Test
             };
             cmbSelMode.SelectedItem = WaveSelectionMode.Sample;
 
+            sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
+
             // Progress bar.
             progBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{ConverterOps.Format(progBar.Current)}");
-            progBar.ProgressColor = Color.CornflowerBlue;
-            progBar.BackColor = Color.Salmon;
+            progBar.ProgressColor = Color.Green;
+            progBar.TextColor = Color.Yellow;
+            progBar.BackColor = Color.Cyan;
 
             // Wave viewers.
             wv1.DrawColor = Color.Red;
             wv1.BackColor = Color.Cyan;
             wv1.ViewerChangeEvent += ProcessViewerChangeEvent;
-            sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
 
             wv2.DrawColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;
@@ -101,7 +103,8 @@ namespace AudioLib.Test
             // Create reader.
             _waveOutSwapper = new();
 
-            _player = new("Microsoft Sound Mapper", 200, _waveOutSwapper) { Volume = 0.5 };
+            
+            _player = new(AudioSettings.LibSettings.WavOutDevice, int.Parse(AudioSettings.LibSettings.Latency), _waveOutSwapper) { Volume = 0.5 };
             _player.PlaybackStopped += (_, __) =>
             {
                 LogLine("Player finished");
@@ -235,12 +238,6 @@ namespace AudioLib.Test
             _waveOutSwapper.SetInput(_prov);
         }
 
-        void Render_Click(object sender, EventArgs e)
-        {
-            var thumb = wv1.Render(progBar.Width, progBar.Height, Color.Blue, Color.Pink, true);
-            progBar.Thumbnail = thumb;
-        }
-
         void Csp_ClipProgress(object? sender, ClipSampleProvider.ClipProgressEventArgs e)
         {
             progBar.Current = (int)e.Position;
@@ -255,9 +252,10 @@ namespace AudioLib.Test
                     {
                         csp.Rewind();
                         wv1.Init(csp);
+                        csp.Rewind();
+
                         wv2.Init(new NullSampleProvider());
 
-                        csp.Rewind();
                         LogLine($"Show {csp.GetInfoString()}");
                         progBar.Length = csp.SamplesPerChannel;
                     }
@@ -270,14 +268,14 @@ namespace AudioLib.Test
                             afr.Rewind();
                             wv1.Init(new ClipSampleProvider(afr, StereoCoercion.Left));
                             afr.Rewind();
-                            wv2.Init(new ClipSampleProvider(afr, StereoCoercion.Right), true); // simple
+                            wv2.Init(new ClipSampleProvider(afr, StereoCoercion.Right));
                         }
                         else // mono
                         {
                             afr.Rewind();
                             wv1.Init(new ClipSampleProvider(afr, StereoCoercion.None));
                             afr.Rewind();
-                            wv2.Init(new ClipSampleProvider(afr, StereoCoercion.None), true); // simple);
+                            wv2.Init(new ClipSampleProvider(afr, StereoCoercion.None));
                         }
 
                         afr.Rewind();
@@ -287,6 +285,7 @@ namespace AudioLib.Test
                     break;
             }
 
+            progBar.Current = 0;
             var thumb = wv1.Render(progBar.Width, progBar.Height, Color.Blue, Color.Pink, true);
             progBar.Thumbnail = thumb;
         }

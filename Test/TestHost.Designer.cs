@@ -41,8 +41,6 @@
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.cmbSelMode = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnRender = new System.Windows.Forms.ToolStripButton();
-            this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             this.sldGain = new NBagOfUis.Slider();
             this.chkPlay = new System.Windows.Forms.CheckBox();
             this.toolStrip1.SuspendLayout();
@@ -73,11 +71,11 @@
             this.progBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.progBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.progBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.progBar.Location = new System.Drawing.Point(250, 44);
+            this.progBar.Location = new System.Drawing.Point(332, 44);
             this.progBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.progBar.Name = "progBar";
             this.progBar.ProgressColor = System.Drawing.Color.Orange;
-            this.progBar.Size = new System.Drawing.Size(523, 48);
+            this.progBar.Size = new System.Drawing.Size(659, 48);
             this.progBar.TabIndex = 24;
             this.progBar.Thumbnail = null;
             // 
@@ -90,7 +88,7 @@
             this.wv1.Location = new System.Drawing.Point(6, 100);
             this.wv1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.wv1.Name = "wv1";
-            this.wv1.Size = new System.Drawing.Size(985, 219);
+            this.wv1.Size = new System.Drawing.Size(985, 196);
             this.wv1.TabIndex = 26;
             // 
             // wv2
@@ -99,10 +97,10 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.wv2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.wv2.Gain = 1F;
-            this.wv2.Location = new System.Drawing.Point(6, 327);
+            this.wv2.Location = new System.Drawing.Point(6, 304);
             this.wv2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.wv2.Name = "wv2";
-            this.wv2.Size = new System.Drawing.Size(985, 95);
+            this.wv2.Size = new System.Drawing.Size(985, 118);
             this.wv2.TabIndex = 32;
             // 
             // toolStrip1
@@ -127,9 +125,7 @@
             this.toolStripSeparator9,
             this.toolStripLabel1,
             this.cmbSelMode,
-            this.toolStripSeparator4,
-            this.btnRender,
-            this.toolStripSeparator10});
+            this.toolStripSeparator4});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(1000, 28);
@@ -267,20 +263,6 @@
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(6, 28);
             // 
-            // btnRender
-            // 
-            this.btnRender.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnRender.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnRender.Name = "btnRender";
-            this.btnRender.Size = new System.Drawing.Size(56, 25);
-            this.btnRender.Text = "render";
-            this.btnRender.Click += new System.EventHandler(this.Render_Click);
-            // 
-            // toolStripSeparator10
-            // 
-            this.toolStripSeparator10.Name = "toolStripSeparator10";
-            this.toolStripSeparator10.Size = new System.Drawing.Size(6, 28);
-            // 
             // sldGain
             // 
             this.sldGain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -359,7 +341,5 @@
         private System.Windows.Forms.ToolStripComboBox cmbSelMode;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
-        private System.Windows.Forms.ToolStripButton btnRender;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
     }
 }
