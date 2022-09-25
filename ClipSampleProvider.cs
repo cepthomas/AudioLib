@@ -41,11 +41,11 @@ namespace AudioLib
         /// <summary>The total time.</summary>
         public TimeSpan TotalTime { get { return TimeSpan.FromMilliseconds((int)(1000.0f * _vals.Length / WaveFormat.SampleRate)); } }
 
-        /// <summary>Make this class sort of look like a stream. This is actually the index into the buffer aka sample index.</summary>
+        /// <summary>Make this class sort of look like a stream. TODO1 This is actually the index into the buffer aka sample index.</summary>
         public long Position
         {
            get { return _position; }
-           set { _position = _vals.Length > 0 ? (long)MathUtils.Constrain(value, 0, _vals.Length - 1) : 0; }
+           set { _position = _vals.Length > 0 ? MathUtils.Constrain((int)value, 0, _vals.Length - 1) : 0; }
         }
 
         /// <summary>The current time.</summary>
@@ -58,7 +58,7 @@ namespace AudioLib
         public int SelLength { get; set; } = 0;
 
         /// <summary>Number of samples per notification.</summary>
-        public int SamplesPerNotification { get; set; }
+        public int SamplesPerNotification { get; set; } = 5000;
         #endregion
 
         #region Events
@@ -81,12 +81,9 @@ namespace AudioLib
         /// </summary>
         /// <param name="source">Source provider to use.</param>
         /// <param name="mode">How to handle stereo files.</param>
-        /// <param name="samplesPerNotification">Number of samples between notifications.</param>
-        public ClipSampleProvider(ISampleProvider source, StereoCoercion mode, int samplesPerNotification = 5000)
+        public ClipSampleProvider(ISampleProvider source, StereoCoercion mode)
         {
             FileName = "";
-            SamplesPerNotification = samplesPerNotification;
-
             ReadSource(source, mode);
         }
 
@@ -128,12 +125,8 @@ namespace AudioLib
             int numRead = 0;
             int end = _vals.Length;
 
-            // Is it a specific selection?
-            if(SelLength > 0)
-            {
-                _position = Math.Max(SelStart, _position);
-                end = SelStart + SelLength;
-            }
+            // Find the end. Is it a specific selection?
+            end = SelLength > 0 ? MathUtils.Constrain(SelStart + SelLength, 0, _vals.Length) : _vals.Length;
 
             // Read area of interest.
             long numToRead = Math.Min(count, end - _position);
@@ -145,7 +138,7 @@ namespace AudioLib
                 _sampleCount++;
             }
 
-            if (_sampleCount >= SamplesPerNotification)
+            if (_sampleCount >= SamplesPerNotification || numRead == 0)
             {
                 _args.Position = _position;
                 _args.CurrentTime = CurrentTime;

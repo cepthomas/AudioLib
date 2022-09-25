@@ -38,8 +38,11 @@
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.btnAfReader = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.cmbSelMode = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnRender = new System.Windows.Forms.ToolStripButton();
+            this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             this.sldGain = new NBagOfUis.Slider();
             this.chkPlay = new System.Windows.Forms.CheckBox();
             this.toolStrip1.SuspendLayout();
@@ -65,15 +68,18 @@
             // 
             // progBar
             // 
+            this.progBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
             this.progBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.progBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             this.progBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.progBar.Location = new System.Drawing.Point(6, 44);
+            this.progBar.Location = new System.Drawing.Point(250, 44);
             this.progBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.progBar.Name = "progBar";
             this.progBar.ProgressColor = System.Drawing.Color.Orange;
-            this.progBar.Size = new System.Drawing.Size(341, 48);
+            this.progBar.Size = new System.Drawing.Size(523, 48);
             this.progBar.TabIndex = 24;
+            this.progBar.Thumbnail = null;
             // 
             // wv1
             // 
@@ -119,8 +125,11 @@
             this.toolStripSeparator8,
             this.btnAfReader,
             this.toolStripSeparator9,
+            this.toolStripLabel1,
             this.cmbSelMode,
-            this.toolStripSeparator4});
+            this.toolStripSeparator4,
+            this.btnRender,
+            this.toolStripSeparator10});
             this.toolStrip1.Location = new System.Drawing.Point(0, 0);
             this.toolStrip1.Name = "toolStrip1";
             this.toolStrip1.Size = new System.Drawing.Size(1000, 28);
@@ -239,6 +248,12 @@
             this.toolStripSeparator9.Name = "toolStripSeparator9";
             this.toolStripSeparator9.Size = new System.Drawing.Size(6, 28);
             // 
+            // toolStripLabel1
+            // 
+            this.toolStripLabel1.Name = "toolStripLabel1";
+            this.toolStripLabel1.Size = new System.Drawing.Size(73, 25);
+            this.toolStripLabel1.Text = "sel mode:";
+            // 
             // cmbSelMode
             // 
             this.cmbSelMode.AutoSize = false;
@@ -252,12 +267,26 @@
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(6, 28);
             // 
+            // btnRender
+            // 
+            this.btnRender.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnRender.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnRender.Name = "btnRender";
+            this.btnRender.Size = new System.Drawing.Size(56, 25);
+            this.btnRender.Text = "render";
+            this.btnRender.Click += new System.EventHandler(this.Render_Click);
+            // 
+            // toolStripSeparator10
+            // 
+            this.toolStripSeparator10.Name = "toolStripSeparator10";
+            this.toolStripSeparator10.Size = new System.Drawing.Size(6, 28);
+            // 
             // sldGain
             // 
             this.sldGain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.sldGain.DrawColor = System.Drawing.Color.CornflowerBlue;
             this.sldGain.Label = "gain";
-            this.sldGain.Location = new System.Drawing.Point(445, 44);
+            this.sldGain.Location = new System.Drawing.Point(69, 44);
             this.sldGain.Maximum = 3D;
             this.sldGain.Minimum = 0D;
             this.sldGain.Name = "sldGain";
@@ -273,7 +302,7 @@
             this.chkPlay.BackColor = System.Drawing.SystemColors.Control;
             this.chkPlay.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
             this.chkPlay.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
-            this.chkPlay.Location = new System.Drawing.Point(371, 44);
+            this.chkPlay.Location = new System.Drawing.Point(6, 44);
             this.chkPlay.Name = "chkPlay";
             this.chkPlay.Size = new System.Drawing.Size(57, 48);
             this.chkPlay.TabIndex = 36;
@@ -329,5 +358,8 @@
         private System.Windows.Forms.CheckBox chkPlay;
         private System.Windows.Forms.ToolStripComboBox cmbSelMode;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripLabel toolStripLabel1;
+        private System.Windows.Forms.ToolStripButton btnRender;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
     }
 }

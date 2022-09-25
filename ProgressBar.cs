@@ -20,15 +20,23 @@ namespace AudioLib
         /// <summary>For drawing text.</summary>
         readonly StringFormat _format = new() { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
 
+        /// <summary>For drawing text.</summary>
+        readonly Brush _textBrush = Brushes.Black;
+
+        /// <summary>For drawing markers.</summary>
+        readonly Pen _penMark = new(Color.Red, 1);
+
         /// <summary>How to snap.</summary>
         readonly SnapType _snap = SnapType.Fine;
         #endregion
 
         #region Backing fields
-        readonly SolidBrush _brushProgress = new(Color.White);
+        readonly SolidBrush _brushProgress = new(Color.LightGray);
+        int _selStart = 0;
+        int _selLength = 0;
         int _length = 0;
-        int _start = 0;
         int _current = 0;
+        Bitmap? _thumbnail = null;
         #endregion
 
         #region Designer fields
@@ -45,14 +53,28 @@ namespace AudioLib
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int Length { get { return _length; } set { _length = value; Invalidate(); } }
 
+        /// <summary>Selection start sample.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+        public int SelStart { get { return _selStart; } set { _selStart = value; Invalidate(); } }
+
+        /// <summary>Selection length in samples.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+        public int SelLength { get { return _selLength; } set { _selLength = value; Invalidate(); } }
+
         /// <summary>For styling.</summary>
         public Color ProgressColor { get { return _brushProgress.Color; } set { _brushProgress.Color = value; } }
+
+        /// <summary>For styling.</summary>
+        public Color MarkColor { set { _penMark.Color = value; Invalidate(); } }
 
         /// <summary>Big font.</summary>
         public Font FontLarge { get; set; } = new("Microsoft Sans Serif", 20, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Baby font.</summary>
         public Font FontSmall { get; set; } = new("Microsoft Sans Serif", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
+
+        /// <summary>Optional background.</summary>
+        public Bitmap? Thumbnail { get { return _thumbnail; } set { _thumbnail = value; Invalidate(); } }
         #endregion
 
         #region Events
@@ -100,24 +122,42 @@ namespace AudioLib
         /// </summary>
         protected override void OnPaint(PaintEventArgs pe)
         {
-            // Setup.
-            pe.Graphics.Clear(BackColor);
-
             // Validate times.
             _current = MathUtils.Constrain(_current, 0, _length);
 
+            // Draw the thumbnail.
+            if (Thumbnail is not null)
+            {
+                pe.Graphics.DrawImage(Thumbnail, 0, 0);
+            }
+            else // simple background
+            {
+                pe.Graphics.Clear(BackColor);
+            }
+
+            // Show the selection.
+            int start = SelStart;
+            int end = SelLength == 0 ? Length : SelStart + SelLength;
+            int xst = SampleToPixel(start);
+            int xend = SampleToPixel(end);
+            pe.Graphics.DrawLine(_penMark, xst, 0, xst, Height);
+            pe.Graphics.DrawLine(_penMark, xend, 0, xend, Height);
+            //pe.Graphics.DrawRectangle(_penMark, xst, 0, xend, Height);
+
             // Draw the progress.
-            int dstart = SampleToPixel(_start);// _marker1;
-            int dend = SampleToPixel(_current);// _marker2
-            pe.Graphics.FillRectangle(_brushProgress, dstart, 0, dend, Height);
+            int x = SampleToPixel(_current);
+            pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
+            //int dstart = SampleToPixel(_start);
+            //int dend = SampleToPixel(_current);
+            //pe.Graphics.FillRectangle(_brushProgress, dstart, 0, dend, Height);
 
             // Draw text.
             _format.Alignment = StringAlignment.Center;
-            pe.Graphics.DrawString(ConverterOps.Format(_current), FontLarge, Brushes.Black, ClientRectangle, _format);
-            _format.Alignment = StringAlignment.Near;
-            pe.Graphics.DrawString(ConverterOps.Format(_start), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(ConverterOps.Format(_current), FontLarge, _textBrush, ClientRectangle, _format);
+            //_format.Alignment = StringAlignment.Near;
+            //pe.Graphics.DrawString(ConverterOps.Format(_selStart), FontSmall, _textBrush, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Far;
-            pe.Graphics.DrawString(ConverterOps.Format(_length), FontSmall, Brushes.Black, ClientRectangle, _format);
+            pe.Graphics.DrawString(ConverterOps.Format(_length), FontSmall, _textBrush, ClientRectangle, _format);
         }
         #endregion
 
@@ -133,7 +173,6 @@ namespace AudioLib
                 sample = ConverterOps.SnapSample(sample, _snap);
                 toolTip.SetToolTip(this, ConverterOps.Format(sample));
                 _lastXPos = e.X;
-                // need this for anything other than tooltip: Invalidate();
             }
 
             base.OnMouseMove(e);

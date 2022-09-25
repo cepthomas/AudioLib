@@ -13,8 +13,7 @@ using NBagOfTricks;
 using NBagOfTricks.PNUT;
 using NBagOfUis;
 using AudioLib;
-using NAudio.Gui;
-
+using static AudioLib.Globals;
 
 
 namespace AudioLib.Test
@@ -72,9 +71,9 @@ namespace AudioLib.Test
             {
                 switch (cmbSelMode.SelectedItem)
                 {
-                    case WaveSelectionMode.Time: Globals.ConverterOps = new TimeOps(); break;
-                    case WaveSelectionMode.Bar: Globals.ConverterOps = new BarOps(); break;
-                    case WaveSelectionMode.Sample: Globals.ConverterOps = new SampleOps(); break;
+                    case WaveSelectionMode.Time: ConverterOps = new TimeOps(); break;
+                    case WaveSelectionMode.Bar: ConverterOps = new BarOps(); break;
+                    case WaveSelectionMode.Sample: ConverterOps = new SampleOps(); break;
                 }
                 wv1.Invalidate();
                 progBar.Invalidate();
@@ -82,7 +81,7 @@ namespace AudioLib.Test
             cmbSelMode.SelectedItem = WaveSelectionMode.Sample;
 
             // Progress bar.
-            progBar.CurrentChanged += ProgBar_CurrentChanged;
+            progBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{ConverterOps.Format(progBar.Current)}");
             progBar.ProgressColor = Color.CornflowerBlue;
             progBar.BackColor = Color.Salmon;
 
@@ -186,6 +185,14 @@ namespace AudioLib.Test
                     sldGain.Value = wv1.Gain;
                     break;
 
+                case Property.SelStart when sender == wv1:
+                    progBar.SelStart = wv1.SelStart;
+                    break;
+
+                case Property.SelLength when sender == wv1:
+                    progBar.SelLength = wv1.SelLength;
+                    break;
+
                 case Property.Marker when sender == wv2:
                     wv1.Recenter(wv2.Marker);
                     break;
@@ -226,6 +233,12 @@ namespace AudioLib.Test
             _prov = prov;
             ShowWave(_prov);
             _waveOutSwapper.SetInput(_prov);
+        }
+
+        void Render_Click(object sender, EventArgs e)
+        {
+            var thumb = wv1.Render(progBar.Width, progBar.Height, Color.Blue, Color.Pink, true);
+            progBar.Thumbnail = thumb;
         }
 
         void Csp_ClipProgress(object? sender, ClipSampleProvider.ClipProgressEventArgs e)
@@ -272,15 +285,10 @@ namespace AudioLib.Test
                         progBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
                     }
                     break;
-
-                default:
-                    return;
             }
 
-            if (prov is null)
-            {
-                return;
-            }
+            var thumb = wv1.Render(progBar.Width, progBar.Height, Color.Blue, Color.Pink, true);
+            progBar.Thumbnail = thumb;
         }
 
         void Play_Click()
@@ -334,11 +342,6 @@ namespace AudioLib.Test
             });
 
             LogLine(AudioFileInfo.GetFileInfo(@"C:\Users\cepth\OneDrive\Audio\SoundFonts\FluidR3 GM.sf2", verbose));
-        }
-
-        void ProgBar_CurrentChanged(object? sender, EventArgs e)
-        {
-            LogLine($"Current timebar:{progBar.Current}");
         }
 
         void Timer1_Tick(object? sender, EventArgs args)

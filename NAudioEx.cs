@@ -15,7 +15,7 @@ namespace AudioLib
 {
     /// <summary>
     /// Extensions to enhance core NAudio for this application.
-    /// TODO A lot of these are kind of clunky but the alternative is to add some new functionality
+    /// A lot of these are kind of clunky but the alternative is to add some new functionality
     /// to ISampleprovider. Maybe I'll branch NAudio some day.
     /// </summary>
     public static class NAudioEx
@@ -29,11 +29,6 @@ namespace AudioLib
         {
             prov.Validate(true);
             prov.Rewind();
-            //switch (prov)
-            //{
-            //    case ClipSampleProvider csp: csp.Position = 0; break;
-            //    case AudioFileReader afr: afr.Position = 0; break;
-            //}
 
             var data = new List<float>(AudioLibDefs.READ_BUFF_SIZE);
             var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
@@ -105,11 +100,6 @@ namespace AudioLib
         public static void Export(this ISampleProvider prov, string exportFileName)
         {
             prov.Rewind();
-            //switch (prov)
-            //{
-            //    case ClipSampleProvider csp: csp.Position = 0; break;
-            //    case AudioFileReader afr: afr.Position = 0; break;
-            //}
 
             List<string> ls = new();
             var vals = new float[AudioLibDefs.READ_BUFF_SIZE];
@@ -154,7 +144,7 @@ namespace AudioLib
         {
             switch (prov)
             {
-                case ClipSampleProvider csp: csp.Position = 0; break;
+                case ClipSampleProvider csp: csp.Position = csp.SelStart; break;
                 case AudioFileReader afr: afr.Position = 0; break;
             }
         }
@@ -175,7 +165,8 @@ namespace AudioLib
             switch (prov)
             {
                 case ClipSampleProvider csp:
-                    ls.Add($"File:{csp.FileName}");
+                    var fn = csp.FileName == "" ? "None" : csp.FileName;
+                    ls.Add($"File:{fn}");
                     ls.Add($"Time:{csp.TotalTime}");
                     ls.Add($"SamplesPerChannel:{csp.SamplesPerChannel}");
                     break;

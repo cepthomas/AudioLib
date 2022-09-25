@@ -47,8 +47,7 @@ namespace AudioLib
         /// <returns></returns>
         public int TextToSample(string val)
         {
-            int sample;
-            if (!int.TryParse(val, out sample))
+            if (!int.TryParse(val, out int sample))
             {
                 sample = -1;
             }

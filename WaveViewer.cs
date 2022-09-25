@@ -75,7 +75,6 @@ namespace AudioLib
         readonly Pen _penDraw = new(Color.Black, 1);
         readonly Pen _penGrid = new(Color.LightGray, 1);
         readonly Pen _penMark = new(Color.Red, 1);
-        readonly SolidBrush _brushMark = new(Color.White);
         #endregion
 
         #region Designer fields
@@ -91,7 +90,7 @@ namespace AudioLib
         public Color GridColor { set { _penGrid.Color = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
-        public Color MarkColor { set { _penMark.Color = value; _brushMark.Color = value; Invalidate(); } }
+        public Color MarkColor { set { _penMark.Color = value; Invalidate(); } }
 
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
@@ -162,6 +161,7 @@ namespace AudioLib
             _max = _vals.Length > 0 ? _vals.Max() : 0;
             _min = _vals.Length > 0 ? _vals.Min() : 0;
 
+            prov.Rewind();
             _selStart = 0;
             _selLength = 0;
             _marker = 0;
@@ -185,7 +185,6 @@ namespace AudioLib
            if (disposing)
            {
                 toolTip.Dispose();
-                _brushMark.Dispose();
                 _penDraw.Dispose();
                 _penGrid.Dispose();
                 _penMark.Dispose();
@@ -635,6 +634,61 @@ namespace AudioLib
                 var granularity = Math.Pow(10, numdigits - 1);
                 return MathUtils.Clamp(val, (int)granularity, false);
             }
+        }
+
+        /// <summary>
+        /// Render a bitmap suitable for navigation.
+        /// </summary>
+        /// <param name="width"></param>
+        /// <param name="height"></param>
+        /// <param name="drawColor"></param>
+        /// <param name="backColor"></param>
+        /// <param name="fit"></param>
+        /// <returns></returns>
+        public Bitmap Render(int width, int height, Color drawColor, Color backColor, bool fit)
+        {
+            Bitmap bmp = new(width, height);
+
+            using (Graphics graphics = Graphics.FromImage(bmp))
+            using (Pen penDraw = new(drawColor, 1))
+            {
+                graphics.Clear(backColor);
+
+                float gain = fit ? 0.9f / Math.Max(Math.Abs(_max), Math.Abs(_min)) : _gain;
+                int samplesPerPixel = _vals.Length / width;
+
+                if (samplesPerPixel > 0)
+                {
+                    var peaks = PeakProvider.GetPeaks(_vals, 0, samplesPerPixel, width);
+
+                    for (int i = 0; i < peaks.Count; i++)
+                    {
+                        // +1 => 0  -1 => height
+                        int max = (int)MathUtils.Map(peaks[i].max * gain, 1.0f, -1.0f, 0, height);
+                        int min = (int)MathUtils.Map(peaks[i].min * gain, 1.0f, -1.0f, 0, height);
+
+                        // Make sure there's always at least one dot.
+                        if (max == min)
+                        {
+                            if (max > 0) { min--; }
+                            else { max++; }
+                        }
+
+                        graphics.DrawLine(penDraw, i, max, i, min);
+                    }
+                }
+                else // Not enough data - just show what we have.
+                {
+                    for (int i = 0; i < _vals.Length; i++)
+                    {
+                        // +1 => 0  -1 => height
+                        int yVal = (int)MathUtils.Map(_vals[i] * gain, 1.0f, -1.0f, 0, height);
+                        graphics.DrawRectangle(penDraw, i, yVal, 1, 1);
+                    }
+                }
+            }
+
+            return bmp;
         }
         #endregion
 
