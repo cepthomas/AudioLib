@@ -23,7 +23,7 @@ namespace AudioLib
         #endregion
 
         #region Backing fields
-        long _position = 0;
+        int _sampleIndex = 0;
         #endregion
 
         #region Properties
@@ -42,15 +42,15 @@ namespace AudioLib
         /// <summary>The total time.</summary>
         public TimeSpan TotalTime { get { return TimeSpan.FromMilliseconds((int)(1000.0f * _vals.Length / WaveFormat.SampleRate)); } }
 
-        /// <summary>Make this class sort of look like a stream. TODO1 This is actually the index into the buffer aka sample index.</summary>
-        public long Position
+        /// <summary>Make this class sort of look like a stream.</summary>
+        public int SampleIndex
         {
-           get { return _position; }
-           set { _position = _vals.Length > 0 ? MathUtils.Constrain((int)value, 0, _vals.Length - 1) : 0; }
+           get { return _sampleIndex; }
+           set { _sampleIndex = _vals.Length > 0 ? MathUtils.Constrain((int)value, 0, _vals.Length - 1) : 0; }
         }
 
         /// <summary>The current time.</summary>
-        public TimeSpan CurrentTime { get { return TimeSpan.FromMilliseconds((int)(1000.0f * _position / WaveFormat.SampleRate)); } }
+        public TimeSpan CurrentTime { get { return TimeSpan.FromMilliseconds((int)(1000.0f * _sampleIndex / WaveFormat.SampleRate)); } }
 
         /// <summary>Selection start sample.</summary>
         public int SelStart { get; set; } = 0;
@@ -59,7 +59,7 @@ namespace AudioLib
         public int SelLength { get; set; } = 0;
 
         /// <summary>Number of samples per notification.</summary>
-        public int SamplesPerNotification { get; set; } = 1000;
+        public int SamplesPerNotification { get; set; } = 5000;
         #endregion
 
         #region Events
@@ -130,32 +130,30 @@ namespace AudioLib
             end = SelLength > 0 ? MathUtils.Constrain(SelStart + SelLength, 0, _vals.Length) : _vals.Length;
 
             // Read area of interest.
-            long numToRead = Math.Min(count, end - _position);
+            long numToRead = Math.Min(count, end - _sampleIndex);
             for (int n = 0; n < numToRead; n++)
             {
-                buffer[n + offset] = _vals[_position] * Gain;
+                buffer[n + offset] = _vals[_sampleIndex] * Gain;
                 numRead++;
-                _position++;
+                _sampleIndex++;
                 _sampleCount++;
 
-                // Check for time to notify. TODO1 doesn't keep up. May need another way to update e.g. using a timer.
+                // Check for time to notify. TODO doesn't keep up. May need another way to update e.g. using a timer.
                 if (_sampleCount >= SamplesPerNotification)
                 {
-                    _args.Position = _position;
+                    _args.Position = _sampleIndex;
                     _args.CurrentTime = CurrentTime;
                     ClipProgress?.Invoke(this, _args);
                     _sampleCount = 0;
-                    //Debug.WriteLine(">>>>>");
                 }
             }
 
             if (numRead == 0) // last one
             {
-                _args.Position = _position;
+                _args.Position = _sampleIndex;
                 _args.CurrentTime = CurrentTime;
                 ClipProgress?.Invoke(this, _args);
                 _sampleCount = 0;
-                //Debug.WriteLine("XXXXX");
             }
 
             return numRead;

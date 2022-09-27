@@ -1,7 +1,7 @@
 using NBagOfTricks;
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace AudioLib
 {
@@ -15,7 +15,8 @@ namespace AudioLib
         #endregion
 
         #region Properties
-        public WaveSelectionMode SelectionMode { get { return WaveSelectionMode.Bar; } }
+        ///// <inheritdoc />
+        //public WaveSelectionMode Mode { get { return WaveSelectionMode.Bar; } }
         #endregion
 
         #region Types
@@ -32,13 +33,8 @@ namespace AudioLib
         #endregion
 
         #region Public functions
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sample"></param>
-        /// <param name="snap"></param>
-        /// <returns></returns>
-        public int SnapSample(int sample, SnapType snap)
+        /// <inheritdoc />
+        public int Snap(int sample, SnapType snap)
         {
             var subdiv = SampleToSubdiv(sample);
 
@@ -52,12 +48,8 @@ namespace AudioLib
             return SubdivToSample(subdiv);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public int TextToSample(string input)
+        /// <inheritdoc />
+        public int Parse(string input)
         {
             int sample = -1;
 
@@ -71,11 +63,7 @@ namespace AudioLib
             return sample;
         }
 
-        /// <summary>
-        /// Human readable.
-        /// </summary>
-        /// <param name="sample"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public string Format(int sample)
         {
             var bb = SampleToBar(sample);
@@ -93,7 +81,7 @@ namespace AudioLib
         {
             int subdiv = -1;
 
-            var bb = TextToBar(input);
+            var bb = ParseBar(input);
 
             if (bb.Valid())
             {
@@ -154,12 +142,14 @@ namespace AudioLib
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        BarDesc TextToBar(string input)
+        BarDesc ParseBar(string input)
         {
             BarDesc bb = new();
 
-            var parts = input.Split(".");
-            if (parts.Length == 3)
+            var parts = input.Split(".").ToList();
+            while (parts.Count < 3) parts.Add(".0"); // pad
+
+            if (parts.Count == 3)
             {
                 if (int.TryParse(parts[0], out int bar)) bb.bar = bar;
                 if (int.TryParse(parts[1], out int beat)) bb.beat = beat;

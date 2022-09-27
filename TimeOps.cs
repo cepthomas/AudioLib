@@ -1,7 +1,7 @@
 using NBagOfTricks;
 using System;
 using System.Collections.Generic;
-
+using System.Linq;
 
 namespace AudioLib
 {
@@ -14,7 +14,8 @@ namespace AudioLib
         #endregion
 
         #region Properties
-        public WaveSelectionMode SelectionMode { get { return WaveSelectionMode.Time; } }
+        ///// <inheritdoc />
+        //public WaveSelectionMode Mode { get { return WaveSelectionMode.Time; } }
         #endregion
 
         #region Types
@@ -31,13 +32,8 @@ namespace AudioLib
         #endregion
 
         #region Public functions
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sample"></param>
-        /// <param name="snap"></param>
-        /// <returns></returns>
-        public int SnapSample(int sample, SnapType snap)
+        /// <inheritdoc />
+        public int Snap(int sample, SnapType snap)
         {
             var tmsec = SampleToMsec(sample);
 
@@ -51,16 +47,12 @@ namespace AudioLib
             return MsecToSample(tmsec);
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        public int TextToSample(string input)
+        /// <inheritdoc />
+        public int Parse(string input)
         {
             int sample = -1;
 
-            int msec = TextToMsec(input);
+            int msec = ParseMsec(input);
 
             if (msec >= 0)
             {
@@ -70,10 +62,7 @@ namespace AudioLib
             return sample;
         }
 
-        /// <summary>
-        /// Human readable.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public string Format(int sample)
         {
             var tm = SampleToTime(sample);
@@ -120,11 +109,11 @@ namespace AudioLib
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        int TextToMsec(string input)
+        int ParseMsec(string input)
         {
             int tmsec = -1;
 
-            var tm = TextToTime(input);
+            var tm = ParseTime(input);
 
             if (tm.Valid())
             {
@@ -139,12 +128,14 @@ namespace AudioLib
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        TimeDesc TextToTime(string input)
+        TimeDesc ParseTime(string input)
         {
             TimeDesc tm = new();
 
-            var parts = input.Split(".");
-            if (parts.Length == 3)
+            var parts = input.Split(".").ToList();
+            while (parts.Count < 3) parts.Add(".0"); // pad
+
+            if (parts.Count == 3)
             {
                 if (int.TryParse(parts[0], out int min)) tm.min = min;
                 if (int.TryParse(parts[1], out int sec)) tm.sec = sec;

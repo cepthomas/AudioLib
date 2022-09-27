@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -10,6 +10,7 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 using static AudioLib.Globals;
+using static System.Windows.Forms.DataFormats;
 
 
 // TODO make mouse etc commands configurable.
@@ -68,9 +69,10 @@ namespace AudioLib
         int _selStart = 0;
         int _selLength = 0;
         int _marker = 0;
-        readonly Pen _penDraw = new(Color.Black, 1);
+        readonly Pen _penWave = new(Color.Black, 1);
         readonly Pen _penGrid = new(Color.LightGray, 1);
         readonly Pen _penMark = new(Color.Red, 1);
+        //readonly SolidBrush _brushMark = new(Color.Red);
         #endregion
 
         #region Designer fields
@@ -80,7 +82,7 @@ namespace AudioLib
 
         #region Properties
         /// <summary>The waveform color.</summary>
-        public Color DrawColor { set { _penDraw.Color = value; Invalidate(); } }
+        public Color WaveColor { set { _penWave.Color = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
         public Color GridColor { set { _penGrid.Color = value; Invalidate(); } }
@@ -128,7 +130,7 @@ namespace AudioLib
         public event EventHandler<ViewerChangeEventArgs>? ViewerChangeEvent;
         public class ViewerChangeEventArgs : EventArgs
         {
-            public Property Change { get; set; } = Property.Marker;
+            public PropertyChange Change { get; set; } = PropertyChange.Marker;
         }
         #endregion
 
@@ -176,7 +178,7 @@ namespace AudioLib
            if (disposing)
            {
                 toolTip.Dispose();
-                _penDraw.Dispose();
+                _penWave.Dispose();
                 _penGrid.Dispose();
                 _penMark.Dispose();
                 _format.Dispose();
@@ -215,43 +217,6 @@ namespace AudioLib
             CheckSel();
             Invalidate();
         }
-
-        /// <summary>
-        /// Owner is updating a property. This does conversion and syntax checking for the client.
-        /// </summary>
-        /// <param name="change">The property</param>
-        /// <param name="val">The new value</param>
-        /// <returns>True if valid.</returns>
-        public bool UpdateProperty(Property change, string val)
-        {
-            bool ok = false;
-
-            int sample = ConverterOps.TextToSample(val);
-            if (sample >= 0)
-            {
-                switch (change)
-                {
-                    case Property.Marker:
-                        _marker = sample;
-                        break;
-
-                    case Property.SelStart:
-                        _selStart = sample;
-                        break;
-
-                    case Property.SelLength:
-                        _selLength = sample;
-                        break;
-
-                    default:
-                        // Later.
-                        break;
-                }
-                ok = true;
-            }
-
-            return ok;
-        }
         #endregion
 
         #region UI handlers
@@ -270,7 +235,7 @@ namespace AudioLib
             // Number of detents the mouse wheel has rotated.
             int wheelDelta = WHEEL_RESOLUTION * e.Delta / SystemInformation.MouseWheelScrollDelta;
 
-            switch(ModifierKeys)
+            switch (ModifierKeys)
             {
                 case Keys.None: // x pan
                     int incr = _samplesPerPixel * PAN_INCREMENT;
@@ -297,7 +262,7 @@ namespace AudioLib
                 case Keys.Shift: // y gain
                     _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
                     _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
-                    ViewerChangeEvent?.Invoke(this, new() { Change = Property.Gain });
+                    ViewerChangeEvent?.Invoke(this, new() { Change = PropertyChange.Gain });
                     Invalidate();
                     break;
             };
@@ -312,26 +277,26 @@ namespace AudioLib
         protected override void OnMouseDown(MouseEventArgs e)
         {
             var sample = PixelToSample(e.X);
-            Property changed = Property.None;
+            PropertyChange changed = PropertyChange.None;
 
-            sample = ConverterOps.SnapSample(sample, _snap);
+            sample = ConverterOps.Snap(sample, _snap);
             if (sample >= 0)
             {
                 switch (e.Button, ModifierKeys)
                 {
                     case (MouseButtons.Left, Keys.None):
                         _marker = sample;
-                        changed = Property.Marker;
+                        changed = PropertyChange.Marker;
                         break;
 
                     case (MouseButtons.Left, Keys.Control):
                         _selStart = sample;
-                        changed = Property.SelStart;
+                        changed = PropertyChange.SelStart;
                         break;
 
                     case (MouseButtons.Left, Keys.Shift):
                         _selLength = sample - _selStart;
-                        changed = Property.SelLength;
+                        changed = PropertyChange.SelLength;
                         break;
 
                     default:
@@ -339,7 +304,7 @@ namespace AudioLib
                         break;
                 }
 
-                if (changed != Property.None)
+                if (changed != PropertyChange.None)
                 {
                     CheckSel();
                     ViewerChangeEvent?.Invoke(this, new() { Change = changed });
@@ -359,7 +324,7 @@ namespace AudioLib
             if (e.X != _lastXPos)
             {
                 var sample = PixelToSample(e.X);
-                sample = ConverterOps.SnapSample(sample, _snap);
+                sample = ConverterOps.Snap(sample, _snap);
                 toolTip.SetToolTip(this, ConverterOps.Format(sample));
                 _lastXPos = e.X;
                 // need this for anything other than tooltip: Invalidate();
@@ -506,14 +471,14 @@ namespace AudioLib
             // Try coarse.
             for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
             {
-                set.Add(ConverterOps.SnapSample(incr, SnapType.Coarse));
+                set.Add(ConverterOps.Snap(incr, SnapType.Coarse));
             }
             if (set.Count < 5)
             {
                 // Try fine.
                 for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
                 {
-                    set.Add(ConverterOps.SnapSample(incr, SnapType.Fine));
+                    set.Add(ConverterOps.Snap(incr, SnapType.Fine));
                 }
             }
             var list = set.OrderBy(x => x).ToList();
@@ -534,12 +499,14 @@ namespace AudioLib
             }
 
             // Show them.
+            _format.Alignment = StringAlignment.Far;
             for (int xs = 1; xs < list.Count; xs++)
             {
                 float xGrid = MathUtils.Map(list[xs], VisibleStart, VisibleStart + VisibleLength, 0, Width);
                 pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
                 pe.Graphics.DrawString($"{ConverterOps.Format(list[xs])}", _textFont, _textBrush, xGrid, 10, _format);
             }
+            _format.Alignment = StringAlignment.Center;
 
             // Show info.
             var sinfo1 = $"Gain:{_gain:0.00}  Snap:{_snap}";
@@ -549,7 +516,7 @@ namespace AudioLib
             pe.Graphics.DrawString(auxInfo, _textFont, _textBrush, Width / 2, Height - 22, _format);
 
 
-            // Then the data - for all modes.
+            // Then the data.
             if (_samplesPerPixel > 0)
             {
                 var peaks = PeakProvider.GetPeaks(_vals, _visibleStart, _samplesPerPixel, Width);
@@ -567,7 +534,7 @@ namespace AudioLib
                         else { max++; }
                     }
 
-                    pe.Graphics.DrawLine(_penDraw, i, max, i, min);
+                    pe.Graphics.DrawLine(_penWave, i, max, i, min);
                 }
             }
             else // Not enough data - just show what we have.
@@ -576,7 +543,7 @@ namespace AudioLib
                 {
                     // +1 => 0  -1 => Height
                     int yVal = (int)MathUtils.Map(_vals[i] * _gain, 1.0f, -1.0f, 0, Height);
-                    pe.Graphics.DrawRectangle(_penDraw, i, yVal, 1, 1);
+                    pe.Graphics.DrawRectangle(_penWave, i, yVal, 1, 1);
                 }
             }
 
@@ -587,7 +554,7 @@ namespace AudioLib
                 if (x >= 0)
                 {
                     pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
-                    pe.Graphics.DrawRectangle(_penMark, x, 10, 10, 10);
+                    pe.Graphics.FillRectangle(_penMark.Brush, x, 10, 10, 10);
                 }
             }
 
@@ -597,7 +564,7 @@ namespace AudioLib
                 if (x >= 0)
                 {
                     pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
-                    pe.Graphics.DrawRectangle(_penMark, x - 10, 10, 10, 10);
+                    pe.Graphics.FillRectangle(_penMark.Brush, x - 10, 10, 10, 10);
                 }
             }
 
@@ -628,7 +595,7 @@ namespace AudioLib
         /// <param name="backColor"></param>
         /// <param name="fit"></param>
         /// <returns></returns>
-        public Bitmap Render(int width, int height, Color drawColor, Color backColor, bool fit)
+        public Bitmap RenderThumbnail(int width, int height, Color drawColor, Color backColor, bool fit)
         {
             Bitmap bmp = new(width, height);
 

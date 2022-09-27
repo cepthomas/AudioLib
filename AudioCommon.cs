@@ -20,15 +20,26 @@ namespace AudioLib
     /// <summary>How to snap.</summary>
     public enum SnapType { None, Fine, Coarse };
 
-    /// <summary>Notification type.</summary>
-    public enum Property { None, Gain, Marker, SelStart, SelLength }
+    /// <summary>Notification of property change.</summary>
+    public enum PropertyChange { None, Gain, Marker, SelStart, SelLength }
 
-    /// <summary>Abstraction of selection mode.</summary>
+    /// <summary>Abstraction of selection mode. Does text parsing, formatting, snap.</summary>
     public interface IConverterOps
     {
-        WaveSelectionMode SelectionMode { get; }
-        int SnapSample(int sample, SnapType snap);
-        int TextToSample(string input);
+        /// <summary>Snap to neighbor.</summary>
+        /// <param name="sample">Test sample.</param>
+        /// <param name="snap">How tight.</param>
+        /// <returns>Snapped sample.</returns>
+        int Snap(int sample, SnapType snap);
+
+        /// <summary>Parse text.</summary>
+        /// <param name="input">The text.</param>
+        /// <returns>Corresponding sample.</returns>
+        int Parse(string input);
+
+        /// <summary>Make a readable string.</summary>
+        /// <param name="sample">Which sample.</param>
+        /// <returns>The string.</returns>
         string Format(int sample);
     }
     #endregion
@@ -36,11 +47,18 @@ namespace AudioLib
     #region Globals
     public static class Globals
     {
-        /// <summary>Global mode.</summary>
+        /// <summary>This abstracts the conversions for the different WaveSelectionModes.</summary>
         public static IConverterOps ConverterOps { get; set; } = new SampleOps();
 
         /// <summary>Global tempo if using Beat selection mode.</summary>
         public static float BPM { get; set; } = 100.0f;
+
+        /// <summary>Colors.</summary>
+        public static Color ControlColor { get; set; } = Color.MediumOrchid;
+        public static Color WaveColor { get; set; } = Color.ForestGreen;
+        public static Color GridColor { get; set; } = Color.LightGray;
+        public static Color MarkColor { get; set; } = Color.Red;
+        public static Color TextColor { get; set; } = Color.DimGray;
     }
     #endregion
 

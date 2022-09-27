@@ -89,21 +89,19 @@ namespace AudioLib.Test
             progBar.BackColor = Color.Cyan;
 
             // Wave viewers.
-            wv1.DrawColor = Color.Red;
+            wv1.WaveColor = Color.Red;
             wv1.BackColor = Color.Cyan;
             wv1.ViewerChangeEvent += ProcessViewerChangeEvent;
 
-            wv2.DrawColor = Color.Blue;
+            wv2.WaveColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;
             wv2.ViewerChangeEvent += ProcessViewerChangeEvent;
 
             // Static swap provider.
             _provSwap = new ClipSampleProvider(Path.Join(_testFilesDir, "test.wav"), StereoCoercion.Mono);
 
-            // Create reader.
+            // Create player.
             _waveOutSwapper = new();
-
-            
             _player = new(AudioSettings.LibSettings.WavOutDevice, int.Parse(AudioSettings.LibSettings.Latency), _waveOutSwapper) { Volume = 0.5 };
             _player.PlaybackStopped += (_, __) =>
             {
@@ -116,7 +114,7 @@ namespace AudioLib.Test
             foreach (var fn in new[] { "ref-stereo.wav", "one-sec.mp3", "ambi_swoosh.flac", "Tracy.m4a",
                 "avTouch_sample_22050.m4a", "tri-ref.txt", "short_samples.txt", "generate.sin" })
             {
-                LoadButton.DropDownItems.Add(fn, null, LoadViewer_Click);
+                LoadButton.DropDownItems.Add(fn, null, LoadFile_Click);
             }
 
             chkPlay.Click += (_, __) => Play_Click();
@@ -128,7 +126,7 @@ namespace AudioLib.Test
             timer1.Enabled = true;
         }
 
-        void LoadViewer_Click(object? sender, EventArgs args)
+        void LoadFile_Click(object? sender, EventArgs args)
         {
             _player.Run(false);
             chkPlay.Checked = false;
@@ -286,7 +284,7 @@ namespace AudioLib.Test
             }
 
             progBar.Current = 0;
-            var thumb = wv1.Render(progBar.Width, progBar.Height, Color.Blue, Color.Pink, true);
+            var thumb = wv1.RenderThumbnail(progBar.Width, progBar.Height, Color.Blue, Color.Pink, true);
             progBar.Thumbnail = thumb;
         }
 

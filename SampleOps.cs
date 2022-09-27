@@ -19,17 +19,13 @@ namespace AudioLib
         #endregion
 
         #region Properties
-        public WaveSelectionMode SelectionMode { get { return WaveSelectionMode.Sample; } }
+        ///// <inheritdoc />
+        //public WaveSelectionMode Mode { get { return WaveSelectionMode.Sample; } }
         #endregion
 
         #region Public functions
-        /// <summary>
-        /// Snap sample to 10000 or 1000 or none.
-        /// </summary>
-        /// <param name="sample"></param>
-        /// <param name="snap"></param>
-        /// <returns></returns>
-        public int SnapSample(int sample, SnapType snap)
+        /// <inheritdoc />
+        public int Snap(int sample, SnapType snap)
         {
             int snapped = snap switch
             {
@@ -40,12 +36,8 @@ namespace AudioLib
             return snapped;
         }
 
-        /// <summary>
-        /// Parse a sample text.
-        /// </summary>
-        /// <param name="val"></param>
-        /// <returns></returns>
-        public int TextToSample(string val)
+        /// <inheritdoc />
+        public int Parse(string val)
         {
             if (!int.TryParse(val, out int sample))
             {
@@ -54,10 +46,7 @@ namespace AudioLib
             return sample;
         }
 
-        /// <summary>
-        /// Human readable.
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public string Format(int sample)
         {
             return $"{sample}";

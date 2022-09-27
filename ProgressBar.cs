@@ -177,7 +177,7 @@ namespace AudioLib
             if (e.X != _lastXPos)
             {
                 var sample = PixelToSample(e.X);
-                sample = ConverterOps.SnapSample(sample, _snap);
+                sample = ConverterOps.Snap(sample, _snap);
                 toolTip.SetToolTip(this, ConverterOps.Format(sample));
                 _lastXPos = e.X;
             }

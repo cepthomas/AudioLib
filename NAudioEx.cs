@@ -144,7 +144,7 @@ namespace AudioLib
         {
             switch (prov)
             {
-                case ClipSampleProvider csp: csp.Position = csp.SelStart; break;
+                case ClipSampleProvider csp: csp.SampleIndex = csp.SelStart; break;
                 case AudioFileReader afr: afr.Position = 0; break;
             }
         }
