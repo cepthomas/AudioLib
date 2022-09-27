@@ -547,14 +547,14 @@ namespace AudioLib
                 }
             }
 
-            // Selection and markers.
+            // Lastly selection and markers.
             if (_selStart > 0)
             {
                 int x = SampleToPixel(_selStart);
                 if (x >= 0)
                 {
                     pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
-                    pe.Graphics.FillRectangle(_penMark.Brush, x, 10, 10, 10);
+                    pe.Graphics.FillPolygon(_penMark.Brush, new PointF[] { new(x, 10), new(x + 10, 15), new(x, 20) });
                 }
             }
 
@@ -564,7 +564,7 @@ namespace AudioLib
                 if (x >= 0)
                 {
                     pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
-                    pe.Graphics.FillRectangle(_penMark.Brush, x - 10, 10, 10, 10);
+                    pe.Graphics.FillPolygon(_penMark.Brush, new PointF[] { new(x, 10), new(x - 10, 15), new(x, 20) });
                 }
             }
 
@@ -574,6 +574,7 @@ namespace AudioLib
                 if (x >= 0)
                 {
                     pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
+                    pe.Graphics.FillEllipse(_penMark.Brush, x - 5, 10, 10, 10);
                 }
             }
 

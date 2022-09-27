@@ -85,7 +85,7 @@ namespace AudioLib.Test
             // Progress bar.
             progBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{ConverterOps.Format(progBar.Current)}");
             progBar.ProgressColor = Color.Green;
-            progBar.TextColor = Color.Yellow;
+            progBar.TextColor = Color.OrangeRed;
             progBar.BackColor = Color.Cyan;
 
             // Wave viewers.
@@ -182,19 +182,19 @@ namespace AudioLib.Test
 
             switch (e.Change)
             {
-                case Property.Gain when sender == wv1:
+                case PropertyChange.Gain when sender == wv1:
                     sldGain.Value = wv1.Gain;
                     break;
 
-                case Property.SelStart when sender == wv1:
+                case PropertyChange.SelStart when sender == wv1:
                     progBar.SelStart = wv1.SelStart;
                     break;
 
-                case Property.SelLength when sender == wv1:
+                case PropertyChange.SelLength when sender == wv1:
                     progBar.SelLength = wv1.SelLength;
                     break;
 
-                case Property.Marker when sender == wv2:
+                case PropertyChange.Marker when sender == wv2:
                     wv1.Recenter(wv2.Marker);
                     break;
 
