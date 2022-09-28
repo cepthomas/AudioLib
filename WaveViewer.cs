@@ -10,7 +10,8 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 using static AudioLib.Globals;
-using static System.Windows.Forms.DataFormats;
+//using static System.Windows.Forms.DataFormats;
+//using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
 // TODO make mouse etc commands configurable.
@@ -21,9 +22,6 @@ namespace AudioLib
     public partial class WaveViewer : UserControl
     {
         #region Fields
-        /// <summary>For drawing text.</summary>
-        readonly Font _textFont = new("Calibri", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
-
         /// <summary>For drawing text.</summary>
         readonly SolidBrush _textBrush = new(Color.Black);
 
@@ -93,6 +91,9 @@ namespace AudioLib
         /// <summary>For styling.</summary>
         public Color TextColor { set { _textBrush.Color = value; Invalidate(); } }
 
+        /// <summary>For drawing text.</summary>
+        public Font TextFont { get; set; } = new("Calibri", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
+
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
@@ -147,6 +148,39 @@ namespace AudioLib
             SuspendLayout();
             Name = "WaveViewer";
             ResumeLayout(false);
+
+            // Set up main menu.
+            ContextMenuStrip = new ContextMenuStrip(components);
+            ContextMenuStrip.Items.Add("Fit Gain", null, (_, __) => FitGain());
+            ContextMenuStrip.Items.Add("Reset Gain", null, (_, __) => ResetGain());
+            ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => Marker = 0);
+            ContextMenuStrip.Items.Add("Remove Selection", null, (_, __) => SelStart = SelLength = 0);
+
+            //   case Keys.G: // reset gain
+            //       _gain = 1.0f;
+            //   case Keys.H: // reset to initial full view
+            //       ResetView();
+            //   case Keys.M: // go to marker
+            //       if (_marker > 0)
+            //       {
+            //           Recenter(_marker);
+            //           e.Handled = true;
+            //       }
+            //   case Keys.S: // go to selection
+            //       if (_selStart > 0)
+            //       {
+            //           Recenter(_selStart);
+            //           e.Handled = true;
+            //       }
+            //   case Keys.F: // snap fine
+            //       _snap = SnapType.Fine;
+            //   case Keys.C: // snap coarse
+            //       _snap = SnapType.Coarse;
+            //   case Keys.N: // snap none
+            //       _snap = SnapType.None;
+
+
+
         }
 
         /// <summary>
@@ -182,7 +216,7 @@ namespace AudioLib
                 _penGrid.Dispose();
                 _penMark.Dispose();
                 _format.Dispose();
-                _textFont.Dispose();
+                TextFont.Dispose();
            }
            base.Dispose(disposing);
         }
@@ -419,14 +453,13 @@ namespace AudioLib
             const int Y_NUM_LINES = 5;
             const float Y_SPACING = 0.25f;
             const int X_NUM_LINES = 10; // approximately
-            var auxInfo = "auxInfo";
 
             // Setup.
             pe.Graphics.Clear(BackColor);
 
             if (_vals is null || _vals.Length == 0)
             {
-                pe.Graphics.DrawString("No data", _textFont, _textBrush, ClientRectangle, _format);
+                pe.Graphics.DrawString("No data", TextFont, _textBrush, ClientRectangle, _format);
                 return;
             }
 
@@ -447,7 +480,7 @@ namespace AudioLib
                         _penGrid.Width = 5;
                         pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
                         _penGrid.Width = 1;
-                        pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
+                        pe.Graphics.DrawString($"{-val:0.00}", TextFont, _textBrush, 25, yGrid, _format);
                         break;
                             
                     case Y_NUM_LINES:
@@ -458,7 +491,7 @@ namespace AudioLib
                     default:
                         // The main lines.
                         pe.Graphics.DrawLine(_penGrid, 50, yGrid, Width, yGrid);
-                        pe.Graphics.DrawString($"{-val:0.00}", _textFont, _textBrush, 25, yGrid, _format);
+                        pe.Graphics.DrawString($"{-val:0.00}", TextFont, _textBrush, 25, yGrid, _format);
                         break;
                 }
             }
@@ -504,17 +537,20 @@ namespace AudioLib
             {
                 float xGrid = MathUtils.Map(list[xs], VisibleStart, VisibleStart + VisibleLength, 0, Width);
                 pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
-                pe.Graphics.DrawString($"{ConverterOps.Format(list[xs])}", _textFont, _textBrush, xGrid, 10, _format);
+                pe.Graphics.DrawString($"{ConverterOps.Format(list[xs])}", TextFont, _textBrush, xGrid, 10, _format);
             }
             _format.Alignment = StringAlignment.Center;
 
             // Show info.
-            var sinfo1 = $"Gain:{_gain:0.00}  Snap:{_snap}";
-            var sinfo2 = $"VisStart:{_visibleStart}  Mark:{Marker}  SPP:{_samplesPerPixel}  VisLength:{VisibleLength}";
-            var sinfo3 = $"VisStart:{_visibleStart / 44100f}  Mark:{Marker / 44100f}  VisLength:{VisibleLength / 44100f}";
-            pe.Graphics.DrawString(sinfo1, _textFont, _textBrush, Width / 2, Height - 10, _format);
-            pe.Graphics.DrawString(auxInfo, _textFont, _textBrush, Width / 2, Height - 22, _format);
-
+            var info = new List<string>();
+            info.Add($"Gain:{_gain:0.00}");
+            info.Add($"Snap:{_snap}");
+            info.Add($"SelStart:{ConverterOps.Format(_selStart)}");
+            info.Add($"SelLength:{ConverterOps.Format(_selLength)}");
+            info.Add($"Marker:{ConverterOps.Format(_marker)}");
+            //info.Add($"VisStart:{ConverterOps.Format(_visibleStart)}");
+            //info.Add($"VisLength:{ConverterOps.Format(VisibleLength)}");
+            pe.Graphics.DrawString(string.Join("  ", info), TextFont, _textBrush, Width / 2, Height - 10, _format);
 
             // Then the data.
             if (_samplesPerPixel > 0)

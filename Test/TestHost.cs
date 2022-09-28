@@ -78,7 +78,7 @@ namespace AudioLib.Test
                 wv1.Invalidate();
                 progBar.Invalidate();
             };
-            cmbSelMode.SelectedItem = WaveSelectionMode.Sample;
+            cmbSelMode.SelectedItem = _settings.DefaultSelectionMode;
 
             sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
 
@@ -92,6 +92,8 @@ namespace AudioLib.Test
             wv1.WaveColor = Color.Red;
             wv1.BackColor = Color.Cyan;
             wv1.ViewerChangeEvent += ProcessViewerChangeEvent;
+            // Add to the menu.
+            wv1.ContextMenuStrip.Items.Add("Just a test", null, (_, __) => LogLine("That worked"));
 
             wv2.WaveColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;
@@ -394,10 +396,15 @@ namespace AudioLib.Test
         [JsonConverter(typeof(JsonColorConverter))]
         public Color BackColor { get; set; } = Color.AliceBlue;
 
-        [DisplayName("Ignore Me")]
-        [Description("I do nothing.")]
+        [DisplayName("Default Selection Mode")]
+        [Description("Edit midi settings.")]
         [Browsable(true)]
-        public bool IgnoreMe { get; set; } = true;
+        [JsonConverter(typeof(JsonStringEnumConverter))]
+        public WaveSelectionMode DefaultSelectionMode { get; set; } = WaveSelectionMode.Time;
+
+        [DisplayName("Default BPM")]
+        [Browsable(true)]
+        public double DefaultBPM { get; set; } = 100.0;
 
         [DisplayName("Midi Settings")]
         [Description("Edit midi settings.")]
