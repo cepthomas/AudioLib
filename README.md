@@ -16,7 +16,7 @@
 - ClipSampleProvider: Sample provider that encapsulates a client supplied piece of audio.
 - SwappableSampleProvider: Sample provider that supports hot swapping of input.
 - PeakProvider: Customized version of NAudio's IPeakProvider family for displayiing waveforms.
-- ToolStripPropertyEditor: UI component for editing internal values.
+- ToolStripParamEditor: UI component for editing internal values.
 - NAudioEx: NAudio compatible extension methods for the providers implemented here.
 - Converters: Between samples, Audio Time, milliseconds, Bar/Beat.
 - SampleOps, TimeOps, BarOps: Abstractions for the different formats user can select.

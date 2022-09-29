@@ -49,7 +49,7 @@
             this.cmsItem1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripPropertyEditor1 = new AudioLib.ToolStripPropertyEditor();
+            this.toolStripParamEditor1 = new AudioLib.ToolStripParamEditor();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
@@ -309,7 +309,7 @@
             this.cmsItem1ToolStripMenuItem,
             this.toolStripTextBox1,
             this.toolStripSeparator10,
-            this.toolStripPropertyEditor1,
+            this.toolStripParamEditor1,
             this.toolStripSeparator11});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(232, 176);
@@ -328,7 +328,7 @@
             // 
             this.toolStripMenuItem1.Name = "toolStripMenuItem1";
             this.toolStripMenuItem1.Size = new System.Drawing.Size(231, 24);
-            this.toolStripMenuItem1.Text = "Log it!";
+            this.toolStripMenuItem1.Text = "Log it";
             // 
             // cmsItem1ToolStripMenuItem
             // 
@@ -347,12 +347,12 @@
             this.toolStripSeparator10.Name = "toolStripSeparator10";
             this.toolStripSeparator10.Size = new System.Drawing.Size(228, 6);
             // 
-            // toolStripPropertyEditor1
+            // toolStripParamEditor1
             // 
-            this.toolStripPropertyEditor1.Name = "toolStripPropertyEditor1";
-            this.toolStripPropertyEditor1.Size = new System.Drawing.Size(171, 20);
-            this.toolStripPropertyEditor1.Text = "toolStripPropertyEditor1";
-            this.toolStripPropertyEditor1.Value = -1;
+            this.toolStripParamEditor1.Name = "toolStripParamEditor1";
+            this.toolStripParamEditor1.Size = new System.Drawing.Size(171, 20);
+            this.toolStripParamEditor1.Text = "toolStripParamEditor1";
+            this.toolStripParamEditor1.Value = -1;
             // 
             // toolStripSeparator11
             // 
@@ -417,7 +417,7 @@
         private System.Windows.Forms.ToolStripMenuItem cmsItem1ToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox toolStripTextBox1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
-        private ToolStripPropertyEditor toolStripPropertyEditor1;
+        private ToolStripParamEditor toolStripParamEditor1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
     }
 }

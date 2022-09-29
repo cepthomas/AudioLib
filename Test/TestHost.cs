@@ -58,10 +58,10 @@ namespace AudioLib.Test
             ContextMenuStrip = contextMenuStrip1;
 
             // Context menu.
-            ToolStripPropertyEditor ed1 = new();
-            ed1.ValueChanged += (_, __) => { LogLine($"ed1:{ed1.Value}"); };
-            ToolStripPropertyEditor ed2 = new();
-            ed2.ValueChanged += (_, __) => { LogLine($"ed2:{ed2.Value}"); };
+            ToolStripParamEditor ed1 = new();
+            ed1.ParamChanged += (_, __) => { LogLine($"ed1:{ed1.Value}"); };
+            ToolStripParamEditor ed2 = new();
+            ed2.ParamChanged += (_, __) => { LogLine($"ed2:{ed2.Value}"); };
 
             ContextMenuStrip.Items.Add(new ToolStripLabel("Ed the first"));
             ContextMenuStrip.Items.Add(ed1);
@@ -107,8 +107,8 @@ namespace AudioLib.Test
             wv1.BackColor = Color.Cyan;
             wv1.ViewerChangeEvent += ProcessViewerChangeEvent;
 
-            // Add stuff to the menu.
-            wv1.ContextMenuStrip.Items.Add("Add an item", null, (_, __) => LogLine("That worked"));
+            // Add stuff to the wave viewer menu.
+            wv1.ContextMenuStrip.Items.Add("Test item", null, (_, __) => LogLine("Test item worked"));
             toolStripMenuItem1.Click += (_, __) => LogLine($"Log it worked");
 
             wv2.WaveColor = Color.Blue;
@@ -194,25 +194,30 @@ namespace AudioLib.Test
             }
         }
 
+        // Handle UI stuff.
         void ProcessViewerChangeEvent(object? sender, WaveViewer.ViewerChangeEventArgs e)
         {
             LogLine($"{(sender as WaveViewer)!.Name} change: {e.Change}");
 
             switch (e.Change)
             {
-                case PropertyChange.Gain when sender == wv1:
+                case ParamChange.Gain when sender == wv1:
                     sldGain.Value = wv1.Gain;
                     break;
 
-                case PropertyChange.SelStart when sender == wv1:
+                case ParamChange.SelStart when sender == wv1:
                     progBar.SelStart = wv1.SelStart;
                     break;
 
-                case PropertyChange.SelLength when sender == wv1:
+                case ParamChange.SelLength when sender == wv1:
                     progBar.SelLength = wv1.SelLength;
                     break;
 
-                case PropertyChange.Marker when sender == wv2:
+                case ParamChange.Marker when sender == wv1:
+                    //progBar.SelLength = wv1.SelLength;
+                    break;
+
+                case ParamChange.Marker when sender == wv2:
                     wv1.Recenter(wv2.Marker);
                     break;
 

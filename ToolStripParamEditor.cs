@@ -8,16 +8,13 @@ using NBagOfTricks;
 
 namespace AudioLib
 {
-    /// <summary>Simple toolstrip container for the property editor.</summary>
+    /// <summary>Simple toolstrip container for the param editor.</summary>
     [ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.ContextMenuStrip)]
-    public class ToolStripPropertyEditor : ToolStripControlHost
+    public class ToolStripParamEditor : ToolStripControlHost
     {
         #region Fields
         /// <summary>Contained control.</summary>
         TextBox _ed = new();
-
-        ///// <summary>Backer.</summary>
-        //int _value;
 
         /// <summary>OK color.</summary>
         readonly Color _validColor = SystemColors.Window;
@@ -39,14 +36,18 @@ namespace AudioLib
         #endregion
 
         #region Events
-        /// <summary>Slider value changed event.</summary>
-        public event EventHandler? ValueChanged;
+        /// <summary>Value changed by user. Notify owner for display.</summary>
+        public event EventHandler<ParamChangedEventArgs>? ParamChanged;
+        public class ParamChangedEventArgs : EventArgs
+        {
+            public int Value { get; set; } = -1;
+        }
         #endregion
 
         /// <summary>
         /// Make one.
         /// </summary>
-        public ToolStripPropertyEditor() : base(new TextBox())
+        public ToolStripParamEditor() : base(new TextBox())
         {
             _ed = (TextBox)Control;
             _ed.BorderStyle = BorderStyle.None;
@@ -57,7 +58,22 @@ namespace AudioLib
 
             _ed.KeyDown += Ed_KeyDown;
             _ed.KeyPress += Ed_KeyPress;
-            _ed.Leave += Ed_Leave;
+            _ed.PreviewKeyDown += Ed_PreviewKeyDown;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Ed_PreviewKeyDown(object? sender, PreviewKeyDownEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.Tab:
+                    e.IsInputKey = true;
+                    break;
+            }
         }
 
         /// <summary>
@@ -67,9 +83,12 @@ namespace AudioLib
         /// <param name="e"></param>
         void Ed_KeyDown(object? sender, KeyEventArgs e)
         {
-            if (e.KeyCode == Keys.Enter)
+            switch (e.KeyCode)
             {
-                ValidateProperty();
+                case Keys.Enter:
+                case Keys.Tab:
+                    ValidateParam();
+                    break;
             }
         }
 
@@ -85,25 +104,15 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// Look at what the user entered.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Ed_Leave(object? sender, EventArgs e)
-        {
-            ValidateProperty();
-        }
-
-        /// <summary>
         /// Executed when done editing.
         /// </summary>
-        void ValidateProperty()
+        void ValidateParam()
         {
             int sample = Globals.ConverterOps.Parse(_ed.Text);
 
             if (sample >= 0)
             {
-                ValueChanged?.Invoke(this, EventArgs.Empty);
+                ParamChanged?.Invoke(this, new() { Value = sample });
                 _ed.BackColor = _validColor;
             }
             else

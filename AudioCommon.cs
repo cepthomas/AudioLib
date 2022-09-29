@@ -20,8 +20,8 @@ namespace AudioLib
     /// <summary>How to snap.</summary>
     public enum SnapType { Off, Fine, Coarse };
 
-    /// <summary>Notification of property change.</summary>
-    public enum PropertyChange { None, Gain, Marker, SelStart, SelLength }
+    /// <summary>Notification of param change.</summary>
+    public enum ParamChange { None, Gain, Marker, SelStart, SelLength }
 
     /// <summary>Abstraction of selection mode. Does text parsing, formatting, snap.</summary>
     public interface IConverterOps

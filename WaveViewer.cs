@@ -10,6 +10,7 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 using static AudioLib.Globals;
+using static AudioLib.ToolStripParamEditor;
 
 
 // TODO2 make mouse/kbd/context commands configurable?
@@ -45,6 +46,11 @@ namespace AudioLib
         /// <summary>How to snap.</summary>
         SnapType _snap = SnapType.Fine;
         #endregion
+
+        ToolStripParamEditor edSelStart = new();
+        ToolStripParamEditor edSelLength = new();
+        ToolStripParamEditor edMarker = new();
+
 
         #region Constants
         /// <summary>UI gain adjustment.</summary>
@@ -129,7 +135,7 @@ namespace AudioLib
         public event EventHandler<ViewerChangeEventArgs>? ViewerChangeEvent;
         public class ViewerChangeEventArgs : EventArgs
         {
-            public PropertyChange Change { get; set; } = PropertyChange.Marker;
+            public ParamChange Change { get; set; } = ParamChange.Marker;
             public object? Value { get; set; } = null;
         }
         #endregion
@@ -149,46 +155,6 @@ namespace AudioLib
             ResumeLayout(false);
 
             CreateContextMenu();
-        }
-
-        /// <summary>
-        /// Create context menu.
-        /// </summary>
-        void CreateContextMenu()
-        {
-            // Set up main menu. TODO2 Set menu item enables according to system states.
-            ContextMenuStrip = new ContextMenuStrip(components);
-            ContextMenuStrip.Items.Add("Reset View", null, (_, __) => ResetView());
-            ContextMenuStrip.Items.Add("Fit Gain", null, (_, __) => FitGain());
-            ContextMenuStrip.Items.Add("Reset Gain", null, (_, __) => ResetGain());
-            ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            ContextMenuStrip.Items.Add("Go To Marker", null, (_, __) => GoToMarker());
-            ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => { Marker = 0; Invalidate(); });
-            ContextMenuStrip.Items.Add("Go To Selection", null, (_, __) => GoToSelection());
-            ContextMenuStrip.Items.Add("Remove Selection", null, (_, __) => { SelStart = 0; SelLength = 0; Invalidate(); });
-
-            ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            ContextMenuStrip.Items.Add("Snap Coarse", null, (_, __) => SetSnap(SnapType.Coarse));
-            ContextMenuStrip.Items.Add("Snap Fine", null, (_, __) => SetSnap(SnapType.Fine));
-            ContextMenuStrip.Items.Add("Snap Off", null, (_, __) => SetSnap(SnapType.Off));
-
-            ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            ToolStripPropertyEditor edSelStart = new();
-            edSelStart.ValueChanged += (_, __) => { };
-            ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
-            ContextMenuStrip.Items.Add(edSelStart);
-
-            ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            ToolStripPropertyEditor edSelLength = new();
-            edSelLength.ValueChanged += (_, __) => { };
-            ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
-            ContextMenuStrip.Items.Add(edSelLength);
-
-            ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            ToolStripPropertyEditor edMarker = new();
-            edMarker.ValueChanged += (_, __) => { };
-            ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
-            ContextMenuStrip.Items.Add(edMarker);
         }
 
         /// <summary>
@@ -230,7 +196,58 @@ namespace AudioLib
         }
         #endregion
 
-        #region Public functions
+        #region Context menu
+        /// <summary>
+        /// Init the menu.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void ContextMenuStrip_Opening(object? sender, CancelEventArgs e)
+        {
+            edSelStart.Value = _selStart;
+            edSelLength.Value = _selLength;
+            edMarker.Value = _marker;
+        }
+
+        /// <summary>
+        /// Create context menu.
+        /// </summary>
+        void CreateContextMenu()
+        {
+            // Set up main menu. TODO2 Set menu item enables according to system states.
+            ContextMenuStrip = new ContextMenuStrip(components);
+
+            ContextMenuStrip.Items.Add("Reset View", null, (_, __) => ResetView());
+            ContextMenuStrip.Items.Add("Fit Gain", null, (_, __) => FitGain());
+            ContextMenuStrip.Items.Add("Reset Gain", null, (_, __) => ResetGain());
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            ContextMenuStrip.Items.Add("Go To Marker", null, (_, __) => GoToMarker());
+            ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => { Marker = 0; Invalidate(); });
+            ContextMenuStrip.Items.Add("Go To Selection", null, (_, __) => GoToSelection());
+            ContextMenuStrip.Items.Add("Remove Selection", null, (_, __) => { SelStart = 0; SelLength = 0; Invalidate(); });
+
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            ContextMenuStrip.Items.Add("Snap Coarse", null, (_, __) => SetSnap(SnapType.Coarse));
+            ContextMenuStrip.Items.Add("Snap Fine", null, (_, __) => SetSnap(SnapType.Fine));
+            ContextMenuStrip.Items.Add("Snap Off", null, (_, __) => SetSnap(SnapType.Off));
+
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            edSelStart.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
+            ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
+            ContextMenuStrip.Items.Add(edSelStart);
+
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            edSelLength.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
+            ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
+            ContextMenuStrip.Items.Add(edSelLength);
+
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            edMarker.ParamChanged += (object? sender, ParamChangedEventArgs args) => { Marker = args.Value; ContextMenuStrip.Close(); };
+            ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
+            ContextMenuStrip.Items.Add(edMarker);
+
+            ContextMenuStrip.Opening += ContextMenuStrip_Opening;
+        }
         #endregion
 
         #region UI handlers
@@ -280,7 +297,7 @@ namespace AudioLib
                     {
                         _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
                         _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
-                        ViewerChangeEvent?.Invoke(this, new() { Change = PropertyChange.Gain, Value = _gain });
+                        ViewerChangeEvent?.Invoke(this, new() { Change = ParamChange.Gain, Value = _gain });
                         Invalidate();
                     }
                     break;
@@ -293,11 +310,11 @@ namespace AudioLib
         /// Handle mouse clicks to select things.
         /// </summary>
         /// <param name="e"></param>
-        protected override void OnMouseDown(MouseEventArgs e)
+        protected override void OnMouseDoubleClick(MouseEventArgs e)
         {
             var sample = PixelToSample(e.X);
             sample = ConverterOps.Snap(sample, _snap);
-            PropertyChange changed = PropertyChange.None;
+            ParamChange changed = ParamChange.None;
             int newval = -1;
 
             if (sample >= 0)
@@ -307,21 +324,21 @@ namespace AudioLib
                     case (MouseButtons.Left, Keys.None):
                         _marker = sample;
                         CheckProperties();
-                        changed = PropertyChange.Marker;
+                        changed = ParamChange.Marker;
                         newval = _marker;
                         break;
 
                     case (MouseButtons.Left, Keys.Control):
                         _selStart = sample;
                         CheckProperties();
-                        changed = PropertyChange.SelStart;
+                        changed = ParamChange.SelStart;
                         newval = _selStart;
                         break;
 
                     case (MouseButtons.Left, Keys.Shift):
                         _selLength = sample - _selStart;
                         CheckProperties();
-                        changed = PropertyChange.SelLength;
+                        changed = ParamChange.SelLength;
                         newval = _selLength;
                         break;
 
@@ -330,14 +347,14 @@ namespace AudioLib
                         break;
                 }
 
-                if (changed != PropertyChange.None)
+                if (changed != ParamChange.None)
                 {
                     ViewerChangeEvent?.Invoke(this, new() { Change = changed, Value = newval });
                     Invalidate();
                 }
             }
 
-            base.OnMouseDown(e);
+            base.OnMouseDoubleClick(e);
         }
 
         /// <summary>
