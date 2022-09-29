@@ -15,7 +15,7 @@ namespace AudioLib
 {
     /// <summary>
     /// Extensions to enhance core NAudio for this application.
-    /// A lot of these are kind of clunky but the alternative is to add some new functionality
+    /// TODO2 A lot of these are kind of clunky but the alternative is to add some new functionality
     /// to ISampleprovider. Maybe I'll branch NAudio some day.
     /// </summary>
     public static class NAudioEx
@@ -140,7 +140,7 @@ namespace AudioLib
         /// Agnostic stream position setter.
         /// </summary>
         /// <param name="prov"></param>
-        public static void Rewind(this ISampleProvider prov)//TODO eliminate?
+        public static void Rewind(this ISampleProvider prov)
         {
             switch (prov)
             {

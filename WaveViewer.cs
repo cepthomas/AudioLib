@@ -10,11 +10,10 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 using static AudioLib.Globals;
-//using static System.Windows.Forms.DataFormats;
-//using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
 
-// TODO make mouse etc commands configurable.
+// TODO2 make mouse/kbd/context commands configurable?
+
 
 namespace AudioLib
 {
@@ -70,7 +69,6 @@ namespace AudioLib
         readonly Pen _penWave = new(Color.Black, 1);
         readonly Pen _penGrid = new(Color.LightGray, 1);
         readonly Pen _penMark = new(Color.Red, 1);
-        //readonly SolidBrush _brushMark = new(Color.Red);
         #endregion
 
         #region Designer fields
@@ -132,6 +130,7 @@ namespace AudioLib
         public class ViewerChangeEventArgs : EventArgs
         {
             public PropertyChange Change { get; set; } = PropertyChange.Marker;
+            public object? Value { get; set; } = null;
         }
         #endregion
 
@@ -149,7 +148,15 @@ namespace AudioLib
             Name = "WaveViewer";
             ResumeLayout(false);
 
-            // Set up main menu.
+            CreateContextMenu();
+        }
+
+        /// <summary>
+        /// Create context menu.
+        /// </summary>
+        void CreateContextMenu()
+        {
+            // Set up main menu. TODO2 Set menu item enables according to system states.
             ContextMenuStrip = new ContextMenuStrip(components);
             ContextMenuStrip.Items.Add("Reset View", null, (_, __) => ResetView());
             ContextMenuStrip.Items.Add("Fit Gain", null, (_, __) => FitGain());
@@ -273,7 +280,7 @@ namespace AudioLib
                     {
                         _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
                         _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
-                        ViewerChangeEvent?.Invoke(this, new() { Change = PropertyChange.Gain });
+                        ViewerChangeEvent?.Invoke(this, new() { Change = PropertyChange.Gain, Value = _gain });
                         Invalidate();
                     }
                     break;
@@ -289,26 +296,33 @@ namespace AudioLib
         protected override void OnMouseDown(MouseEventArgs e)
         {
             var sample = PixelToSample(e.X);
-            PropertyChange changed = PropertyChange.None;
-
             sample = ConverterOps.Snap(sample, _snap);
+            PropertyChange changed = PropertyChange.None;
+            int newval = -1;
+
             if (sample >= 0)
             {
                 switch (e.Button, ModifierKeys)
                 {
                     case (MouseButtons.Left, Keys.None):
                         _marker = sample;
+                        CheckProperties();
                         changed = PropertyChange.Marker;
+                        newval = _marker;
                         break;
 
                     case (MouseButtons.Left, Keys.Control):
                         _selStart = sample;
+                        CheckProperties();
                         changed = PropertyChange.SelStart;
+                        newval = _selStart;
                         break;
 
                     case (MouseButtons.Left, Keys.Shift):
                         _selLength = sample - _selStart;
+                        CheckProperties();
                         changed = PropertyChange.SelLength;
+                        newval = _selLength;
                         break;
 
                     default:
@@ -318,8 +332,7 @@ namespace AudioLib
 
                 if (changed != PropertyChange.None)
                 {
-                    CheckProperties();
-                    ViewerChangeEvent?.Invoke(this, new() { Change = changed });
+                    ViewerChangeEvent?.Invoke(this, new() { Change = changed, Value = newval });
                     Invalidate();
                 }
             }
@@ -354,10 +367,6 @@ namespace AudioLib
 
             switch (e.KeyCode)
             {
-                case Keys.G: // reset gain
-                    ResetGain();
-                    break;
-
                 case Keys.H: // reset to initial full view
                     ResetView();
                     break;

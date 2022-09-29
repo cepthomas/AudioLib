@@ -55,7 +55,7 @@ namespace AudioLib
         /// <summary>Selection start sample.</summary>
         public int SelStart { get; set; } = 0;
 
-        /// <summary>Selection length in samples.</summary>
+        /// <summary>Selection length in samples. 0 means to the end.</summary>
         public int SelLength { get; set; } = 0;
 
         /// <summary>Number of samples per notification.</summary>
@@ -66,14 +66,13 @@ namespace AudioLib
         /// <summary>Raised periodically to inform the user of play progress.</summary>
         public event EventHandler<ClipProgressEventArgs>? ClipProgress;
 
-        public class ClipProgressEventArgs : EventArgs
+        public class ClipProgressEventArgs : EventArgs //TODO2 Kind of slow for short sample sets.
         {
             public long Position { get; set; }
-            public TimeSpan CurrentTime { get; set; }
         }
 
-        // create objects up front giving GC little to do
-        readonly ClipProgressEventArgs _args = new() { Position = 0, CurrentTime = TimeSpan.Zero };
+        /// <summary>Create objects up front giving GC little to do.</summary>
+        readonly ClipProgressEventArgs _args = new() { Position = 0 };
         #endregion
 
         #region Constructors
@@ -138,11 +137,10 @@ namespace AudioLib
                 _sampleIndex++;
                 _sampleCount++;
 
-                // Check for time to notify. TODO doesn't keep up. May need another way to update e.g. using a timer.
+                // Check for time to notify.
                 if (_sampleCount >= SamplesPerNotification)
                 {
                     _args.Position = _sampleIndex;
-                    _args.CurrentTime = CurrentTime;
                     ClipProgress?.Invoke(this, _args);
                     _sampleCount = 0;
                 }
@@ -151,7 +149,6 @@ namespace AudioLib
             if (numRead == 0) // last one
             {
                 _args.Position = _sampleIndex;
-                _args.CurrentTime = CurrentTime;
                 ClipProgress?.Invoke(this, _args);
                 _sampleCount = 0;
             }
