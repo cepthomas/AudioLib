@@ -13,7 +13,6 @@ using NBagOfTricks;
 using NBagOfTricks.PNUT;
 using NBagOfUis;
 using AudioLib;
-using static AudioLib.Globals;
 
 
 namespace AudioLib.Test
@@ -56,6 +55,21 @@ namespace AudioLib.Test
             Location = new(200, 10);
             Size = new(1000, 700);
 
+            ContextMenuStrip = contextMenuStrip1;
+
+            // Context menu.
+            ToolStripPropertyEditor ed1 = new();
+            ed1.ValueChanged += (_, __) => { LogLine($"ed1:{ed1.Value}"); };
+            ToolStripPropertyEditor ed2 = new();
+            ed2.ValueChanged += (_, __) => { LogLine($"ed2:{ed2.Value}"); };
+
+            ContextMenuStrip.Items.Add(new ToolStripLabel("Ed the first"));
+            ContextMenuStrip.Items.Add(ed1);
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            ContextMenuStrip.Items.Add(new ToolStripLabel("Ed the second"));
+            ContextMenuStrip.Items.Add(ed2);
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+
             // The rest of the controls.
             txtInfo.WordWrap = true;
             txtInfo.BackColor = _settings.BackColor;
@@ -71,9 +85,9 @@ namespace AudioLib.Test
             {
                 switch (cmbSelMode.SelectedItem)
                 {
-                    case WaveSelectionMode.Time: ConverterOps = new TimeOps(); break;
-                    case WaveSelectionMode.Bar: ConverterOps = new BarOps(); break;
-                    case WaveSelectionMode.Sample: ConverterOps = new SampleOps(); break;
+                    case WaveSelectionMode.Time: Globals.ConverterOps = new TimeOps(); break;
+                    case WaveSelectionMode.Bar: Globals.ConverterOps = new BarOps(); break;
+                    case WaveSelectionMode.Sample: Globals.ConverterOps = new SampleOps(); break;
                 }
                 wv1.Invalidate();
                 progBar.Invalidate();
@@ -83,7 +97,7 @@ namespace AudioLib.Test
             sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
 
             // Progress bar.
-            progBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{ConverterOps.Format(progBar.Current)}");
+            progBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{Globals.ConverterOps.Format(progBar.Current)}");
             progBar.ProgressColor = Color.Green;
             progBar.TextColor = Color.OrangeRed;
             progBar.BackColor = Color.Cyan;
@@ -92,8 +106,10 @@ namespace AudioLib.Test
             wv1.WaveColor = Color.Red;
             wv1.BackColor = Color.Cyan;
             wv1.ViewerChangeEvent += ProcessViewerChangeEvent;
-            // Add to the menu.
-            wv1.ContextMenuStrip.Items.Add("Just a test", null, (_, __) => LogLine("That worked"));
+
+            // Add stuff to the menu.
+            wv1.ContextMenuStrip.Items.Add("Add an item", null, (_, __) => LogLine("That worked"));
+            toolStripMenuItem1.Click += (_, __) => LogLine($"Log it worked");
 
             wv2.WaveColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;

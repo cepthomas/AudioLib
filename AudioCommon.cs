@@ -18,7 +18,7 @@ namespace AudioLib
     public enum WaveSelectionMode { Bar, Time, Sample };
 
     /// <summary>How to snap.</summary>
-    public enum SnapType { None, Fine, Coarse };
+    public enum SnapType { Off, Fine, Coarse };
 
     /// <summary>Notification of property change.</summary>
     public enum PropertyChange { None, Gain, Marker, SelStart, SelLength }

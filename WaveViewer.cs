@@ -115,7 +115,7 @@ namespace AudioLib
 
         /// <summary>General purpose marker location.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int Marker { get { return _marker; } set { _marker = value; CheckSel(); Invalidate(); } }
+        public int Marker { get { return _marker; } set { _marker = value; CheckProperties(); Invalidate(); } }
 
         /// <summary>Visible start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -151,36 +151,37 @@ namespace AudioLib
 
             // Set up main menu.
             ContextMenuStrip = new ContextMenuStrip(components);
+            ContextMenuStrip.Items.Add("Reset View", null, (_, __) => ResetView());
             ContextMenuStrip.Items.Add("Fit Gain", null, (_, __) => FitGain());
             ContextMenuStrip.Items.Add("Reset Gain", null, (_, __) => ResetGain());
-            ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => Marker = 0);
-            ContextMenuStrip.Items.Add("Remove Selection", null, (_, __) => SelStart = SelLength = 0);
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            ContextMenuStrip.Items.Add("Go To Marker", null, (_, __) => GoToMarker());
+            ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => { Marker = 0; Invalidate(); });
+            ContextMenuStrip.Items.Add("Go To Selection", null, (_, __) => GoToSelection());
+            ContextMenuStrip.Items.Add("Remove Selection", null, (_, __) => { SelStart = 0; SelLength = 0; Invalidate(); });
 
-            //   case Keys.G: // reset gain
-            //       _gain = 1.0f;
-            //   case Keys.H: // reset to initial full view
-            //       ResetView();
-            //   case Keys.M: // go to marker
-            //       if (_marker > 0)
-            //       {
-            //           Recenter(_marker);
-            //           e.Handled = true;
-            //       }
-            //   case Keys.S: // go to selection
-            //       if (_selStart > 0)
-            //       {
-            //           Recenter(_selStart);
-            //           e.Handled = true;
-            //       }
-            //   case Keys.F: // snap fine
-            //       _snap = SnapType.Fine;
-            //   case Keys.C: // snap coarse
-            //       _snap = SnapType.Coarse;
-            //   case Keys.N: // snap none
-            //       _snap = SnapType.None;
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            ContextMenuStrip.Items.Add("Snap Coarse", null, (_, __) => SetSnap(SnapType.Coarse));
+            ContextMenuStrip.Items.Add("Snap Fine", null, (_, __) => SetSnap(SnapType.Fine));
+            ContextMenuStrip.Items.Add("Snap Off", null, (_, __) => SetSnap(SnapType.Off));
 
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            ToolStripPropertyEditor edSelStart = new();
+            edSelStart.ValueChanged += (_, __) => { };
+            ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
+            ContextMenuStrip.Items.Add(edSelStart);
 
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            ToolStripPropertyEditor edSelLength = new();
+            edSelLength.ValueChanged += (_, __) => { };
+            ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
+            ContextMenuStrip.Items.Add(edSelLength);
 
+            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            ToolStripPropertyEditor edMarker = new();
+            edMarker.ValueChanged += (_, __) => { };
+            ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
+            ContextMenuStrip.Items.Add(edMarker);
         }
 
         /// <summary>
@@ -223,34 +224,6 @@ namespace AudioLib
         #endregion
 
         #region Public functions
-        /// <summary>
-        /// Fit the wave exactly.
-        /// </summary>
-        public void FitGain()
-        {
-            float max = Math.Max(Math.Abs(_max), Math.Abs(_min));
-            Gain = 1.0f / max;
-        }
-
-        /// <summary>
-        /// Go to unity gain.
-        /// </summary>
-        public void ResetGain()
-        {
-            Gain = 1.0f;
-        }
-
-        /// <summary>
-        /// Pan to new center location.
-        /// </summary>
-        /// <param name="sample">Center around this.</param>
-        public void Recenter(int sample)
-        {
-            // Recenter.
-            _visibleStart = sample - VisibleLength / 2;
-            CheckSel();
-            Invalidate();
-        }
         #endregion
 
         #region UI handlers
@@ -272,32 +245,37 @@ namespace AudioLib
             switch (ModifierKeys)
             {
                 case Keys.None: // x pan
-                    int incr = _samplesPerPixel * PAN_INCREMENT;
-                    _visibleStart += wheelDelta > 0 ? incr : -incr; // left or right
-                    _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
-                    Invalidate();
+                    {
+                        int incr = _samplesPerPixel * PAN_INCREMENT;
+                        _visibleStart += wheelDelta > 0 ? incr : -incr; // left or right
+                        _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
+                        Invalidate();
+                    }
                     break;
 
-                case Keys.Control: // x zoom
-                    // Get sample to center about.
-                    int center = _marker;  // Or? PixelToSample(Width / 2), PixelToSample(MouseX());
-                    // Modify the zoom factor.
-                    int samplesPerPixelMax = _vals.Length / Width;
-                    incr = (int)(ZOOM_RATIO * _samplesPerPixel);
-                    if(incr == 0 && _samplesPerPixel > 1) // close in
+                case Keys.Control: // x zoom TOODO not exactly perfect.
                     {
-                        incr = 1;
+                        // Get sample to center about.
+                        int center = PixelToSample(Width / 2); // or mouse or _marker
+                        double incr = Math.Round(ZOOM_RATIO * _samplesPerPixel);
+                        if (incr == 0 && _samplesPerPixel > 1) // close in
+                        {
+                            incr = 1;
+                        }
+                        _samplesPerPixel += (int)Math.Round(wheelDelta > 0 ? -incr : incr); // in or out
+                        int samplesPerPixelMax = _vals.Length / Width;
+                        _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, samplesPerPixelMax);
+                        Recenter(center);
                     }
-                    _samplesPerPixel += wheelDelta > 0 ? -incr : incr; // in or out
-                    _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, samplesPerPixelMax);
-                    Recenter(center);
                     break;
 
                 case Keys.Shift: // y gain
-                    _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
-                    _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
-                    ViewerChangeEvent?.Invoke(this, new() { Change = PropertyChange.Gain });
-                    Invalidate();
+                    {
+                        _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
+                        _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
+                        ViewerChangeEvent?.Invoke(this, new() { Change = PropertyChange.Gain });
+                        Invalidate();
+                    }
                     break;
             };
 
@@ -340,7 +318,7 @@ namespace AudioLib
 
                 if (changed != PropertyChange.None)
                 {
-                    CheckSel();
+                    CheckProperties();
                     ViewerChangeEvent?.Invoke(this, new() { Change = changed });
                     Invalidate();
                 }
@@ -361,13 +339,6 @@ namespace AudioLib
                 sample = ConverterOps.Snap(sample, _snap);
                 toolTip.SetToolTip(this, ConverterOps.Format(sample));
                 _lastXPos = e.X;
-                // need this for anything other than tooltip: Invalidate();
-            }
-
-            if (e.Button == MouseButtons.Left)
-            {
-                //_current = GetTimeFromMouse(e.X);
-                //CurrentTimeChanged?.Invoke(this, new EventArgs());
             }
 
             base.OnMouseMove(e);
@@ -379,53 +350,41 @@ namespace AudioLib
         /// <param name="e"></param>
         protected override void OnKeyDown(KeyEventArgs e)
         {
+            e.Handled = true;
+
             switch (e.KeyCode)
             {
                 case Keys.G: // reset gain
-                    _gain = 1.0f;
-                    e.Handled = true;
+                    ResetGain();
                     break;
 
                 case Keys.H: // reset to initial full view
                     ResetView();
-                    e.Handled = true;
                     break;
 
                 case Keys.M: // go to marker
-                    if (_marker > 0)
-                    {
-                        Recenter(_marker);
-                        e.Handled = true;
-                    }
+                    GoToMarker();
                     break;
 
                 case Keys.S: // go to selection
-                    if (_selStart > 0)
-                    {
-                        Recenter(_selStart);
-                        e.Handled = true;
-                    }
+                    GoToSelection();
                     break;
 
                 case Keys.F: // snap fine
-                    _snap = SnapType.Fine;
-                    e.Handled = true;
+                    SetSnap(SnapType.Fine);
                     break;
 
                 case Keys.C: // snap coarse
-                    _snap = SnapType.Coarse;
-                    e.Handled = true;
+                    SetSnap(SnapType.Coarse);
                     break;
 
                 case Keys.N: // snap none
-                    _snap = SnapType.None;
-                    e.Handled = true;
+                    SetSnap(SnapType.Off);
                     break;
-            }
 
-            if (e.Handled)
-            {
-                Invalidate();
+                default:
+                    e.Handled = false;
+                    break;
             }
 
             base.OnKeyDown(e);
@@ -679,25 +638,88 @@ namespace AudioLib
         }
         #endregion
 
+        #region Helpers for private and public use
+        /// <summary>
+        /// Fit the wave exactly.
+        /// </summary>
+        public void FitGain()
+        {
+            float max = Math.Max(Math.Abs(_max), Math.Abs(_min));
+            Gain = 1.0f / max;
+        }
+
+        /// <summary>
+        /// Go to unity gain.
+        /// </summary>
+        public void ResetGain()
+        {
+            _gain = 1.0f;
+            Invalidate();
+        }
+
+        /// <summary>
+        /// Pan to new center location.
+        /// </summary>
+        /// <param name="sample">Center around this.</param>
+        public void Recenter(int sample)
+        {
+            _visibleStart = sample - VisibleLength / 2;
+            CheckProperties();
+            Invalidate();
+        }
+
+        /// <summary>
+        /// Show original view.
+        /// </summary>
+        public void ResetView()
+        {
+            _visibleStart = 0;
+            _samplesPerPixel = _vals.Length / Width;
+            Invalidate();
+        }
+
+        /// <summary>
+        /// Go to the current marker.
+        /// </summary>
+        public void GoToMarker()
+        {
+            if (_marker > 0)
+            {
+                Recenter(_marker);
+            }
+        }
+
+        /// <summary>
+        /// Go to the current selection.
+        /// </summary>
+        public void GoToSelection()
+        {
+            if (_selStart > 0)
+            {
+                Recenter(_selStart);
+            }
+        }
+
+        /// <summary>
+        /// Set snap.
+        /// </summary>
+        public void SetSnap(SnapType snap)
+        {
+            _snap = snap;
+            Invalidate();
+        }
+        #endregion
+
         #region Private functions
         /// <summary>
         /// Do a few sanity checks.
         /// </summary>
-        void CheckSel()
+        void CheckProperties()
         {
             _selStart = MathUtils.Constrain(_selStart, 0, _vals.Length);
             _selLength = MathUtils.Constrain(_selLength, 0, _vals.Length - _selStart);
             _marker = MathUtils.Constrain(_marker, 0, _vals.Length);
             _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void ResetView()
-        {
-            _visibleStart = 0;
-            _samplesPerPixel = _vals.Length / Width;
         }
 
         /// <summary>

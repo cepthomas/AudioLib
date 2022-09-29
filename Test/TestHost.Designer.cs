@@ -34,16 +34,25 @@
             this.toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
             this.btnResample = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
-            this.btnTest = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             this.btnAfReader = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator9 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
             this.cmbSelMode = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnTest = new System.Windows.Forms.ToolStripButton();
             this.sldGain = new NBagOfUis.Slider();
             this.chkPlay = new System.Windows.Forms.CheckBox();
+            this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.toolStripComboBox1 = new System.Windows.Forms.ToolStripComboBox();
+            this.toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
+            this.cmsItem1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
+            this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripPropertyEditor1 = new AudioLib.ToolStripPropertyEditor();
+            this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStrip1.SuspendLayout();
+            this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // timer1
@@ -74,7 +83,6 @@
             this.progBar.Location = new System.Drawing.Point(332, 44);
             this.progBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.progBar.Name = "progBar";
-            this.progBar.ProgressColor = System.Drawing.Color.Orange;
             this.progBar.Size = new System.Drawing.Size(659, 48);
             this.progBar.TabIndex = 24;
             this.progBar.Thumbnail = null;
@@ -90,6 +98,7 @@
             this.wv1.Name = "wv1";
             this.wv1.Size = new System.Drawing.Size(985, 196);
             this.wv1.TabIndex = 26;
+            this.wv1.TextFont = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             // 
             // wv2
             // 
@@ -102,6 +111,7 @@
             this.wv2.Name = "wv2";
             this.wv2.Size = new System.Drawing.Size(985, 118);
             this.wv2.TabIndex = 32;
+            this.wv2.TextFont = new System.Drawing.Font("Calibri", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
             // 
             // toolStrip1
             // 
@@ -119,7 +129,6 @@
             this.toolStripSeparator6,
             this.btnResample,
             this.toolStripSeparator7,
-            this.btnTest,
             this.toolStripSeparator8,
             this.btnAfReader,
             this.toolStripSeparator9,
@@ -216,14 +225,6 @@
             this.toolStripSeparator7.Name = "toolStripSeparator7";
             this.toolStripSeparator7.Size = new System.Drawing.Size(6, 28);
             // 
-            // btnTest
-            // 
-            this.btnTest.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.btnTest.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.btnTest.Name = "btnTest";
-            this.btnTest.Size = new System.Drawing.Size(37, 25);
-            this.btnTest.Text = "test";
-            // 
             // toolStripSeparator8
             // 
             this.toolStripSeparator8.Name = "toolStripSeparator8";
@@ -263,6 +264,14 @@
             this.toolStripSeparator4.Name = "toolStripSeparator4";
             this.toolStripSeparator4.Size = new System.Drawing.Size(6, 28);
             // 
+            // btnTest
+            // 
+            this.btnTest.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnTest.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnTest.Name = "btnTest";
+            this.btnTest.Size = new System.Drawing.Size(37, 24);
+            this.btnTest.Text = "test";
+            // 
             // sldGain
             // 
             this.sldGain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
@@ -291,6 +300,65 @@
             this.chkPlay.Text = "play";
             this.chkPlay.UseVisualStyleBackColor = false;
             // 
+            // contextMenuStrip1
+            // 
+            this.contextMenuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
+            this.contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripComboBox1,
+            this.toolStripMenuItem1,
+            this.cmsItem1ToolStripMenuItem,
+            this.toolStripTextBox1,
+            this.toolStripSeparator10,
+            this.toolStripPropertyEditor1,
+            this.toolStripSeparator11});
+            this.contextMenuStrip1.Name = "contextMenuStrip1";
+            this.contextMenuStrip1.Size = new System.Drawing.Size(232, 176);
+            // 
+            // toolStripComboBox1
+            // 
+            this.toolStripComboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.toolStripComboBox1.Items.AddRange(new object[] {
+            "sel1",
+            "sel2",
+            "sel3"});
+            this.toolStripComboBox1.Name = "toolStripComboBox1";
+            this.toolStripComboBox1.Size = new System.Drawing.Size(121, 28);
+            // 
+            // toolStripMenuItem1
+            // 
+            this.toolStripMenuItem1.Name = "toolStripMenuItem1";
+            this.toolStripMenuItem1.Size = new System.Drawing.Size(231, 24);
+            this.toolStripMenuItem1.Text = "Log it!";
+            // 
+            // cmsItem1ToolStripMenuItem
+            // 
+            this.cmsItem1ToolStripMenuItem.Name = "cmsItem1ToolStripMenuItem";
+            this.cmsItem1ToolStripMenuItem.Size = new System.Drawing.Size(231, 24);
+            this.cmsItem1ToolStripMenuItem.Text = "MenuItem1";
+            // 
+            // toolStripTextBox1
+            // 
+            this.toolStripTextBox1.Name = "toolStripTextBox1";
+            this.toolStripTextBox1.Size = new System.Drawing.Size(100, 27);
+            this.toolStripTextBox1.Text = "This is a textbox";
+            // 
+            // toolStripSeparator10
+            // 
+            this.toolStripSeparator10.Name = "toolStripSeparator10";
+            this.toolStripSeparator10.Size = new System.Drawing.Size(228, 6);
+            // 
+            // toolStripPropertyEditor1
+            // 
+            this.toolStripPropertyEditor1.Name = "toolStripPropertyEditor1";
+            this.toolStripPropertyEditor1.Size = new System.Drawing.Size(171, 20);
+            this.toolStripPropertyEditor1.Text = "toolStripPropertyEditor1";
+            this.toolStripPropertyEditor1.Value = -1;
+            // 
+            // toolStripSeparator11
+            // 
+            this.toolStripSeparator11.Name = "toolStripSeparator11";
+            this.toolStripSeparator11.Size = new System.Drawing.Size(228, 6);
+            // 
             // TestHost
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
@@ -308,6 +376,8 @@
             this.Text = "TestHost";
             this.toolStrip1.ResumeLayout(false);
             this.toolStrip1.PerformLayout();
+            this.contextMenuStrip1.ResumeLayout(false);
+            this.contextMenuStrip1.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -319,6 +389,7 @@
         private WaveViewer wv1;
         private WaveViewer wv2;
         private NBagOfUis.TextViewer txtInfo;
+        private NBagOfUis.Slider sldGain;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton btnRunBars;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
@@ -330,7 +401,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripButton btnFileInfo;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private NBagOfUis.Slider sldGain;
         private System.Windows.Forms.ToolStripButton btnResample;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripButton btnTest;
@@ -341,5 +411,13 @@
         private System.Windows.Forms.ToolStripComboBox cmbSelMode;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
+        private System.Windows.Forms.ToolStripComboBox toolStripComboBox1;
+        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
+        private System.Windows.Forms.ToolStripMenuItem cmsItem1ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripTextBox toolStripTextBox1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
+        private ToolStripPropertyEditor toolStripPropertyEditor1;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
     }
 }

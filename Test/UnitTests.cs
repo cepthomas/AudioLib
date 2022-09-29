@@ -17,7 +17,7 @@ namespace AudioLib.Test
             // Sample <-> sample.
             SampleOps ops = new();
 
-            int sout = ops.Snap(1234567, SnapType.None);
+            int sout = ops.Snap(1234567, SnapType.Off);
             UT_EQUAL(sout, 1234567);
 
             sout = ops.Snap(1234367, SnapType.Fine); // round down
