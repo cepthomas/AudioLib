@@ -30,9 +30,6 @@ namespace AudioLib
         /// <inheritdoc />
         public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
 
-        /// <summary>The associated file name. Empty if new.</summary>
-        public string FileName { get; }
-
         /// <summary>Overall gain applied to all samples.</summary>
         public float Gain { get; set; } = 1.0f;
 
@@ -46,7 +43,7 @@ namespace AudioLib
         public int SampleIndex
         {
            get { return _sampleIndex; }
-           set { _sampleIndex = _vals.Length > 0 ? MathUtils.Constrain((int)value, 0, _vals.Length - 1) : 0; }
+           set { _sampleIndex = _vals.Length > 0 ? MathUtils.Constrain(value, 0, _vals.Length - 1) : 0; }
         }
 
         /// <summary>The current time.</summary>
@@ -83,7 +80,7 @@ namespace AudioLib
         /// <param name="mode">How to handle stereo files.</param>
         public ClipSampleProvider(ISampleProvider source, StereoCoercion mode)
         {
-            FileName = "";
+            //FileName = "";
             ReadSource(source, mode);
         }
 
@@ -93,7 +90,7 @@ namespace AudioLib
         /// <param name="vals">The data to use.</param>
         public ClipSampleProvider(float[] vals)
         {
-            FileName = "";
+            //FileName = "";
             _vals = vals;
         }
 
@@ -104,7 +101,7 @@ namespace AudioLib
         /// <param name="mode">How to handle stereo files.</param>
         public ClipSampleProvider(string fn, StereoCoercion mode)
         {
-            FileName = fn;
+            //FileName = fn;
             using var prov = new AudioFileReader(fn);
             ReadSource(prov, mode);
         }

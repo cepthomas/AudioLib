@@ -13,6 +13,9 @@ using NBagOfTricks;
 
 namespace AudioLib
 {
+    /// <summary>Conversion options.</summary>
+    public enum Conversion { ToMonoWav, SplitStereo, Resample }
+
     /// <summary>
     /// Extensions to enhance core NAudio for this application.
     /// TODO2 A lot of these are kind of clunky but the alternative is to add some new functionality
@@ -35,6 +38,7 @@ namespace AudioLib
             int numRead;
             int totalRead = 0;
             int maxSamples = AudioSettings.LibSettings.MaxClipSize * AudioLibDefs.SAMPLE_RATE * 60;
+
             while ((numRead = prov.Read(buff, 0, buff.Length)) > 0)
             {
                 data.AddRange(buff.Take(numRead));
@@ -80,16 +84,108 @@ namespace AudioLib
             }
         }
 
+
+
+
+        // /// <summary>
+        // /// Resample to a new wav file.
+        // /// </summary>
+        // /// <param name="fn">The current filename</param>
+        // /// <param name="newfn">The new filename</param>
+        // /// <returns>Succesful conversion.</returns>
+        // public static bool Resample(string fn, string newfn)
+        // {
+        //     bool converted = true;
+        //     using var rdr = new AudioFileReader(fn);
+        //     if (rdr.WaveFormat.SampleRate == AudioLibDefs.SAMPLE_RATE)
+        //     {
+        //         // Already correct rate.
+        //         converted = false;
+        //     }
+        //     else
+        //     {
+        //         var resampler = new WdlResamplingSampleProvider(rdr, AudioLibDefs.SAMPLE_RATE);
+        //         WaveFileWriter.CreateWaveFile16(newfn, resampler);
+        //     }
+        //     return converted;
+        // }
+
+
+
+
         /// <summary>
-        /// Resample to a new wav file.
+        /// Process a stereo file.
         /// </summary>
-        /// <param name="fn">The current filename</param>
-        /// <param name="newfn">The new filename</param>
-        public static void Resample(string fn, string newfn)
+        /// <param name="conv">Specific operation</param>
+        /// <param name="fn">The input filename</param>
+        /// <returns>Succesful conversion.</returns>
+        public static bool Convert(Conversion conv, string fn)
         {
-            using var rdr = new AudioFileReader(fn);
-            var resampler = new WdlResamplingSampleProvider(rdr, AudioLibDefs.SAMPLE_RATE);
-            WaveFileWriter.CreateWaveFile16(newfn, resampler);
+            bool converted = true;
+            ISampleProvider? prov1 = null;
+            ISampleProvider? prov2 = null;
+            string tag1 = "";
+            string tag2 = "";
+
+            using var afr = new AudioFileReader(fn);
+            prov1 = afr;
+
+            switch (conv)
+            {
+                case Conversion.ToMonoWav:
+                    if (prov1.WaveFormat.Channels == 2)
+                    {
+                        prov1 = new StereoToMonoSampleProvider(prov1) { LeftVolume = 0.5f, RightVolume = 0.5f };
+                    }
+                    // else leave mono as is.
+                    tag1 = "mono";
+                    break;
+
+                case Conversion.SplitStereo:
+                    if (prov1.WaveFormat.Channels == 2)
+                    {
+                        prov2 = new StereoToMonoSampleProvider(prov1) { LeftVolume = 0.0f, RightVolume = 1.0f };
+                        prov1 = new StereoToMonoSampleProvider(prov1) { LeftVolume = 1.0f, RightVolume = 0.0f };
+                        tag1 = "left";
+                        tag2 = "right";
+                    }
+                    else
+                    {
+                        prov1 = null;
+                        converted = false;
+                    }
+                    break;
+
+                case Conversion.Resample:
+                    if (prov1.WaveFormat.SampleRate != AudioLibDefs.SAMPLE_RATE)
+                    {
+                        prov1 = new WdlResamplingSampleProvider(prov1, AudioLibDefs.SAMPLE_RATE);
+                        tag1 = "resampled";
+                    }
+                    else
+                    {
+                        // Already correct rate.
+                        prov1 = null;
+                        converted = false;
+                    }
+                    break;
+            }
+
+            if (prov1 is not null)
+            {
+                var ext = Path.GetExtension(fn);
+                string newfn = fn.Replace(ext, $"{tag1}.wav");
+                WaveFileWriter.CreateWaveFile16(newfn, prov1);
+            }
+
+            if (prov2 is not null)
+            {
+                var ext = Path.GetExtension(fn);
+                string newfn = fn.Replace(ext, $"{tag2}.wav");
+                WaveFileWriter.CreateWaveFile16(newfn, prov2);
+            }
+
+            return converted;
         }
 
         /// <summary>
@@ -165,8 +261,8 @@ namespace AudioLib
             switch (prov)
             {
                 case ClipSampleProvider csp:
-                    var fn = csp.FileName == "" ? "None" : csp.FileName;
-                    ls.Add($"File:{fn}");
+                    //var fn = csp.FileName == "" ? "None" : csp.FileName;
+                    //ls.Add($"File:{fn}");
                     ls.Add($"Time:{csp.TotalTime}");
                     ls.Add($"SamplesPerChannel:{csp.SamplesPerChannel}");
                     break;
