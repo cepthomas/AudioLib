@@ -94,12 +94,12 @@ namespace AudioLib.Test
             };
             cmbSelMode.SelectedItem = _settings.DefaultSelectionMode;
 
-            sldGain.ValueChanged += (_, __) => wv1.Gain = sldGain.Value;
+            sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
 
             // Progress bar.
             progBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{Globals.ConverterOps.Format(progBar.Current)}");
             progBar.ProgressColor = Color.Green;
-            progBar.TextColor = Color.OrangeRed;
+            progBar.TextColor = Color.White;
             progBar.BackColor = Color.Cyan;
 
             // Wave viewers.
@@ -120,7 +120,7 @@ namespace AudioLib.Test
 
             // Create player.
             _waveOutSwapper = new();
-            _player = new(AudioSettings.LibSettings.WavOutDevice, int.Parse(AudioSettings.LibSettings.Latency), _waveOutSwapper) { Volume = 0.5 };
+            _player = new(AudioSettings.LibSettings.WavOutDevice, int.Parse(AudioSettings.LibSettings.Latency), _waveOutSwapper) { Volume = 0.5f };
             _player.PlaybackStopped += (_, __) =>
             {
                 LogLine("Player finished");
@@ -137,6 +137,8 @@ namespace AudioLib.Test
 
             chkPlay.Click += (_, __) => Play_Click();
 
+            btnRewind.Click += (_, __) => _prov?.Rewind();
+
             btnTest.Click += (_, __) => UnitTests();
 
             // Go-go-go.
@@ -144,6 +146,11 @@ namespace AudioLib.Test
             timer1.Enabled = true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void LoadFile_Click(object? sender, EventArgs args)
         {
             _player.Run(false);
@@ -180,7 +187,7 @@ namespace AudioLib.Test
                         else
                         {
                             var csp = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            csp.ClipProgress += Csp_ClipProgress;
+                            //csp.ClipProgress += Csp_ClipProgress;
                             prov = csp;
                         }
                         break;
@@ -194,7 +201,11 @@ namespace AudioLib.Test
             }
         }
 
-        // Handle UI stuff.
+        /// <summary>
+        /// Handle UI stuff.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void ProcessViewerChangeEvent(object? sender, WaveViewer.ViewerChangeEventArgs e)
         {
             LogLine($"{(sender as WaveViewer)!.Name} change: {e.Change}");
@@ -207,10 +218,18 @@ namespace AudioLib.Test
 
                 case ParamChange.SelStart when sender == wv1:
                     progBar.SelStart = wv1.SelStart;
+                    switch (_prov)
+                    {
+                        case ClipSampleProvider csp: csp.SelStart = wv1.SelStart; break;
+                    }
                     break;
 
                 case ParamChange.SelLength when sender == wv1:
                     progBar.SelLength = wv1.SelLength;
+                    switch (_prov)
+                    {
+                        case ClipSampleProvider csp: csp.SelLength = wv1.SelLength; break;
+                    }
                     break;
 
                 case ParamChange.Marker when sender == wv1:
@@ -226,14 +245,17 @@ namespace AudioLib.Test
             };
         }
 
-        // Helper to manage resources.
+        /// <summary>
+        /// Helper to manage resources.
+        /// </summary>
+        /// <param name="prov"></param>
         void SetProvider(ISampleProvider prov)
         {
             // Clean up old?
             switch (_prov)
             {
                 case ClipSampleProvider csp:
-                    csp.ClipProgress -= Csp_ClipProgress;
+                    //csp.ClipProgress -= Csp_ClipProgress;
                     break;
 
                 case AudioFileReader afr:
@@ -245,7 +267,7 @@ namespace AudioLib.Test
             switch (prov)
             {
                 case ClipSampleProvider csp:
-                    csp.ClipProgress += Csp_ClipProgress;
+                    //csp.ClipProgress += Csp_ClipProgress;
                     //progBar.Length = csp.SamplesPerChannel;
                     break;
 
@@ -259,12 +281,10 @@ namespace AudioLib.Test
             _waveOutSwapper.SetInput(_prov);
         }
 
-        void Csp_ClipProgress(object? sender, ClipSampleProvider.ClipProgressEventArgs e)
-        {
-            progBar.Current = (int)e.Position;
-        }
-
-        // Boilerplate helper.
+        /// <summary>
+        /// Boilerplate helper.
+        /// </summary>
+        /// <param name="prov"></param>
         void ShowWave(ISampleProvider? prov)
         {
             switch (prov)
@@ -311,6 +331,9 @@ namespace AudioLib.Test
             progBar.Thumbnail = thumb;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void Play_Click()
         {
             if (_prov is null)
@@ -323,15 +346,24 @@ namespace AudioLib.Test
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Resample_Click(object? sender, EventArgs e)
         {
             string fn = Path.Join(_testFilesDir, "Tracy.m4a");
             string newfn = Path.Join(_testFilesDir, "Tracy.wav");
 
-            NAudioEx.Resample(fn, newfn);
+            NAudioEx.Convert(Conversion.Resample, newfn);
         }
 
-        // Swap test for SwappableSampleProvider.
+        /// <summary>
+        /// Swap test for SwappableSampleProvider.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void Swap_Click(object? sender, EventArgs args)
         {
             if (_prov is null)
@@ -347,6 +379,11 @@ namespace AudioLib.Test
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void FileInfo_Click(object? sender, EventArgs args)
         {
             // Dump all test files.
@@ -364,6 +401,11 @@ namespace AudioLib.Test
             LogLine(AudioFileInfo.GetFileInfo(@"C:\Users\cepth\OneDrive\Audio\SoundFonts\FluidR3 GM.sf2", verbose));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void Timer1_Tick(object? sender, EventArgs args)
         {
             if (btnRunBars.Checked)
@@ -371,8 +413,21 @@ namespace AudioLib.Test
                 // Update progress bar.
                 progBar.Current += 1000; // not-realtime for testing
             }
+            else
+            {
+                switch (_prov)
+                {
+                    case ClipSampleProvider csp: progBar.Current = csp.SampleIndex; break;
+                    case AudioFileReader afr: progBar.Current = (int)(afr.Position / afr.WaveFormat.BitsPerSample / 4 / afr.WaveFormat.Channels); break;
+                }
+            }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Settings_Click(object sender, EventArgs e)
         {
             _settings.Edit("howdy!", 400);
@@ -380,11 +435,18 @@ namespace AudioLib.Test
             LogLine("You better restart!");
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
         void LogLine(string s)
         {
             this.InvokeIfRequired(_ => { txtInfo.AppendLine(s); });
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         void UnitTests()
         {
             TestRunner runner = new(OutputFormat.Readable);
@@ -394,6 +456,10 @@ namespace AudioLib.Test
             //File.WriteAllLines(@"..\..\out\test_out.txt", runner.Context.OutputLines);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="disposing"></param>
         protected override void Dispose(bool disposing)
         {
             if (disposing && (components != null))

@@ -11,6 +11,7 @@ using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
 using static AudioLib.Globals;
 using static AudioLib.ToolStripParamEditor;
+using System.Xml.Linq;
 
 
 namespace AudioLib
@@ -42,15 +43,6 @@ namespace AudioLib
 
         /// <summary>How to snap.</summary>
         SnapType _snap = SnapType.Fine;
-
-        /// <summary>Keep this around for context menu.</summary>
-        ToolStripParamEditor _edSelStart = new();
-
-        /// <summary>Keep this around for context menu.</summary>
-        ToolStripParamEditor _edSelLength = new();
-
-        /// <summary>Keep this around for context menu.</summary>
-        ToolStripParamEditor _edMarker = new();
         #endregion
 
         #region Constants
@@ -70,9 +62,9 @@ namespace AudioLib
         #region Backing fields
         float _gain = 1.0f;
         int _visibleStart = 0;
-        int _selStart = 0;
+        int _selStart = -1;
         int _selLength = 0;
-        int _marker = 0;
+        int _marker = -1;
         readonly Pen _penWave = new(Color.Black, 1);
         readonly Pen _penGrid = new(Color.LightGray, 1);
         readonly Pen _penMark = new(Color.Red, 1);
@@ -99,6 +91,9 @@ namespace AudioLib
         /// <summary>For drawing text.</summary>
         public Font TextFont { get; set; } = new("Calibri", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
+        /// <summary>Owner can add some menu items.</summary>
+        public List<ToolStripItem> ExtraMenuItems { get; set; } = new();
+
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
@@ -110,15 +105,15 @@ namespace AudioLib
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int TotalTime { get { return (int)((double)Length / AudioLibDefs.SAMPLE_RATE / 1000.0f); } }
 
-        /// <summary>Selection start sample.</summary>
+        /// <summary>Selection start sample. -1 means no selection.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int SelStart { get { return _selStart; } set { _selStart = value; Invalidate(); } }
 
-        /// <summary>Selection length in samples.</summary>
+        /// <summary>Selection length in samples. 0 means to the end.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int SelLength { get { return _selLength; } set { _selLength = value; Invalidate(); } }
 
-        /// <summary>General purpose marker location.</summary>
+        /// <summary>General purpose marker location. -1 means no marker.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int Marker { get { return _marker; } set { _marker = value; CheckProperties(); Invalidate(); } }
 
@@ -150,12 +145,12 @@ namespace AudioLib
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
             //InitializeComponent():
             components = new Container();
-            toolTip = new(components);
             SuspendLayout();
+            toolTip = new(components);
+            ContextMenuStrip = new(components);
+            ContextMenuStrip.Opening += ContextMenuStrip_Opening;
             Name = "WaveViewer";
             ResumeLayout(false);
-
-            CreateContextMenu();
         }
 
         /// <summary>
@@ -169,9 +164,9 @@ namespace AudioLib
             _min = _vals.Length > 0 ? _vals.Min() : 0;
             prov.Rewind();
 
-            SelStart = 0;
-            SelLength = 0;
-            Marker = 0;
+            _selStart = -1;
+            _selLength = 0;
+            _marker = -1;
 
             ResetView();
 
@@ -184,70 +179,70 @@ namespace AudioLib
         /// <param name="disposing">true if managed resources should be disposed; otherwise, false.</param>
         protected override void Dispose(bool disposing)
         {
-           if (disposing)
-           {
+            if (disposing)
+            {
                 toolTip.Dispose();
                 _penWave.Dispose();
                 _penGrid.Dispose();
                 _penMark.Dispose();
                 _format.Dispose();
                 TextFont.Dispose();
-           }
-           base.Dispose(disposing);
+                components.Dispose();
+            }
+            base.Dispose(disposing);
         }
         #endregion
 
         #region Context menu
         /// <summary>
-        /// Init the menu.
+        /// Create context menu.
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         void ContextMenuStrip_Opening(object? sender, CancelEventArgs e)
         {
-            _edSelStart.Value = _selStart;
-            _edSelLength.Value = _selLength;
-            _edMarker.Value = _marker;
-        }
+            ContextMenuStrip.Items.Clear();
 
-        /// <summary>
-        /// Create context menu.
-        /// </summary>
-        void CreateContextMenu()
-        {
-            // Set up main menu. TODO Set menu item enables according to system states.
-            ContextMenuStrip = new ContextMenuStrip(components);
-
+            // Set up main menu.
             ContextMenuStrip.Items.Add("Reset View", null, (_, __) => ResetView());
             ContextMenuStrip.Items.Add("Fit Gain", null, (_, __) => FitGain());
             ContextMenuStrip.Items.Add("Reset Gain", null, (_, __) => ResetGain());
-            ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            ContextMenuStrip.Items.Add("Go To Marker", null, (_, __) => GoToMarker());
-            ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => { Marker = 0; Invalidate(); });
-            ContextMenuStrip.Items.Add("Go To Selection", null, (_, __) => GoToSelection());
-            ContextMenuStrip.Items.Add("Remove Selection", null, (_, __) => { SelStart = 0; SelLength = 0; Invalidate(); });
-
             ContextMenuStrip.Items.Add(new ToolStripSeparator());
             ContextMenuStrip.Items.Add("Snap Coarse", null, (_, __) => SetSnap(SnapType.Coarse));
             ContextMenuStrip.Items.Add("Snap Fine", null, (_, __) => SetSnap(SnapType.Fine));
             ContextMenuStrip.Items.Add("Snap Off", null, (_, __) => SetSnap(SnapType.Off));
 
-            ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            _edSelStart.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
-            ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
-            ContextMenuStrip.Items.Add(_edSelStart);
+            if (_marker >= 0)
+            {
+                ContextMenuStrip.Items.Add(new ToolStripSeparator());
+                ContextMenuStrip.Items.Add("Go To Marker", null, (_, __) => GoToMarker());
+                ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => Marker = -1 );
 
-            ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            _edSelLength.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
-            ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
-            ContextMenuStrip.Items.Add(_edSelLength);
+                ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
+                ToolStripParamEditor edMarker = new() { Value = Marker };
+                edMarker.ParamChanged += (object? sender, ParamChangedEventArgs args) => { Marker = args.Value; ContextMenuStrip.Close(); };
+                ContextMenuStrip.Items.Add(edMarker);
+            }
 
-            ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            _edMarker.ParamChanged += (object? sender, ParamChangedEventArgs args) => { Marker = args.Value; ContextMenuStrip.Close(); };
-            ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
-            ContextMenuStrip.Items.Add(_edMarker);
+            if (_selStart >= 0)
+            {
+                ContextMenuStrip.Items.Add(new ToolStripSeparator());
+                ContextMenuStrip.Items.Add("Go To Selection", null, (_, __) => GoToSelection());
+                ContextMenuStrip.Items.Add("Remove Selection", null, (_, __) => { _selStart = -1; _selLength = 0; Invalidate(); });
 
-            ContextMenuStrip.Opening += ContextMenuStrip_Opening;
+                ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
+                ToolStripParamEditor edSelStart = new() { Value = SelStart };
+                edSelStart.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
+                ContextMenuStrip.Items.Add(edSelStart);
+
+                ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
+                ToolStripParamEditor edSelLength = new() { Value = SelLength };
+                edSelLength.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
+                ContextMenuStrip.Items.Add(edSelLength);
+            }
+
+            // Owner might have something to add.
+            ExtraMenuItems.ForEach(m => ContextMenuStrip.Items.Add(m));
         }
         #endregion
 
@@ -311,7 +306,7 @@ namespace AudioLib
         /// Handle mouse clicks to select things.
         /// </summary>
         /// <param name="e"></param>
-        protected override void OnMouseDoubleClick(MouseEventArgs e)
+        protected override void OnMouseClick(MouseEventArgs e)
         {
             var sample = PixelToSample(e.X);
             sample = ConverterOps.Snap(sample, _snap);
@@ -322,7 +317,7 @@ namespace AudioLib
             {
                 switch (e.Button, ModifierKeys)
                 {
-                    case (MouseButtons.Left, Keys.None):
+                    case (MouseButtons.Left, Keys.Alt):
                         _marker = sample;
                         CheckProperties();
                         changed = ParamChange.Marker;
@@ -571,8 +566,8 @@ namespace AudioLib
                 }
             }
 
-            // Lastly selection and markers.
-            if (_selStart > 0)
+            // Selection?
+            if (_selStart >= 0)
             {
                 int x = SampleToPixel(_selStart);
                 if (x >= 0)
@@ -580,11 +575,10 @@ namespace AudioLib
                     pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
                     pe.Graphics.FillPolygon(_penMark.Brush, new PointF[] { new(x, 10), new(x + 10, 15), new(x, 20) });
                 }
-            }
 
-            if (_selLength > 0)
-            {
-                int x = SampleToPixel(_selStart + _selLength);
+                int end = _selLength > 0 ? _selStart + _selLength : _vals.Length;
+
+                x = SampleToPixel(end);
                 if (x >= 0)
                 {
                     pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
@@ -592,7 +586,8 @@ namespace AudioLib
                 }
             }
 
-            if (_marker > 0)
+            // Marker?
+            if (_marker >= 0)
             {
                 int x = SampleToPixel(_marker);
                 if (x >= 0)
@@ -712,7 +707,7 @@ namespace AudioLib
         /// </summary>
         public void GoToMarker()
         {
-            if (_marker > 0)
+            if (_marker >= 0)
             {
                 Recenter(_marker);
             }
@@ -723,7 +718,7 @@ namespace AudioLib
         /// </summary>
         public void GoToSelection()
         {
-            if (_selStart > 0)
+            if (_selStart >= 0)
             {
                 Recenter(_selStart);
             }
@@ -745,9 +740,9 @@ namespace AudioLib
         /// </summary>
         void CheckProperties()
         {
-            _selStart = MathUtils.Constrain(_selStart, 0, _vals.Length);
+            _selStart = MathUtils.Constrain(_selStart, -1, _vals.Length);
             _selLength = MathUtils.Constrain(_selLength, 0, _vals.Length - _selStart);
-            _marker = MathUtils.Constrain(_marker, 0, _vals.Length);
+            _marker = MathUtils.Constrain(_marker, -1, _vals.Length);
             _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
         }
 

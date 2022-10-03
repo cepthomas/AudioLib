@@ -16,6 +16,7 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TestHost));
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.txtInfo = new NBagOfUis.TextViewer();
             this.progBar = new AudioLib.ProgressBar();
@@ -51,6 +52,7 @@
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             this.toolStripParamEditor1 = new AudioLib.ToolStripParamEditor();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
+            this.btnRewind = new System.Windows.Forms.Button();
             this.toolStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -277,7 +279,7 @@
             this.sldGain.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.sldGain.DrawColor = System.Drawing.Color.CornflowerBlue;
             this.sldGain.Label = "gain";
-            this.sldGain.Location = new System.Drawing.Point(69, 44);
+            this.sldGain.Location = new System.Drawing.Point(168, 44);
             this.sldGain.Maximum = 3D;
             this.sldGain.Minimum = 0D;
             this.sldGain.Name = "sldGain";
@@ -312,7 +314,7 @@
             this.toolStripParamEditor1,
             this.toolStripSeparator11});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
-            this.contextMenuStrip1.Size = new System.Drawing.Size(232, 176);
+            this.contextMenuStrip1.Size = new System.Drawing.Size(232, 148);
             // 
             // toolStripComboBox1
             // 
@@ -349,9 +351,9 @@
             // 
             // toolStripParamEditor1
             // 
+            this.toolStripParamEditor1.AutoSize = false;
             this.toolStripParamEditor1.Name = "toolStripParamEditor1";
             this.toolStripParamEditor1.Size = new System.Drawing.Size(171, 20);
-            this.toolStripParamEditor1.Text = "toolStripParamEditor1";
             this.toolStripParamEditor1.Value = -1;
             // 
             // toolStripSeparator11
@@ -359,11 +361,24 @@
             this.toolStripSeparator11.Name = "toolStripSeparator11";
             this.toolStripSeparator11.Size = new System.Drawing.Size(228, 6);
             // 
+            // btnRewind
+            // 
+            this.btnRewind.BackColor = System.Drawing.SystemColors.Control;
+            this.btnRewind.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.btnRewind.Font = new System.Drawing.Font("Segoe UI", 10.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
+            this.btnRewind.Location = new System.Drawing.Point(69, 45);
+            this.btnRewind.Name = "btnRewind";
+            this.btnRewind.Size = new System.Drawing.Size(81, 47);
+            this.btnRewind.TabIndex = 37;
+            this.btnRewind.Text = "Rewind";
+            this.btnRewind.UseVisualStyleBackColor = false;
+            // 
             // TestHost
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1000, 576);
+            this.Controls.Add(this.btnRewind);
             this.Controls.Add(this.chkPlay);
             this.Controls.Add(this.txtInfo);
             this.Controls.Add(this.sldGain);
@@ -419,5 +434,6 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
         private ToolStripParamEditor toolStripParamEditor1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
+        private System.Windows.Forms.Button btnRewind;
     }
 }

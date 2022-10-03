@@ -18,8 +18,8 @@ namespace AudioLib
         /// <summary>The full buffer from client.</summary>
         float[] _vals = Array.Empty<float>();
 
-        /// <summary>For notifications.</summary>
-        int _sampleCount = 0;
+        ///// <summary>For notifications.</summary>
+        //int _sampleCount = 0;
         #endregion
 
         #region Backing fields
@@ -55,20 +55,12 @@ namespace AudioLib
         /// <summary>Selection length in samples. 0 means to the end.</summary>
         public int SelLength { get; set; } = 0;
 
-        /// <summary>Number of samples per notification.</summary>
-        public int SamplesPerNotification { get; set; } = 5000;
+        ///// <summary>Number of samples per notification.</summary>
+        //public int SamplesPerNotification { get; set; } = 5000;
         #endregion
 
         #region Events
-        ///// <summary>Raised periodically to inform the user of play progress.</summary>
-        ///// Doesn't work well for short clips. Using a timer instead.
-        //public event EventHandler<ClipProgressEventArgs>? ClipProgress;
-        //public class ClipProgressEventArgs : EventArgs
-        //{
-        //    public long Position { get; set; }
-        //}
-        ///// <summary>Create objects up front giving GC little to do.</summary>
-        //readonly ClipProgressEventArgs _args = new() { Position = 0 };
+
         #endregion
 
         #region Constructors
@@ -119,10 +111,11 @@ namespace AudioLib
         public int Read(float[] buffer, int offset, int count)
         {
             int numRead = 0;
-            int end = _vals.Length;
 
             // Find the end. Is it a specific selection?
-            end = SelLength > 0 ? MathUtils.Constrain(SelStart + SelLength, 0, _vals.Length) : _vals.Length;
+            int end = SelStart >= 0 && SelLength > 0 ?
+                MathUtils.Constrain(SelStart + SelLength, 0, _vals.Length) :
+                _vals.Length;
 
             // Read area of interest.
             long numToRead = Math.Min(count, end - _sampleIndex);
@@ -131,23 +124,23 @@ namespace AudioLib
                 buffer[n + offset] = _vals[_sampleIndex] * Gain;
                 numRead++;
                 _sampleIndex++;
-                _sampleCount++;
+                //_sampleCount++;
 
-                // Check for time to notify.
-                if (_sampleCount >= SamplesPerNotification)
-                {
-                    //_args.Position = _sampleIndex;
-                    //ClipProgress?.Invoke(this, _args);
-                    _sampleCount = 0;
-                }
+                //// Check for time to notify.
+                //if (_sampleCount >= SamplesPerNotification)
+                //{
+                //    _args.Position = _sampleIndex;
+                //    ClipProgress?.Invoke(this, _args);
+                //    _sampleCount = 0;
+                //}
             }
 
-            if (numRead == 0) // last one
-            {
-                //_args.Position = _sampleIndex;
-                //ClipProgress?.Invoke(this, _args);
-                _sampleCount = 0;
-            }
+            //if (numRead == 0) // last one
+            //{
+            //    _args.Position = _sampleIndex;
+            //    ClipProgress?.Invoke(this, _args);
+            //    _sampleCount = 0;
+            //}
 
             return numRead;
         }
