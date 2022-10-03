@@ -94,7 +94,7 @@ namespace AudioLib.Test
             };
             cmbSelMode.SelectedItem = _settings.DefaultSelectionMode;
 
-            sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
+            sldGain.ValueChanged += (_, __) => wv1.Gain = sldGain.Value;
 
             // Progress bar.
             progBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{Globals.ConverterOps.Format(progBar.Current)}");

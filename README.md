@@ -2,9 +2,8 @@
 
 - WinForms library of various audio components and controls.
 - This uses NAudio extensively but limits internal formats to IEEE 32bit fp 44100Hz.
-- Note that NAudio API and buffers are float, whereas this library uses double.
 - For usage, see [Wavicler](https://github.com/cepthomas/Wavicler) which is a fairly comprehensive example
-  which documents most of the features. Also see the Test project.
+  that documents most of the features. Also see the Test project.
 - Requires VS2022 and .NET6.
 
 # Contents

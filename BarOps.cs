@@ -98,10 +98,10 @@ namespace AudioLib
         /// <returns></returns>
         int SubdivToSample(int subdiv)
         {
-            float minPerBeat = 1.0f / Globals.BPM;
-            float secPerBeat = minPerBeat * 60;
-            float smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
-            float smplPerSubdiv = smplPerBeat / SUBDIVS_PER_BEAT;
+            double minPerBeat = 1.0 / Globals.BPM;
+            double secPerBeat = minPerBeat * 60;
+            double smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
+            double smplPerSubdiv = smplPerBeat / SUBDIVS_PER_BEAT;
             var sample = (int)(smplPerSubdiv * subdiv);
             return sample;
         }
@@ -113,10 +113,10 @@ namespace AudioLib
         /// <returns></returns>
         int SampleToSubdiv(int sample)
         {
-            float minPerBeat = 1.0f / Globals.BPM;
-            float secPerBeat = minPerBeat * 60;
-            float smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
-            float beats = sample / smplPerBeat;
+            double minPerBeat = 1.0 / Globals.BPM;
+            double secPerBeat = minPerBeat * 60;
+            double smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
+            double beats = sample / smplPerBeat;
             var subdiv = (int)Math.Round(beats * SUBDIVS_PER_BEAT);
             return subdiv;
         }

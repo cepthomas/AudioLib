@@ -60,16 +60,15 @@ namespace AudioLib
         #endregion
 
         #region Events
-        /// <summary>Raised periodically to inform the user of play progress.</summary>
-        public event EventHandler<ClipProgressEventArgs>? ClipProgress;
-
-        public class ClipProgressEventArgs : EventArgs //TODO2 Kind of slow for short sample sets.
-        {
-            public long Position { get; set; }
-        }
-
-        /// <summary>Create objects up front giving GC little to do.</summary>
-        readonly ClipProgressEventArgs _args = new() { Position = 0 };
+        ///// <summary>Raised periodically to inform the user of play progress.</summary>
+        ///// Doesn't work well for short clips. Using a timer instead.
+        //public event EventHandler<ClipProgressEventArgs>? ClipProgress;
+        //public class ClipProgressEventArgs : EventArgs
+        //{
+        //    public long Position { get; set; }
+        //}
+        ///// <summary>Create objects up front giving GC little to do.</summary>
+        //readonly ClipProgressEventArgs _args = new() { Position = 0 };
         #endregion
 
         #region Constructors
@@ -137,16 +136,16 @@ namespace AudioLib
                 // Check for time to notify.
                 if (_sampleCount >= SamplesPerNotification)
                 {
-                    _args.Position = _sampleIndex;
-                    ClipProgress?.Invoke(this, _args);
+                    //_args.Position = _sampleIndex;
+                    //ClipProgress?.Invoke(this, _args);
                     _sampleCount = 0;
                 }
             }
 
             if (numRead == 0) // last one
             {
-                _args.Position = _sampleIndex;
-                ClipProgress?.Invoke(this, _args);
+                //_args.Position = _sampleIndex;
+                //ClipProgress?.Invoke(this, _args);
                 _sampleCount = 0;
             }
 

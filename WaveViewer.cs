@@ -13,9 +13,6 @@ using static AudioLib.Globals;
 using static AudioLib.ToolStripParamEditor;
 
 
-// TODO2 make mouse/kbd/context commands configurable?
-
-
 namespace AudioLib
 {
     /// <summary>Simple mono wave display.</summary>
@@ -45,12 +42,16 @@ namespace AudioLib
 
         /// <summary>How to snap.</summary>
         SnapType _snap = SnapType.Fine;
+
+        /// <summary>Keep this around for context menu.</summary>
+        ToolStripParamEditor _edSelStart = new();
+
+        /// <summary>Keep this around for context menu.</summary>
+        ToolStripParamEditor _edSelLength = new();
+
+        /// <summary>Keep this around for context menu.</summary>
+        ToolStripParamEditor _edMarker = new();
         #endregion
-
-        ToolStripParamEditor edSelStart = new();
-        ToolStripParamEditor edSelLength = new();
-        ToolStripParamEditor edMarker = new();
-
 
         #region Constants
         /// <summary>UI gain adjustment.</summary>
@@ -107,7 +108,7 @@ namespace AudioLib
 
         /// <summary>Length of the clip in msec.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public int TotalTime { get { return (int)((float)Length / AudioLibDefs.SAMPLE_RATE / 1000.0f); } }
+        public int TotalTime { get { return (int)((double)Length / AudioLibDefs.SAMPLE_RATE / 1000.0f); } }
 
         /// <summary>Selection start sample.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -204,9 +205,9 @@ namespace AudioLib
         /// <param name="e"></param>
         void ContextMenuStrip_Opening(object? sender, CancelEventArgs e)
         {
-            edSelStart.Value = _selStart;
-            edSelLength.Value = _selLength;
-            edMarker.Value = _marker;
+            _edSelStart.Value = _selStart;
+            _edSelLength.Value = _selLength;
+            _edMarker.Value = _marker;
         }
 
         /// <summary>
@@ -214,7 +215,7 @@ namespace AudioLib
         /// </summary>
         void CreateContextMenu()
         {
-            // Set up main menu. TODO2 Set menu item enables according to system states.
+            // Set up main menu. TODO Set menu item enables according to system states.
             ContextMenuStrip = new ContextMenuStrip(components);
 
             ContextMenuStrip.Items.Add("Reset View", null, (_, __) => ResetView());
@@ -232,19 +233,19 @@ namespace AudioLib
             ContextMenuStrip.Items.Add("Snap Off", null, (_, __) => SetSnap(SnapType.Off));
 
             ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            edSelStart.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
+            _edSelStart.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
             ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
-            ContextMenuStrip.Items.Add(edSelStart);
+            ContextMenuStrip.Items.Add(_edSelStart);
 
             ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            edSelLength.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
+            _edSelLength.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
             ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
-            ContextMenuStrip.Items.Add(edSelLength);
+            ContextMenuStrip.Items.Add(_edSelLength);
 
             ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            edMarker.ParamChanged += (object? sender, ParamChangedEventArgs args) => { Marker = args.Value; ContextMenuStrip.Close(); };
+            _edMarker.ParamChanged += (object? sender, ParamChangedEventArgs args) => { Marker = args.Value; ContextMenuStrip.Close(); };
             ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
-            ContextMenuStrip.Items.Add(edMarker);
+            ContextMenuStrip.Items.Add(_edMarker);
 
             ContextMenuStrip.Opening += ContextMenuStrip_Opening;
         }
@@ -296,7 +297,7 @@ namespace AudioLib
                 case Keys.Shift: // y gain
                     {
                         _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
-                        _gain = (float)MathUtils.Constrain(_gain, 0.0f, AudioLibDefs.MAX_GAIN);
+                        _gain = (float)MathUtils.Constrain(_gain, 0.0, AudioLibDefs.MAX_GAIN);
                         ViewerChangeEvent?.Invoke(this, new() { Change = ParamChange.Gain, Value = _gain });
                         Invalidate();
                     }
@@ -527,12 +528,14 @@ namespace AudioLib
             _format.Alignment = StringAlignment.Center;
 
             // Show info.
-            var info = new List<string>();
-            info.Add($"Gain:{_gain:0.00}");
-            info.Add($"Snap:{_snap}");
-            info.Add($"SelStart:{ConverterOps.Format(_selStart)}");
-            info.Add($"SelLength:{ConverterOps.Format(_selLength)}");
-            info.Add($"Marker:{ConverterOps.Format(_marker)}");
+            var info = new List<string>
+            {
+                $"Gain:{_gain:0.00}",
+                $"Snap:{_snap}",
+                $"SelStart:{ConverterOps.Format(_selStart)}",
+                $"SelLength:{ConverterOps.Format(_selLength)}",
+                $"Marker:{ConverterOps.Format(_marker)}"
+            };
             //info.Add($"VisStart:{ConverterOps.Format(_visibleStart)}");
             //info.Add($"VisLength:{ConverterOps.Format(VisibleLength)}");
             pe.Graphics.DrawString(string.Join("  ", info), TextFont, _textBrush, Width / 2, Height - 10, _format);

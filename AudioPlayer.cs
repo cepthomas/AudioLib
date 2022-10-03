@@ -23,7 +23,7 @@ namespace AudioLib
         #endregion
 
         #region Backing fields
-        double _volume = AudioLibDefs.VOLUME_MAX * 0.7;
+        float _volume = AudioLibDefs.VOLUME_MAX * 0.7f;
         #endregion
 
         #region Events
@@ -37,7 +37,7 @@ namespace AudioLib
         public bool Valid { get { return _waveOut is not null; } }
 
         /// <summary>Volume.</summary>
-        public double Volume
+        public float Volume
         {
             get
             {
@@ -45,8 +45,8 @@ namespace AudioLib
             }
             set 
             {
-                _volume = MathUtils.Constrain(value, AudioLibDefs.VOLUME_MIN, AudioLibDefs.VOLUME_MAX);
-                if (_waveOut is not null) { _waveOut.Volume = (float)_volume; }
+                _volume = (float)MathUtils.Constrain(value, AudioLibDefs.VOLUME_MIN, AudioLibDefs.VOLUME_MAX);
+                if (_waveOut is not null) { _waveOut.Volume = _volume; }
             }
         }
 
@@ -74,7 +74,7 @@ namespace AudioLib
                     {
                         DeviceNumber = i,
                         DesiredLatency = latency,
-                        Volume = (float)Volume
+                        Volume = Volume
                     };
                     _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
                     _waveOut.Init(smpl);

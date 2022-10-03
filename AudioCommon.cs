@@ -51,7 +51,7 @@ namespace AudioLib
         public static IConverterOps ConverterOps { get; set; } = new SampleOps();
 
         /// <summary>Global tempo if using Beat selection mode.</summary>
-        public static float BPM { get; set; } = 100.0f;
+        public static double BPM { get; set; } = 100.0f;
 
         /// <summary>Colors.</summary>
         public static Color ControlColor { get; set; } = Color.MediumOrchid;
@@ -69,10 +69,10 @@ namespace AudioLib
         public const string AUDIO_FILE_TYPES = "*.wav;*.mp3;*.m4a;*.flac";
 
         /// <summary>NAudio doesn't publish this for their API.</summary>
-        public const double VOLUME_MIN = 0.0;
+        public const float VOLUME_MIN = 0.0f;
 
         /// <summary>NAudio doesn't publish this for their API.</summary>
-        public const double VOLUME_MAX = 1.0;
+        public const float VOLUME_MAX = 1.0f;
 
         /// <summary>Maximum gain.</summary>
         public const float MAX_GAIN = 5.0f;

@@ -74,7 +74,7 @@ namespace AudioLib
         /// </summary>
         /// <param name="msec"></param>
         /// <returns></returns>
-        public int MsecToSample(float msec)
+        public int MsecToSample(double msec)
         {
             double sample = (double)AudioLibDefs.SAMPLE_RATE * msec / MSEC_PER_SECOND;
             return (int)sample;

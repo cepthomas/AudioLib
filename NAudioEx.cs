@@ -18,8 +18,6 @@ namespace AudioLib
 
     /// <summary>
     /// Extensions to enhance core NAudio for this application.
-    /// TODO2 A lot of these are kind of clunky but the alternative is to add some new functionality
-    /// to ISampleprovider. Maybe I'll branch NAudio some day.
     /// </summary>
     public static class NAudioEx
     {
@@ -84,45 +82,16 @@ namespace AudioLib
             }
         }
 
-
-
-
-        // /// <summary>
-        // /// Resample to a new wav file.
-        // /// </summary>
-        // /// <param name="fn">The current filename</param>
-        // /// <param name="newfn">The new filename</param>
-        // /// <returns>Succesful conversion.</returns>
-        // public static bool Resample(string fn, string newfn)
-        // {
-        //     bool converted = true;
-        //     using var rdr = new AudioFileReader(fn);
-        //     if (rdr.WaveFormat.SampleRate == AudioLibDefs.SAMPLE_RATE)
-        //     {
-        //         // Already correct rate.
-        //         converted = false;
-        //     }
-        //     else
-        //     {
-        //         var resampler = new WdlResamplingSampleProvider(rdr, AudioLibDefs.SAMPLE_RATE);
-        //         WaveFileWriter.CreateWaveFile16(newfn, resampler);
-        //     }
-        //     return converted;
-        // }
-
-
-
-
         /// <summary>
-        /// Process a stereo file.
+        /// Process a file.
         /// </summary>
-        /// <param name="conv">Specific operation</param>
-        /// <param name="fn">The input filename</param>
+        /// <param name="conv">Specific operation.</param>
+        /// <param name="fn">The input filename. Output file is the same with option appended.</param>
         /// <returns>Succesful conversion.</returns>
         public static bool Convert(Conversion conv, string fn)
         {
             bool converted = true;
-            ISampleProvider? prov1 = null;
+            ISampleProvider? prov1;
             ISampleProvider? prov2 = null;
             string tag1 = "";
             string tag2 = "";
