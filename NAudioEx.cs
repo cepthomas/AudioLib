@@ -9,6 +9,7 @@ using System.Windows.Forms;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NBagOfTricks;
+using static System.Resources.ResXFileRef;
 
 
 namespace AudioLib
@@ -143,15 +144,41 @@ namespace AudioLib
             if (prov1 is not null)
             {
                 var ext = Path.GetExtension(fn);
-                string newfn = fn.Replace(ext, $"{tag1}.wav");
+                string newfn = fn.Replace(ext, $"_{tag1}.wav");
                 WaveFileWriter.CreateWaveFile16(newfn, prov1);
             }
 
             if (prov2 is not null)
             {
                 var ext = Path.GetExtension(fn);
-                string newfn = fn.Replace(ext, $"{tag2}.wav");
+                string newfn = fn.Replace(ext, $"_{tag2}.wav");
                 WaveFileWriter.CreateWaveFile16(newfn, prov2);
+            }
+
+            return converted;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fn"></param>
+        /// <param name="newfn"></param>
+        /// <returns></returns>
+        public static bool Resample(string fn, string newfn)
+        {
+            bool converted = true;
+
+            ISampleProvider prov = new AudioFileReader(fn);
+
+            if (prov.WaveFormat.SampleRate != AudioLibDefs.SAMPLE_RATE)
+            {
+                prov = new WdlResamplingSampleProvider(prov, AudioLibDefs.SAMPLE_RATE);
+                WaveFileWriter.CreateWaveFile16(newfn, prov);
+            }
+            else
+            {
+                // Already correct rate.
+                converted = false;
             }
 
             return converted;
