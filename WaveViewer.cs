@@ -277,12 +277,16 @@ namespace AudioLib
                     {
                         // Get sample to center about.
                         int center = PixelToSample(Width / 2); // or mouse or _marker
+
                         double incr = Math.Round(ZOOM_RATIO * _samplesPerPixel);
-                        if (incr == 0 && _samplesPerPixel > 1) // close in
+                        bool dirout = wheelDelta <= 0;
+
+                        if (incr == 0 && (_samplesPerPixel > 1 || dirout)) // close - creep
                         {
                             incr = 1;
                         }
-                        _samplesPerPixel += (int)Math.Round(wheelDelta > 0 ? -incr : incr); // in or out
+
+                        _samplesPerPixel += (int)Math.Round(dirout ? +incr : -incr); // +:out -:in
                         int samplesPerPixelMax = _vals.Length / Width;
                         _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, samplesPerPixelMax);
                         Recenter(center);
