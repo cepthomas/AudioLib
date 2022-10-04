@@ -159,29 +159,15 @@ namespace AudioLib
         }
 
         /// <summary>
-        /// 
+        /// For client convenience.
         /// </summary>
         /// <param name="fn"></param>
         /// <param name="newfn"></param>
-        /// <returns></returns>
-        public static bool Resample(string fn, string newfn)
+        public static void Resample(string fn, string newfn)
         {
-            bool converted = true;
-
             ISampleProvider prov = new AudioFileReader(fn);
-
-            if (prov.WaveFormat.SampleRate != AudioLibDefs.SAMPLE_RATE)
-            {
-                prov = new WdlResamplingSampleProvider(prov, AudioLibDefs.SAMPLE_RATE);
-                WaveFileWriter.CreateWaveFile16(newfn, prov);
-            }
-            else
-            {
-                // Already correct rate.
-                converted = false;
-            }
-
-            return converted;
+            prov = new WdlResamplingSampleProvider(prov, AudioLibDefs.SAMPLE_RATE);
+            WaveFileWriter.CreateWaveFile16(newfn, prov);
         }
 
         /// <summary>
