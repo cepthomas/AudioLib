@@ -47,7 +47,7 @@ namespace AudioLib.Test
 
             AudioSettings.LibSettings = new();
             // Must do this first before initializing.
-            _settings = (TestSettings)Settings.Load(".", typeof(TestSettings));
+            _settings = (TestSettings)SettingsCore.Load(".", typeof(TestSettings));
             AudioSettings.LibSettings = _settings.AudioSettings;
 
             WindowState = FormWindowState.Normal;
@@ -430,7 +430,7 @@ namespace AudioLib.Test
         /// <param name="e"></param>
         void Settings_Click(object sender, EventArgs e)
         {
-            _settings.Edit("howdy!", 400);
+            SettingsEditor.Edit(_settings, "howdy!!!", 400);
             _settings.Save();
             LogLine("You better restart!");
         }
@@ -475,7 +475,7 @@ namespace AudioLib.Test
         }
     }
 
-    public class TestSettings : Settings
+    public class TestSettings : SettingsCore
     {
         [DisplayName("Background Color")]
         [Description("The color used for overall background.")]
