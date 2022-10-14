@@ -1,9 +1,10 @@
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace AudioLib
+
+namespace Ephemera.AudioLib
 {
     /// <summary>Converters for audio time.</summary>
     public class TimeOps : IConverterOps

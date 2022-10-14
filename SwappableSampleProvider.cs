@@ -4,7 +4,7 @@ using NAudio.Gui;
 using NAudio.Wave;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     /// <summary>
     /// Sample provider that supports hot swapping of input. Mainly used to supply input to

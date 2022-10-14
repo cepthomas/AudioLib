@@ -8,13 +8,12 @@ using System.IO;
 using System.ComponentModel;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using NBagOfTricks;
-using static AudioLib.Globals;
-using static AudioLib.ToolStripParamEditor;
-using System.Xml.Linq;
+using Ephemera.NBagOfTricks;
+using static Ephemera.AudioLib.Globals;
+using static Ephemera.AudioLib.ToolStripParamEditor;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     /// <summary>Simple mono wave display.</summary>
     public partial class WaveViewer : UserControl

@@ -8,11 +8,10 @@ using System.Text;
 using System.Windows.Forms;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using NBagOfTricks;
-using static System.Resources.ResXFileRef;
+using Ephemera.NBagOfTricks;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     /// <summary>Conversion options.</summary>
     public enum Conversion { ToMonoWav, SplitStereo, Resample }

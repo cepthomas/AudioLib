@@ -9,10 +9,10 @@ using System.Diagnostics;
 using System.ComponentModel;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     /// <summary>A simple audio file player.</summary>
     public sealed class AudioPlayer : IDisposable

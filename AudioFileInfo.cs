@@ -9,10 +9,10 @@ using System.Diagnostics;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using NAudio.SoundFont;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     /// <summary>Borrowed from NAudio.</summary>
     public class AudioFileInfo

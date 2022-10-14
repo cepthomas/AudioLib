@@ -5,10 +5,10 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using NAudio.Wave;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     #region Types
     /// <summary>How to handle stereo files.</summary>

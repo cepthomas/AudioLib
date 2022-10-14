@@ -2,10 +2,10 @@ using System;
 using System.Diagnostics;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     /// <summary>
     /// Provider that encapsulates a client supplied audio data subset. When constructed, it reads in the

@@ -4,11 +4,11 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using NBagOfTricks;
-using static AudioLib.Globals;
+using Ephemera.NBagOfTricks;
+using static Ephemera.AudioLib.Globals;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     /// <summary>The control.</summary>
     public partial class ProgressBar : UserControl

@@ -8,8 +8,8 @@
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
         <Description>AudioLib tester</Description>
         <Copyright>MIT License</Copyright>
-        <RootNamespace>AudioLib.Test</RootNamespace>
-        <AssemblyName>AudioLib.Test</AssemblyName>
+        <RootNamespace>Ephemera.AudioLib.Test</RootNamespace>
+        <AssemblyName>Ephemera.AudioLib.Test</AssemblyName>
         <OutputPath>bin\</OutputPath>
         <!-- <DefineConstants>DEBUG;TRACE</DefineConstants> -->
         <WarningLevel>4</WarningLevel>
@@ -30,11 +30,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <Reference Include="NBagOfTricks">
-            <HintPath>..\lib\NBagOfTricks.dll</HintPath>
+        <Reference Include="Ephemera.NBagOfTricks">
+            <HintPath>..\lib\Ephemera.NBagOfTricks.dll</HintPath>
         </Reference>
-        <Reference Include="NBagOfUis">
-          <HintPath>..\lib\NBagOfUis.dll</HintPath>
+        <Reference Include="Ephemera.NBagOfUis">
+          <HintPath>..\lib\Ephemera.NBagOfUis.dll</HintPath>
         </Reference>
     </ItemGroup>
 

@@ -5,10 +5,10 @@ using System.Drawing;
 using System.IO;
 using System.Windows.Forms;
 using NAudio.Wave;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     /// <summary>Converters for samples.</summary>
     public class SampleOps : IConverterOps

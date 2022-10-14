@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using NAudio.Wave;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     /// <summary>
     /// Sample provider that does nothing.

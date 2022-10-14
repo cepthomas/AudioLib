@@ -4,7 +4,7 @@ using System.Diagnostics;
 using System.IO;
 
 
-namespace AudioLib.Test
+namespace Ephemera.AudioLib.Test
 {
     class Program
     {

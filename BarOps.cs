@@ -1,9 +1,10 @@
-using NBagOfTricks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Ephemera.NBagOfTricks;
 
-namespace AudioLib
+
+namespace Ephemera.AudioLib
 {
     /// <summary>Converters for musical time. 0-based not traditional 1-based.</summary>
     public class BarOps : IConverterOps

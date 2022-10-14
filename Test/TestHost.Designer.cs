@@ -1,4 +1,4 @@
-﻿namespace AudioLib.Test
+﻿namespace Ephemera.AudioLib.Test
 {
     partial class TestHost
     {

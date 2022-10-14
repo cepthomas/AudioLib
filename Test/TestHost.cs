@@ -9,13 +9,13 @@ using System.Text.Json.Serialization;
 using System.Diagnostics;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
-using NBagOfTricks;
-using NBagOfTricks.PNUT;
-using NBagOfUis;
-using AudioLib;
+using Ephemera.NBagOfTricks;
+using Ephemera.NBagOfTricks.PNUT;
+using Ephemera.NBagOfUis;
+using Ephemera.AudioLib;
 
 
-namespace AudioLib.Test
+namespace Ephemera.AudioLib.Test
 {
     public partial class TestHost : Form
     {

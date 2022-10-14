@@ -7,10 +7,10 @@ using System.Drawing;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using NAudio.Wave;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     [Serializable]
     public class AudioSettings

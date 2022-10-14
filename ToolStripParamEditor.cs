@@ -3,10 +3,10 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Windows.Forms.Design;
 using System.Drawing;
-using NBagOfTricks;
+using Ephemera.NBagOfTricks;
 
 
-namespace AudioLib
+namespace Ephemera.AudioLib
 {
     /// <summary>Simple toolstrip container for the param editor.</summary>
     [ToolStripItemDesignerAvailability(ToolStripItemDesignerAvailability.ContextMenuStrip)]

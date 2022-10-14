@@ -1,14 +1,14 @@
-﻿using NBagOfTricks.PNUT;
-using NBagOfTricks;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using Ephemera.NBagOfTricks.PNUT;
+using Ephemera.NBagOfTricks;
 
 
-namespace AudioLib.Test
+namespace Ephemera.AudioLib.Test
 {
     public class CONVERT_SAMPLE : TestSuite
     {
