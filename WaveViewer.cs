@@ -127,7 +127,7 @@ namespace Ephemera.AudioLib
 
         #region Events
         /// <summary>Value changed by user. Notify owner for display.</summary>
-        public event EventHandler<ViewerChangeEventArgs>? ViewerChangeEvent;
+        public event EventHandler<ViewerChangeEventArgs>? ViewerChange;
         public class ViewerChangeEventArgs : EventArgs
         {
             public ParamChange Change { get; set; } = ParamChange.Marker;
@@ -296,7 +296,7 @@ namespace Ephemera.AudioLib
                     {
                         _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
                         _gain = (float)MathUtils.Constrain(_gain, 0.0, AudioLibDefs.MAX_GAIN);
-                        ViewerChangeEvent?.Invoke(this, new() { Change = ParamChange.Gain, Value = _gain });
+                        ViewerChange?.Invoke(this, new() { Change = ParamChange.Gain, Value = _gain });
                         Invalidate();
                     }
                     break;
@@ -348,7 +348,7 @@ namespace Ephemera.AudioLib
 
                 if (changed != ParamChange.None)
                 {
-                    ViewerChangeEvent?.Invoke(this, new() { Change = changed, Value = newval });
+                    ViewerChange?.Invoke(this, new() { Change = changed, Value = newval });
                     Invalidate();
                 }
             }

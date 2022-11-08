@@ -105,7 +105,7 @@ namespace Ephemera.AudioLib.Test
             // Wave viewers.
             wv1.WaveColor = Color.Red;
             wv1.BackColor = Color.Cyan;
-            wv1.ViewerChangeEvent += ProcessViewerChangeEvent;
+            wv1.ViewerChange += ProcessViewerChange;
 
             // Add stuff to the wave viewer menu.
             wv1.ContextMenuStrip.Items.Add("Test item", null, (_, __) => LogLine("Test item worked"));
@@ -113,7 +113,7 @@ namespace Ephemera.AudioLib.Test
 
             wv2.WaveColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;
-            wv2.ViewerChangeEvent += ProcessViewerChangeEvent;
+            wv2.ViewerChange += ProcessViewerChange;
 
             // Static swap provider.
             _provSwap = new ClipSampleProvider(Path.Join(_testFilesDir, "test.wav"), StereoCoercion.Mono);
@@ -206,7 +206,7 @@ namespace Ephemera.AudioLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ProcessViewerChangeEvent(object? sender, WaveViewer.ViewerChangeEventArgs e)
+        void ProcessViewerChange(object? sender, WaveViewer.ViewerChangeEventArgs e)
         {
             LogLine($"{(sender as WaveViewer)!.Name} change: {e.Change}");
 
