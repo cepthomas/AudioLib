@@ -428,6 +428,20 @@ namespace Ephemera.AudioLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
+        void Caps_Click(object? sender, EventArgs e)
+        {
+            // –1 indicates the default output device, while 0 is the first output device.
+            for (int id = -1; id < WaveOut.DeviceCount; id++)
+            {
+                var cap = WaveOut.GetCapabilities(id);
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Settings_Click(object sender, EventArgs e)
         {
             SettingsEditor.Edit(_settings, "howdy!!!", 400);
@@ -493,8 +507,8 @@ namespace Ephemera.AudioLib.Test
         [Browsable(true)]
         public double DefaultBPM { get; set; } = 100.0;
 
-        [DisplayName("Midi Settings")]
-        [Description("Edit midi settings.")]
+        [DisplayName("Audio Settings")]
+        [Description("Edit audio settings.")]
         [Browsable(true)]
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public AudioSettings AudioSettings { get; set; } = new();

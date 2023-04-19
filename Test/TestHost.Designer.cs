@@ -18,10 +18,10 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TestHost));
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.txtInfo = new NBagOfUis.TextViewer();
-            this.progBar = new AudioLib.ProgressBar();
-            this.wv1 = new AudioLib.WaveViewer();
-            this.wv2 = new AudioLib.WaveViewer();
+            this.txtInfo = new Ephemera.NBagOfUis.TextViewer();
+            this.progBar = new Ephemera.AudioLib.ProgressBar();
+            this.wv1 = new Ephemera.AudioLib.WaveViewer();
+            this.wv2 = new Ephemera.AudioLib.WaveViewer();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
             this.btnRunBars = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
@@ -42,7 +42,7 @@
             this.cmbSelMode = new System.Windows.Forms.ToolStripComboBox();
             this.toolStripSeparator4 = new System.Windows.Forms.ToolStripSeparator();
             this.btnTest = new System.Windows.Forms.ToolStripButton();
-            this.sldGain = new NBagOfUis.Slider();
+            this.sldGain = new Ephemera.NBagOfUis.Slider();
             this.chkPlay = new System.Windows.Forms.CheckBox();
             this.contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.toolStripComboBox1 = new System.Windows.Forms.ToolStripComboBox();
@@ -50,9 +50,10 @@
             this.cmsItem1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripParamEditor1 = new AudioLib.ToolStripParamEditor();
+            this.toolStripParamEditor1 = new Ephemera.AudioLib.ToolStripParamEditor();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.btnRewind = new System.Windows.Forms.Button();
+            this.btnCaps = new System.Windows.Forms.ToolStripButton();
             this.toolStrip1.SuspendLayout();
             this.contextMenuStrip1.SuspendLayout();
             this.SuspendLayout();
@@ -131,6 +132,7 @@
             this.toolStripSeparator6,
             this.btnResample,
             this.toolStripSeparator7,
+            this.btnCaps,
             this.toolStripSeparator8,
             this.btnAfReader,
             this.toolStripSeparator9,
@@ -373,6 +375,15 @@
             this.btnRewind.Text = "Rewind";
             this.btnRewind.UseVisualStyleBackColor = false;
             // 
+            // btnCaps
+            // 
+            this.btnCaps.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnCaps.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnCaps.Name = "btnCaps";
+            this.btnCaps.Size = new System.Drawing.Size(43, 25);
+            this.btnCaps.Text = "caps";
+            this.btnCaps.Click += new System.EventHandler(this.Caps_Click);
+            // 
             // TestHost
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
@@ -435,5 +446,6 @@
         private ToolStripParamEditor toolStripParamEditor1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.Button btnRewind;
+        private System.Windows.Forms.ToolStripButton btnCaps;
     }
 }
