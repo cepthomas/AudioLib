@@ -28,13 +28,13 @@ namespace Ephemera.AudioLib
         [DisplayName("Wave Output Device")]
         [Description("How to play the audio files.")]
         [Browsable(true)]
-        [TypeConverter(typeof(FixedListTypeConverter))]
+        [TypeConverter(typeof(AudioSettingsConverter))]
         public string WavOutDevice { get; set; } = "Microsoft Sound Mapper";
 
         [DisplayName("Latency")]
         [Description("What's the hurry?")]
         [Browsable(true)]
-        [TypeConverter(typeof(FixedListTypeConverter))]
+        [TypeConverter(typeof(AudioSettingsConverter))]
         public string Latency { get; set; } = "200";
 
         [DisplayName("Max Clip Size")]
@@ -45,7 +45,7 @@ namespace Ephemera.AudioLib
     }
 
     /// <summary>Converter for selecting property value from known lists.</summary>
-    public class FixedListTypeConverter : TypeConverter
+    public class AudioSettingsConverter : TypeConverter
     {
         public override bool GetStandardValuesSupported(ITypeDescriptorContext? context) { return true; }
         public override bool GetStandardValuesExclusive(ITypeDescriptorContext? context) { return true; }
