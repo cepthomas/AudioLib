@@ -73,9 +73,9 @@ namespace Ephemera.AudioLib.Test
             // The rest of the controls.
             txtInfo.WordWrap = true;
             txtInfo.BackColor = _settings.BackColor;
-            txtInfo.MatchColors.Add("! ", Color.LightPink);
-            txtInfo.MatchColors.Add("ERR", Color.LightPink);
-            txtInfo.MatchColors.Add("WRN", Color.Plum);
+            txtInfo.MatchText.Add("! ", Color.LightPink);
+            txtInfo.MatchText.Add("ERR", Color.LightPink);
+            txtInfo.MatchText.Add("WRN", Color.Plum);
             txtInfo.Prompt = "> ";
 
             cmbSelMode.Items.Add(WaveSelectionMode.Time);
