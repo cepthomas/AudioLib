@@ -467,7 +467,8 @@ namespace Ephemera.AudioLib.Test
             var cases = new[] { "CONVERT" };
             runner.RunSuites(cases);
             runner.Context.OutputLines.ForEach(l => LogLine(l));
-            //File.WriteAllLines(@"..\..\out\test_out.txt", runner.Context.OutputLines);
+            //var fn = Path.Combine(MiscUtils.GetSourcePath(), "out", "testhost_out.txt");
+            //File.WriteAllLines(fn, runner.Context.OutputLines);
         }
 
         /// <summary>
