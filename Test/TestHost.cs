@@ -20,7 +20,7 @@ namespace Ephemera.AudioLib.Test
     public partial class TestHost : Form
     {
         /// <summary>Where the files are.</summary>
-        readonly string _testFilesDir = @"C:\Dev\repos\Misc\TestAudioFiles";
+        readonly string _testFilesDir = @"C:\Dev\Apps\Misc\TestAudioFiles";
 
         /// <summary>The current audio provider.</summary>
         ISampleProvider _prov = new NullSampleProvider();
