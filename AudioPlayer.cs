@@ -23,7 +23,7 @@ namespace Ephemera.AudioLib
         #endregion
 
         #region Backing fields
-        float _volume = AudioLibDefs.VOLUME_MAX * 0.7f;
+        float _volume = AudioLibDefs.MAX_VOLUME * 0.7f;
         #endregion
 
         #region Events
@@ -45,7 +45,7 @@ namespace Ephemera.AudioLib
             }
             set 
             {
-                _volume = (float)MathUtils.Constrain(value, AudioLibDefs.VOLUME_MIN, AudioLibDefs.VOLUME_MAX);
+                _volume = (float)MathUtils.Constrain(value, 0.0f, AudioLibDefs.MAX_VOLUME);
                 if (_waveOut is not null) { _waveOut.Volume = _volume; }
             }
         }

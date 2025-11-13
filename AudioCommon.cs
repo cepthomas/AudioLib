@@ -69,10 +69,7 @@ namespace Ephemera.AudioLib
         public const string AUDIO_FILE_TYPES = "*.wav;*.mp3;*.m4a;*.flac";
 
         /// <summary>NAudio doesn't publish this for their API.</summary>
-        public const float VOLUME_MIN = 0.0f;
-
-        /// <summary>NAudio doesn't publish this for their API.</summary>
-        public const float VOLUME_MAX = 1.0f;
+        public const float MAX_VOLUME = 1.0f;
 
         /// <summary>Maximum gain.</summary>
         public const float MAX_GAIN = 5.0f;
