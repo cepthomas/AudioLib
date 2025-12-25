@@ -54,7 +54,7 @@ namespace Ephemera.AudioLib
         public static double BPM { get; set; } = 100.0f;
 
         /// <summary>Colors.</summary>
-        public static Color ControlColor { get; set; } = Color.MediumOrchid;
+        public static Color DrawColor { get; set; } = Color.MediumOrchid;
         public static Color WaveColor { get; set; } = Color.ForestGreen;
         public static Color GridColor { get; set; } = Color.LightGray;
         public static Color MarkColor { get; set; } = Color.Red;
