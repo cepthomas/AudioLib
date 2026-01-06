@@ -15,15 +15,6 @@ namespace Ephemera.AudioLib
     [Serializable]
     public class AudioSettings
     {
-        /// <summary>Current audio settings. Client must set this before accessing!</summary>
-        [Browsable(false)]
-        public static AudioSettings LibSettings
-        {
-            get { if (_settings is null) throw new InvalidOperationException("Client must set this property before accessing"); return _settings; }
-            set { _settings = value; }
-        }
-        static AudioSettings? _settings = null;
-
         #region Persisted editable properties
         [DisplayName("Wave Output Device")]
         [Description("How to play the audio files.")]
@@ -36,11 +27,6 @@ namespace Ephemera.AudioLib
         [Browsable(true)]
         [TypeConverter(typeof(AudioSettingsConverter))]
         public string Latency { get; set; } = "200";
-
-        [DisplayName("Max Clip Size")]
-        [Description("Limit clips to this many minutes. Has a direct effect on memory usage.")]
-        [Browsable(true)]
-        public int MaxClipSize { get; set; } = AudioLibDefs.MAX_CLIP_SIZE;
         #endregion
     }
 

@@ -83,7 +83,7 @@ namespace Ephemera.AudioLib
         /// <summary>Standard formatting.</summary>
         public const string TS_FORMAT = @"mm\.ss\.fff";
 
-        /// <summary>Max clip size in minutes. Can be overriden in settings.</summary>
+        /// <summary>Max clip size in minutes. Has a direct effect on memory usage.</summary>
         public const int MAX_CLIP_SIZE = 10;
     }
     #endregion

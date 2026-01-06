@@ -35,7 +35,7 @@ namespace Ephemera.AudioLib
             var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
             int numRead;
             int totalRead = 0;
-            int maxSamples = AudioSettings.LibSettings.MaxClipSize * AudioLibDefs.SAMPLE_RATE * 60;
+            int maxSamples = AudioLibDefs.MAX_CLIP_SIZE * AudioLibDefs.SAMPLE_RATE * 60;
 
             while ((numRead = prov.Read(buff, 0, buff.Length)) > 0)
             {

@@ -20,7 +20,7 @@ namespace Ephemera.AudioLib.Test
     public partial class TestHost : Form
     {
         /// <summary>Where the files are.</summary>
-        readonly string _testFilesDir = @"C:\Dev\Apps\Misc\TestAudioFiles";
+        readonly string _testFilesDir = @"C:\Dev\Misc\TestAudioFiles";
 
         /// <summary>The current audio provider.</summary>
         ISampleProvider _prov = new NullSampleProvider();
@@ -44,11 +44,6 @@ namespace Ephemera.AudioLib.Test
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
-
-            AudioSettings.LibSettings = new();
-            // Must do this first before initializing.
-            _settings = (TestSettings)SettingsCore.Load(".", typeof(TestSettings));
-            AudioSettings.LibSettings = _settings.AudioSettings;
 
             WindowState = FormWindowState.Normal;
             StartPosition = FormStartPosition.Manual;
@@ -120,7 +115,7 @@ namespace Ephemera.AudioLib.Test
 
             // Create player.
             _waveOutSwapper = new();
-            _player = new(AudioSettings.LibSettings.WavOutDevice, int.Parse(AudioSettings.LibSettings.Latency), _waveOutSwapper) { Volume = 0.5f };
+            _player = new(_settings.WavOutDevice, int.Parse(_settings.Latency), _waveOutSwapper) { Volume = 0.5f };
             _player.PlaybackStopped += (_, __) =>
             {
                 LogLine("Player finished");
@@ -508,10 +503,16 @@ namespace Ephemera.AudioLib.Test
         [Browsable(true)]
         public double DefaultBPM { get; set; } = 100.0;
 
-        [DisplayName("Audio Settings")]
-        [Description("Edit audio settings.")]
+        [DisplayName("Wave Output Device")]
+        [Description("How to play the audio files.")]
         [Browsable(true)]
-        [TypeConverter(typeof(ExpandableObjectConverter))]
-        public AudioSettings AudioSettings { get; set; } = new();
+        [TypeConverter(typeof(AudioSettingsConverter))]
+        public string WavOutDevice { get; set; } = "Microsoft Sound Mapper";
+
+        [DisplayName("Latency")]
+        [Description("What's the hurry?")]
+        [Browsable(true)]
+        [TypeConverter(typeof(AudioSettingsConverter))]
+        public string Latency { get; set; } = "200";
     }
 }
