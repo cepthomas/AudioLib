@@ -4,7 +4,7 @@
 - This uses NAudio extensively but limits internal formats to IEEE 32bit fp 44100Hz.
 - For usage, see [Wavicler](https://github.com/cepthomas/Wavicler) which is a fairly comprehensive example
   that documents most of the features. Also see the Test project.
-- Requires VS2022 and .NET6.
+- Requires VS2022 and .NET8.
 
 # Contents
 
