@@ -20,7 +20,7 @@ namespace Ephemera.AudioLib.Test
     public partial class TestHost : Form
     {
         /// <summary>Where the files are.</summary>
-        readonly string _testFilesDir = @"C:\Dev\Misc\TestAudioFiles";
+        readonly string _testFilesDir;
 
         /// <summary>The current audio provider.</summary>
         ISampleProvider _prov = new NullSampleProvider();
@@ -49,6 +49,8 @@ namespace Ephemera.AudioLib.Test
             StartPosition = FormStartPosition.Manual;
             Location = new(200, 10);
             Size = new(1000, 700);
+
+            _testFilesDir = Path.Join(Environment.GetEnvironmentVariable("DEV_PATH"), "Misc", "TestAudioFiles");
 
             ContextMenuStrip = contextMenuStrip1;
 
