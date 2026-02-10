@@ -20,7 +20,7 @@ namespace Ephemera.AudioLib.Test
     public partial class TestHost : Form
     {
         /// <summary>Where the files are.</summary>
-        readonly string _testFilesDir;
+        readonly string _filesDir;
 
         /// <summary>The current audio provider.</summary>
         ISampleProvider _prov = new NullSampleProvider();
@@ -50,7 +50,7 @@ namespace Ephemera.AudioLib.Test
             Location = new(200, 10);
             Size = new(1000, 700);
 
-            _testFilesDir = Path.Join(Environment.GetEnvironmentVariable("DEV_PATH"), "Misc", "TestAudioFiles");
+            _filesDir = Path.Join(MiscUtils.GetSourcePath(), "Files");
 
             ContextMenuStrip = contextMenuStrip1;
 
@@ -68,12 +68,17 @@ namespace Ephemera.AudioLib.Test
             ContextMenuStrip.Items.Add(new ToolStripSeparator());
 
             // The rest of the controls.
-            txtInfo.WordWrap = true;
-            txtInfo.BackColor = _settings.BackColor;
-            txtInfo.MatchText.Add("! ", Color.LightPink);
-            txtInfo.MatchText.Add("ERR", Color.LightPink);
-            txtInfo.MatchText.Add("WRN", Color.Plum);
-            txtInfo.Prompt = "> ";
+            tvInfo.WordWrap = true;
+            tvInfo.BackColor = _settings.BackColor;
+
+            List<TextViewer.Matcher> matchers =
+            [
+                new("! ", BgColor: Color.LightPink),
+                new("ERR", BgColor: Color.LightPink),
+                new("WRN", BgColor: Color.Plum),
+            ];
+            tvInfo.Matchers = matchers;
+            tvInfo.Prompt = "> ";
 
             cmbSelMode.Items.Add(WaveSelectionMode.Time);
             cmbSelMode.Items.Add(WaveSelectionMode.Bar);
@@ -105,7 +110,7 @@ namespace Ephemera.AudioLib.Test
             wv1.ViewerChange += ProcessViewerChange;
 
             // Add stuff to the wave viewer menu.
-            wv1.ContextMenuStrip.Items.Add("Test item", null, (_, __) => LogLine("Test item worked"));
+            wv1.ContextMenuStrip!.Items.Add("Test item", null, (_, __) => LogLine("Test item worked"));
             toolStripMenuItem1.Click += (_, __) => LogLine($"Log it worked");
 
             wv2.WaveColor = Color.Blue;
@@ -113,7 +118,7 @@ namespace Ephemera.AudioLib.Test
             wv2.ViewerChange += ProcessViewerChange;
 
             // Static swap provider.
-            _provSwap = new ClipSampleProvider(Path.Join(_testFilesDir, "test.wav"), StereoCoercion.Mono);
+            _provSwap = new ClipSampleProvider(Path.Join(_filesDir, "test.wav"), StereoCoercion.Mono);
 
             // Create player.
             _waveOutSwapper = new();
@@ -126,11 +131,7 @@ namespace Ephemera.AudioLib.Test
             };
 
             // File openers.
-            foreach (var fn in new[] { "ref-stereo.wav", "one-sec.mp3", "ambi_swoosh.flac", "Tracy.m4a",
-                "avTouch_sample_22050.m4a", "tri-ref.txt", "short_samples.txt", "generate.sin" })
-            {
-                LoadButton.DropDownItems.Add(fn, null, LoadFile_Click);
-            }
+            Directory.GetFiles(_filesDir).ForEach(fn => { LoadButton.DropDownItems.Add(fn, null, LoadFile_Click); });
 
             chkPlay.Click += (_, __) => Play_Click();
 
@@ -159,7 +160,7 @@ namespace Ephemera.AudioLib.Test
             try
             {
                 ISampleProvider? prov = null;
-                string fn = Path.Join(_testFilesDir, sender!.ToString());
+                string fn = sender!.ToString();
 
                 switch (ext)
                 {
@@ -350,10 +351,8 @@ namespace Ephemera.AudioLib.Test
         /// <param name="e"></param>
         void Resample_Click(object? sender, EventArgs e)
         {
-            string fn = Path.Join(_testFilesDir, "Tracy.m4a");
-            string newfn = Path.Join(_testFilesDir, "Tracy.wav");
-
-            NAudioEx.Convert(Conversion.Resample, newfn);
+            string fn = Path.Join(_filesDir, "test.wav");
+            NAudioEx.Convert(Conversion.Resample, fn);
         }
 
         /// <summary>
@@ -385,17 +384,10 @@ namespace Ephemera.AudioLib.Test
         {
             // Dump all test files.
             bool verbose = false;
-            string[] files = new[] {
-                "ambi_swoosh.flac", "avTouch_sample_22050.m4a", "bass_woodsy_c.flac", "Cave Ceremony 01.wav", "Fat Box 01.wav",
-                "Horns 01.wav", "one-sec.mp3", "_kidch.mp3", "one-sec.wav", "Orchestra 03.wav", "ref-stereo.wav",
-                "sin-stereo-audible.wav", "sin.wav", "test.wav" };
-
-            files.ForEach(f =>
+            Directory.GetFiles(_filesDir).ForEach(f =>
             {
-                LogLine(AudioFileInfo.GetFileInfo(Path.Join(_testFilesDir, f), verbose));
+                LogLine(AudioFileInfo.GetFileInfo(f, verbose));
             });
-
-            LogLine(AudioFileInfo.GetFileInfo(@"C:\Users\cepth\OneDrive\Audio\SoundFonts\FluidR3 GM.sf2", verbose));
         }
 
         /// <summary>
@@ -430,7 +422,7 @@ namespace Ephemera.AudioLib.Test
             // –1 indicates the default output device, while 0 is the first output device.
             for (int id = -1; id < WaveOut.DeviceCount; id++)
             {
-                var cap = WaveOut.GetCapabilities(id);
+                _ = WaveOut.GetCapabilities(id);
             }
         }
 
@@ -452,7 +444,7 @@ namespace Ephemera.AudioLib.Test
         /// <param name="s"></param>
         void LogLine(string s)
         {
-            this.InvokeIfRequired(_ => { txtInfo.AppendLine(s); });
+            this.InvokeIfRequired(_ => { tvInfo.Append(s); });
         }
 
         /// <summary>

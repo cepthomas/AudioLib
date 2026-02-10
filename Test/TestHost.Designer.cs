@@ -18,7 +18,7 @@
             this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TestHost));
             this.timer1 = new System.Windows.Forms.Timer(this.components);
-            this.txtInfo = new Ephemera.NBagOfUis.TextViewer();
+            this.tvInfo = new Ephemera.NBagOfUis.TextViewer();
             this.progBar = new Ephemera.AudioLib.ProgressBar();
             this.wv1 = new Ephemera.AudioLib.WaveViewer();
             this.wv2 = new Ephemera.AudioLib.WaveViewer();
@@ -64,17 +64,17 @@
             // 
             // txtInfo
             // 
-            this.txtInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            this.tvInfo.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.txtInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.txtInfo.Location = new System.Drawing.Point(6, 429);
-            this.txtInfo.MaxText = 50000;
-            this.txtInfo.Name = "txtInfo";
-            this.txtInfo.Prompt = "";
-            this.txtInfo.Size = new System.Drawing.Size(985, 135);
-            this.txtInfo.TabIndex = 29;
-            this.txtInfo.WordWrap = true;
+            this.tvInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.tvInfo.Location = new System.Drawing.Point(6, 429);
+            this.tvInfo.MaxText = 50000;
+            this.tvInfo.Name = "txtInfo";
+            this.tvInfo.Prompt = "";
+            this.tvInfo.Size = new System.Drawing.Size(985, 135);
+            this.tvInfo.TabIndex = 29;
+            this.tvInfo.WordWrap = true;
             // 
             // progBar
             // 
@@ -391,7 +391,7 @@
             this.ClientSize = new System.Drawing.Size(1000, 576);
             this.Controls.Add(this.btnRewind);
             this.Controls.Add(this.chkPlay);
-            this.Controls.Add(this.txtInfo);
+            this.Controls.Add(this.tvInfo);
             this.Controls.Add(this.sldGain);
             this.Controls.Add(this.wv2);
             this.Controls.Add(this.toolStrip1);
@@ -414,7 +414,7 @@
         private ProgressBar progBar;
         private WaveViewer wv1;
         private WaveViewer wv2;
-        private NBagOfUis.TextViewer txtInfo;
+        private NBagOfUis.TextViewer tvInfo;
         private NBagOfUis.Slider sldGain;
         private System.Windows.Forms.ToolStrip toolStrip1;
         private System.Windows.Forms.ToolStripButton btnRunBars;
