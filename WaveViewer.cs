@@ -26,7 +26,7 @@ namespace Ephemera.AudioLib
         readonly StringFormat _format = new() { LineAlignment = StringAlignment.Center, Alignment = StringAlignment.Center };
 
         /// <summary>The data buffer.</summary>
-        float[] _vals = Array.Empty<float>();
+        float[] _vals = [];
 
         /// <summary>Extent of _vals.</summary>
         float _min = 0;
@@ -71,7 +71,7 @@ namespace Ephemera.AudioLib
 
         #region Designer fields
         readonly ToolTip toolTip;
-        readonly IContainer components;
+        readonly Container components;
         #endregion
 
         #region Properties
@@ -91,7 +91,7 @@ namespace Ephemera.AudioLib
         public Font TextFont { get; set; } = new("Calibri", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Owner can add some menu items.</summary>
-        public List<ToolStripItem> ExtraMenuItems { get; set; } = new();
+        public List<ToolStripItem> ExtraMenuItems { get; set; } = [];
 
         /// <summary>Client gain adjustment.</summary>
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
@@ -200,7 +200,7 @@ namespace Ephemera.AudioLib
         /// <param name="e"></param>
         void ContextMenuStrip_Opening(object? sender, CancelEventArgs e)
         {
-            ContextMenuStrip.Items.Clear();
+            ContextMenuStrip!.Items.Clear();
 
             // Set up main menu.
             ContextMenuStrip.Items.Add("Reset View", null, (_, __) => ResetView());
@@ -219,7 +219,7 @@ namespace Ephemera.AudioLib
 
                 ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
                 ToolStripParamEditor edMarker = new() { Value = Marker };
-                edMarker.ParamChanged += (object? sender, ParamChangedEventArgs args) => { Marker = args.Value; ContextMenuStrip.Close(); };
+                edMarker.ParamChanged += (sender, args) => { Marker = args.Value; ContextMenuStrip.Close(); };
                 ContextMenuStrip.Items.Add(edMarker);
             }
 
@@ -231,12 +231,12 @@ namespace Ephemera.AudioLib
 
                 ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
                 ToolStripParamEditor edSelStart = new() { Value = SelStart };
-                edSelStart.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
+                edSelStart.ParamChanged += (sender, args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
                 ContextMenuStrip.Items.Add(edSelStart);
 
                 ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
                 ToolStripParamEditor edSelLength = new() { Value = SelLength };
-                edSelLength.ParamChanged += (object? sender, ParamChangedEventArgs args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
+                edSelLength.ParamChanged += (sender, args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
                 ContextMenuStrip.Items.Add(edSelLength);
             }
 
@@ -483,7 +483,7 @@ namespace Ephemera.AudioLib
             // X grid lines.
             // Calc the x increment and fit to a fine or coarse set.
             int sampincr = RoundGranular(VisibleLength / X_NUM_LINES);
-            HashSet<int> set = new();
+            HashSet<int> set = [];
 
             // Try coarse.
             for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
@@ -504,7 +504,7 @@ namespace Ephemera.AudioLib
             if (list.Count > 10)
             {
                 int prune = list.Count / 10 + 1;
-                List<int> newList = new();
+                List<int> newList = [];
                 for (int i = 0; i < list.Count; i++)
                 {
                     if (i % prune == 0)

@@ -41,17 +41,14 @@ namespace Ephemera.AudioLib
         {
             List<string>? rec = null;
 
-            switch (context!.PropertyDescriptor.Name)
+            switch (context!.PropertyDescriptor!.Name)
             {
                 case "Latency":
-                    rec = new List<string>()
-                    {
-                        "25", "50", "100", "150", "200", "300", "400", "500"
-                    };
+                    rec = [ "25", "50", "100", "150", "200", "300", "400", "500" ];
                     break;
 
                 case "WavOutDevice":
-                    rec = new List<string>();
+                    rec = [];
                     for (int id = -1; id < WaveOut.DeviceCount; id++) // –1 indicates the default output device, while 0 is the first output device.
                     {
                         var cap = WaveOut.GetCapabilities(id);

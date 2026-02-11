@@ -70,15 +70,13 @@ namespace Ephemera.AudioLib.Test
             // The rest of the controls.
             tvInfo.WordWrap = true;
             tvInfo.BackColor = _settings.BackColor;
-
-            List<TextViewer.Matcher> matchers =
+            tvInfo.Prompt = "> ";
+            tvInfo.Matchers =
             [
                 new("! ", BgColor: Color.LightPink),
                 new("ERR", BgColor: Color.LightPink),
                 new("WRN", BgColor: Color.Plum),
             ];
-            tvInfo.Matchers = matchers;
-            tvInfo.Prompt = "> ";
 
             cmbSelMode.Items.Add(WaveSelectionMode.Time);
             cmbSelMode.Items.Add(WaveSelectionMode.Bar);
@@ -160,7 +158,7 @@ namespace Ephemera.AudioLib.Test
             try
             {
                 ISampleProvider? prov = null;
-                string fn = sender!.ToString();
+                string fn = sender!.ToString()!;
 
                 switch (ext)
                 {
@@ -253,6 +251,7 @@ namespace Ephemera.AudioLib.Test
             switch (_prov)
             {
                 case ClipSampleProvider csp:
+                    var p = csp.SampleIndex;
                     //csp.ClipProgress -= Csp_ClipProgress;
                     break;
 
@@ -265,11 +264,13 @@ namespace Ephemera.AudioLib.Test
             switch (prov)
             {
                 case ClipSampleProvider csp:
+                    var p = csp.SampleIndex;
                     //csp.ClipProgress += Csp_ClipProgress;
                     //progBar.Length = csp.SamplesPerChannel;
                     break;
 
                 case AudioFileReader afr:
+                    var p2 = afr.Position;
                     //progBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
                     break;
             }
