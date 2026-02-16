@@ -454,11 +454,9 @@ namespace Ephemera.AudioLib.Test
         void UnitTests()
         {
             TestRunner runner = new(OutputFormat.Readable);
-            var cases = new[] { "CONVERT" };
-            runner.RunSuites(cases);
+            var torun = new[] { "CONVERT" };
+            runner.RunSuites(torun);
             runner.Context.OutputLines.ForEach(l => LogLine(l));
-            //var fn = Path.Combine(MiscUtils.GetSourcePath(), "out", "testhost_out.txt");
-            //File.WriteAllLines(fn, runner.Context.OutputLines);
         }
 
         /// <summary>
