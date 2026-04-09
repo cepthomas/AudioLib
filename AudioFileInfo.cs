@@ -32,7 +32,7 @@ namespace Ephemera.AudioLib
                 ".m4a"  => GetInfoOther(fileName, verbose),
                 ".flac" => GetInfoOther(fileName, verbose),
                 ".mp3"  => GetInfoMp3(fileName, verbose),
-                ".sf2"  => GetInfoSf(fileName, verbose),
+                ".sf2" => GetInfoSf(fileName, verbose),
                 _ => GetInfoOther(fileName, verbose),
             };
             return sinfo;
@@ -163,24 +163,30 @@ namespace Ephemera.AudioLib
         /// <returns></returns>
         public static string GetInfoOther(string fileName, bool verbose)
         {
-            var ls = new List<string>
+            try
             {
-                $"============= mfr file:{fileName} ================="
-            };
+                var ls = new List<string>
+                {
+                    $"============= mfr file:{fileName} ================="
+                };
 
-            MediaFoundationReader mfr = new(fileName);
+                MediaFoundationReader mfr = new(fileName);
 
-            var wf = mfr.WaveFormat;
-            ls.AddRange(FormatWaveFormat(wf));
-            ls.Add($"Length:{mfr.Length}");
-            ls.Add($"TotalTime:{mfr.TotalTime}");
+                var wf = mfr.WaveFormat;
+                ls.AddRange(FormatWaveFormat(wf));
+                ls.Add($"Length:{mfr.Length}");
+                ls.Add($"TotalTime:{mfr.TotalTime}");
 
-            if (verbose)
-            {
+                if (verbose)
+                {
+                }
 
+                return string.Join(Environment.NewLine, ls);
             }
-
-            return string.Join(Environment.NewLine, ls);
+            catch (Exception)
+            {
+                return $"============= Can't get info for {fileName} =================";
+            }
         }
 
         /// <summary>
