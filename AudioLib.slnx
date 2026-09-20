@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="AudioLib.csproj" />
+  <Project Path="Test/Test.csproj" />
+</Solution>

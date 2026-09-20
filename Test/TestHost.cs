@@ -35,7 +35,7 @@ namespace Ephemera.AudioLib.Test
         readonly AudioPlayer _player;
 
         /// <summary>Test stuff.</summary>
-        readonly TestSettings _settings = new();
+        readonly TestSettings _settings;
 
         /// <summary>
         /// Constructor.
@@ -44,6 +44,9 @@ namespace Ephemera.AudioLib.Test
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
+
+            // Get settings.
+            _settings = (TestSettings)SettingsCore.Load(MiscUtils.GetSourcePath(), typeof(TestSettings));
 
             WindowState = FormWindowState.Normal;
             StartPosition = FormStartPosition.Manual;

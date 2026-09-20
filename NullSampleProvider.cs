@@ -14,7 +14,7 @@ namespace Ephemera.AudioLib
         public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
 
         /// <inheritdoc />
-        public int Read(float[] buffer, int offset, int count)
+        public int Read(Span<float> buffer)
         {
             return 0;
         }

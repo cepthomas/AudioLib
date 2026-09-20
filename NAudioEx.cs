@@ -37,7 +37,7 @@ namespace Ephemera.AudioLib
             int totalRead = 0;
             int maxSamples = AudioLibDefs.MAX_CLIP_SIZE * AudioLibDefs.SAMPLE_RATE * 60;
 
-            while ((numRead = prov.Read(buff, 0, buff.Length)) > 0)
+            while ((numRead = prov.Read(buff.AsSpan(0, buff.Length))) > 0)
             {
                 data.AddRange(buff.Take(numRead));
 
@@ -188,7 +188,7 @@ namespace Ephemera.AudioLib
                 ls.Add($"Index,Val");
                 while (!done)
                 {
-                    var sread = prov.Read(vals, 0, AudioLibDefs.READ_BUFF_SIZE);
+                    var sread = prov.Read(vals.AsSpan(0, AudioLibDefs.READ_BUFF_SIZE));
                     for (int i = 0; i < sread; i++)
                     {
                         ls.Add($"{index++}, {vals[i]}");
@@ -201,7 +201,7 @@ namespace Ephemera.AudioLib
                 ls.Add($"Index,Left,Right");
                 while (!done)
                 {
-                    var sread = prov.Read(vals, 0, AudioLibDefs.READ_BUFF_SIZE);
+                    var sread = prov.Read(vals.AsSpan(0, AudioLibDefs.READ_BUFF_SIZE));
                     for (int i = 0; i < sread; i += 2)
                     {
                         ls.Add($"{index++}, {vals[i]}, {vals[i + 1]}");

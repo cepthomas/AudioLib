@@ -3,6 +3,7 @@ using System.Windows.Forms;
 using System.Diagnostics;
 using System.Windows.Forms.Design;
 using System.Drawing;
+using System.ComponentModel;
 using Ephemera.NBagOfTricks;
 
 
@@ -25,6 +26,7 @@ namespace Ephemera.AudioLib
 
         #region Properties
         /// <summary>Current value (sample) or -1 if invalid.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int Value
         {
             get { return Globals.ConverterOps.Parse(_ed.Text); }
@@ -32,6 +34,7 @@ namespace Ephemera.AudioLib
         }
 
         /// <summary>Tool tip or other label.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public string Label { set { ToolTipText = value; } }
         #endregion
 

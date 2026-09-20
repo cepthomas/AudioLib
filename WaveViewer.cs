@@ -76,24 +76,31 @@ namespace Ephemera.AudioLib
 
         #region Properties
         /// <summary>The waveform color.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Color WaveColor { set { _penWave.Color = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Color GridColor { set { _penGrid.Color = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Color MarkColor { set { _penMark.Color = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Color TextColor { set { _textBrush.Color = value; Invalidate(); } }
 
         /// <summary>For drawing text.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Font TextFont { get; set; } = new("Calibri", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Owner can add some menu items.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public List<ToolStripItem> ExtraMenuItems { get; set; } = [];
 
         /// <summary>Client gain adjustment.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
         /// <summary>Length of the clip in samples.</summary>

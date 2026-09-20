@@ -42,10 +42,8 @@ namespace Ephemera.AudioLib
         /// ISampleProvider implementation.
         /// </summary>
         /// <param name="buffer">Sample buffer.</param>
-        /// <param name="offset">Offset into buffer.</param>
-        /// <param name="count">Number of samples requested.</param>
         /// <returns>Number of samples read.</returns>
-        public int Read(float[] buffer, int offset, int count)
+        public int Read(Span<float> buffer)
         {
             if (_currentInput is null)
             {
@@ -53,14 +51,14 @@ namespace Ephemera.AudioLib
                 return 0;
             }
 
-            var readBuffer = new float[count];
+            var readBuffer = new float[buffer.Length];
 
             if (_currentInput.WaveFormat.Channels == 1)
             {
                 // Convert mono into stereo. Borrowed from MonoToStereoSampleProvider:
-                var req = count / 2;
-                var index = offset;
-                var sread = _currentInput.Read(readBuffer, 0, req);
+                var req = buffer.Length / 2;
+                var index = 0;
+                var sread = _currentInput.Read(readBuffer.AsSpan(0, req));
                 for (var n = 0; n < sread; n++)
                 {
                     buffer[index++] = readBuffer[n]; // L
@@ -70,9 +68,9 @@ namespace Ephemera.AudioLib
             }
             else // Stereo - as is.
             {
-                var req = count;
-                var index = offset;
-                int sread = _currentInput.Read(readBuffer, 0, req);
+                var req = buffer.Length;
+                var index = 0;
+                int sread = _currentInput.Read(readBuffer.AsSpan(0, req));
                 for (int i = 0; i < sread; i++)
                 {
                     buffer[index++] = readBuffer[i];

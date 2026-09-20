@@ -64,21 +64,27 @@ namespace Ephemera.AudioLib
         public int SelLength { get { return _selLength; } set { _selLength = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Color ProgressColor { set { _penProgress.Color = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Color MarkColor { set { _penMark.Color = value; Invalidate(); } }
 
         /// <summary>For styling.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Color TextColor { set { _textBrush.Color = value; Invalidate(); } }
 
         /// <summary>Big font.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Font FontLarge { get; set; } = new("Microsoft Sans Serif", 20, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Baby font.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Font FontSmall { get; set; } = new("Microsoft Sans Serif", 10, FontStyle.Regular, GraphicsUnit.Point, 0);
 
         /// <summary>Optional background.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Bitmap? Thumbnail { get { return _thumbnail; } set { _thumbnail = value; Invalidate(); } }
         #endregion
 

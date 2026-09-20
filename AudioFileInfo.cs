@@ -99,7 +99,7 @@ namespace Ephemera.AudioLib
                 {
                     ls.Add($"ExtraSize:{wf.ExtraSize} BlockAlign:{wf.BlockAlign}");
 
-                    foreach (RiffChunk chunk in rd.ExtraChunks)
+                    foreach (RiffChunk chunk in rd.Chunks) // was ExtraChunks
                     {
                         ls.Add($"Chunk:{chunk.IdentifierAsString} Length:{chunk.Length}");
                         //byte[] data = rd.GetChunkData(chunk);

@@ -105,10 +105,8 @@ namespace Ephemera.AudioLib
         /// ISampleProvider implementation.
         /// </summary>
         /// <param name="buffer">Sample buffer.</param>
-        /// <param name="offset">Offset into buffer.</param>
-        /// <param name="count">Number of samples requested.</param>
         /// <returns>Number of samples read.</returns>
-        public int Read(float[] buffer, int offset, int count)
+        public int Read(Span<float> buffer)
         {
             int numRead = 0;
 
@@ -118,10 +116,10 @@ namespace Ephemera.AudioLib
                 _vals.Length;
 
             // Read area of interest.
-            long numToRead = Math.Min(count, end - _sampleIndex);
+            long numToRead = Math.Min(buffer.Length, end - _sampleIndex);
             for (int n = 0; n < numToRead; n++)
             {
-                buffer[n + offset] = _vals[_sampleIndex] * Gain;
+                buffer[n] = _vals[_sampleIndex] * Gain;
                 numRead++;
                 _sampleIndex++;
                 //_sampleCount++;
