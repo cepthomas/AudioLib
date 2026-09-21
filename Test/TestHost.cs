@@ -53,7 +53,12 @@ namespace Ephemera.AudioLib.Test
             Location = new(200, 10);
             Size = new(1000, 700);
 
-            _filesDir = Path.Join(MiscUtils.GetSourcePath(), "Files");
+            _filesDir = Path.Join(Environment.GetEnvironmentVariable("DEV_PATH"), "Misc", "TestAudioFiles");
+            if (!Path.Exists(_filesDir))
+            {
+                MessageBox.Show($"Test files path {_filesDir} is not valid.{Environment.NewLine}This needs DEV_PATH set, or hack source to taste.");
+                Environment.Exit(1);
+            }
 
             ContextMenuStrip = contextMenuStrip1;
 
