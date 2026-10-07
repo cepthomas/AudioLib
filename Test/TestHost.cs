@@ -52,6 +52,7 @@ namespace Ephemera.AudioLib.Test
             StartPosition = FormStartPosition.Manual;
             Location = new(200, 10);
             Size = new(1000, 700);
+            Text = "AudioLib Test";
 
             _filesDir = Path.Join(Environment.GetEnvironmentVariable("DEV_PATH"), "Misc", "TestAudioFiles");
             if (!Path.Exists(_filesDir))
