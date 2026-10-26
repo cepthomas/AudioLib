@@ -1,9 +1,8 @@
 using System;
+using System.ComponentModel;
 using System.Windows.Forms;
-using System.Diagnostics;
 using System.Windows.Forms.Design;
 using System.Drawing;
-using System.ComponentModel;
 using Ephemera.NBagOfTricks;
 
 

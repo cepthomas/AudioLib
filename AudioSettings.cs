@@ -1,11 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Windows.Forms;
-using System.Drawing;
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using NAudio.Wave;
 using Ephemera.NBagOfTricks;
 

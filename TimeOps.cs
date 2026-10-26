@@ -1,7 +1,7 @@
-using Ephemera.NBagOfTricks;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Ephemera.NBagOfTricks;
 
 
 namespace Ephemera.AudioLib

@@ -1,11 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Windows.Forms;
-using System.IO;
-using System.Diagnostics;
 using System.ComponentModel;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;

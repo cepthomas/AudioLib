@@ -1,10 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Drawing;
-using System.IO;
-using System.Windows.Forms;
-using NAudio.Wave;
 using Ephemera.NBagOfTricks;
 
 
