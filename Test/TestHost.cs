@@ -350,7 +350,18 @@ namespace Ephemera.AudioLib.Test
             }
             else
             {
-                _player.Run(chkPlay.Checked);
+                if (chkPlay.Checked)
+                {
+                    _player.Run(true);
+                    if (!_player.Playing)
+                    {
+                        LogLine("ERR: can't run clip!");
+                    }
+                }
+                else
+                {
+                    _player.Run(chkPlay.Checked);
+                }
             }
         }
 
