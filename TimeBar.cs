@@ -10,7 +10,7 @@ using static Ephemera.AudioLib.Globals;
 namespace Ephemera.AudioLib
 {
     /// <summary>The control.</summary>
-    public partial class ProgressBar : UserControl
+    public partial class TimeBar.cs : UserControl
     {
         #region Fields
         /// <summary>For tracking mouse moves.</summary>
@@ -96,13 +96,13 @@ namespace Ephemera.AudioLib
         /// <summary>
         /// Constructor.
         /// </summary>
-        public ProgressBar()
+        public TimeBar.cs()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
             components = new Container();
             toolTip = new(components);
             SuspendLayout();
-            Name = "ProgressBar";
+            Name = "TimeBar.cs";
             ResumeLayout(false);
         }
 

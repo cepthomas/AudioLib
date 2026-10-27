@@ -19,7 +19,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TestHost));
             this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.tvInfo = new Ephemera.NBagOfUis.TextViewer();
-            this.progBar = new Ephemera.AudioLib.ProgressBar();
+            this.timeBar = new Ephemera.AudioLib.TimeBar();
             this.wv1 = new Ephemera.AudioLib.WaveViewer();
             this.wv2 = new Ephemera.AudioLib.WaveViewer();
             this.toolStrip1 = new System.Windows.Forms.ToolStrip();
@@ -76,19 +76,19 @@
             this.tvInfo.TabIndex = 29;
             this.tvInfo.WordWrap = true;
             // 
-            // progBar
+            // timeBar
             // 
-            this.progBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            this.timeBar.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.progBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.progBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.progBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
-            this.progBar.Location = new System.Drawing.Point(332, 44);
-            this.progBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.progBar.Name = "progBar";
-            this.progBar.Size = new System.Drawing.Size(659, 48);
-            this.progBar.TabIndex = 24;
-            this.progBar.Thumbnail = null;
+            this.timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.timeBar.FontLarge = new System.Drawing.Font("Microsoft Sans Serif", 20F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.timeBar.FontSmall = new System.Drawing.Font("Microsoft Sans Serif", 10F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.timeBar.Location = new System.Drawing.Point(332, 44);
+            this.timeBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.timeBar.Name = "timeBar";
+            this.timeBar.Size = new System.Drawing.Size(659, 48);
+            this.timeBar.TabIndex = 24;
+            this.timeBar.Thumbnail = null;
             // 
             // wv1
             // 
@@ -396,7 +396,7 @@
             this.Controls.Add(this.wv2);
             this.Controls.Add(this.toolStrip1);
             this.Controls.Add(this.wv1);
-            this.Controls.Add(this.progBar);
+            this.Controls.Add(this.timeBar);
             this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.Name = "TestHost";
             this.Text = "TestHost";
@@ -411,7 +411,7 @@
 
         #endregion
         private System.Windows.Forms.Timer timer1;
-        private ProgressBar progBar;
+        private TimeBar timeBar;
         private WaveViewer wv1;
         private WaveViewer wv2;
         private NBagOfUis.TextViewer tvInfo;
