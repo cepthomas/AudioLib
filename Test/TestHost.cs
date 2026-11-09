@@ -363,7 +363,7 @@ namespace Ephemera.AudioLib.Test
             else
             {
                 if (chkPlay.Checked)
-                {
+                {  
                     _player.Run(true);
                     if (!_player.Playing)
                     {
@@ -371,7 +371,7 @@ namespace Ephemera.AudioLib.Test
                         chkPlay.Checked = false;
                     }
                 }
-                else
+                else   
                 {
                     _player.Run(chkPlay.Checked);
                 }
