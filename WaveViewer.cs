@@ -9,6 +9,8 @@ using Ephemera.NBagOfTricks;
 using static Ephemera.AudioLib.Globals;
 using static Ephemera.AudioLib.ToolStripParamEditor;
 
+//TODO-A straighten out gain/volume usage. Also Wavicler...
+
 
 namespace Ephemera.AudioLib
 {

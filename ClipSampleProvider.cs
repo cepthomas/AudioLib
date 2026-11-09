@@ -100,7 +100,7 @@ namespace Ephemera.AudioLib
 
         #region Public functions
         /// <summary>
-        /// Reads samples from this sample provider with adjustments for gain.
+        /// Reads samples from this sample provider with adjustments for volume.
         /// Honors user selection if specified.
         /// ISampleProvider implementation.
         /// </summary>
