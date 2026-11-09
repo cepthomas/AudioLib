@@ -27,7 +27,7 @@
             this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.btnSettings = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
-            this.LoadButton = new System.Windows.Forms.ToolStripDropDownButton();
+            this.btnLoad = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.btnSwap = new System.Windows.Forms.ToolStripButton();
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
@@ -124,7 +124,7 @@
             this.toolStripSeparator1,
             this.btnSettings,
             this.toolStripSeparator2,
-            this.LoadButton,
+            this.btnLoad,
             this.toolStripSeparator3,
             this.btnSwap,
             this.toolStripSeparator5,
@@ -173,13 +173,13 @@
             this.toolStripSeparator2.Name = "toolStripSeparator2";
             this.toolStripSeparator2.Size = new System.Drawing.Size(6, 28);
             // 
-            // LoadButton
+            // btnLoad
             // 
-            this.LoadButton.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            this.LoadButton.ImageTransparentColor = System.Drawing.Color.Magenta;
-            this.LoadButton.Name = "LoadButton";
-            this.LoadButton.Size = new System.Drawing.Size(53, 25);
-            this.LoadButton.Text = "load";
+            this.btnLoad.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.btnLoad.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.btnLoad.Name = "btnLoad";
+            this.btnLoad.Size = new System.Drawing.Size(53, 25);
+            this.btnLoad.Text = "load";
             // 
             // toolStripSeparator3
             // 
@@ -421,7 +421,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
         private System.Windows.Forms.ToolStripButton btnSettings;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
-        private System.Windows.Forms.ToolStripDropDownButton LoadButton;
+        private System.Windows.Forms.ToolStripDropDownButton btnLoad;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
         private System.Windows.Forms.ToolStripButton btnSwap;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;

@@ -99,17 +99,17 @@ namespace Ephemera.AudioLib.Test
                     case WaveSelectionMode.Sample: Globals.ConverterOps = new SampleOps(); break;
                 }
                 wv1.Invalidate();
-                progBar.Invalidate();
+                timeBar.Invalidate();
             };
             cmbSelMode.SelectedItem = _settings.DefaultSelectionMode;
 
             sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
 
             // Progress bar.
-            progBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{Globals.ConverterOps.Format(progBar.Current)}");
-            progBar.ProgressColor = Color.Green;
-            progBar.TextColor = Color.White;
-            progBar.BackColor = Color.Cyan;
+            timeBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{Globals.ConverterOps.Format(timeBar.Current)}");
+            timeBar.ProgressColor = Color.Green;
+            timeBar.TextColor = Color.White;
+            timeBar.BackColor = Color.Cyan;
 
             // Wave viewers.
             wv1.WaveColor = Color.Red;
@@ -138,7 +138,12 @@ namespace Ephemera.AudioLib.Test
             };
 
             // File openers.
-            Directory.GetFiles(_filesDir).ForEach(fn => { LoadButton.DropDownItems.Add(fn, null, LoadFile_Click); });
+            Directory.GetFiles(_filesDir).ForEach(fn => { btnLoad.DropDownItems.Add(fn, null, LoadFile_Click); });
+
+            //// Source - https://stackoverflow.com/a/12927028
+            //var files = Directory.GetFiles("path_to_files").Where(file => Regex.IsMatch(file, @"^.+\.(wav|mp3|txt)$"));
+            //AUDIO_FILE_TYPES
+
 
             chkPlay.Click += (_, __) => Play_Click();
 
@@ -222,7 +227,7 @@ namespace Ephemera.AudioLib.Test
                     break;
 
                 case ParamChange.SelStart when sender == wv1:
-                    progBar.SelStart = wv1.SelStart;
+                    timeBar.SelStart = wv1.SelStart;
                     switch (_prov)
                     {
                         case ClipSampleProvider csp: csp.SelStart = wv1.SelStart; break;
@@ -230,7 +235,7 @@ namespace Ephemera.AudioLib.Test
                     break;
 
                 case ParamChange.SelLength when sender == wv1:
-                    progBar.SelLength = wv1.SelLength;
+                    timeBar.SelLength = wv1.SelLength;
                     switch (_prov)
                     {
                         case ClipSampleProvider csp: csp.SelLength = wv1.SelLength; break;
@@ -238,7 +243,7 @@ namespace Ephemera.AudioLib.Test
                     break;
 
                 case ParamChange.Marker when sender == wv1:
-                    //progBar.SelLength = wv1.SelLength;
+                    //timeBar.SelLength = wv1.SelLength;
                     break;
 
                 case ParamChange.Marker when sender == wv2:
@@ -275,12 +280,12 @@ namespace Ephemera.AudioLib.Test
                 case ClipSampleProvider csp:
                     var p = csp.SampleIndex;
                     //csp.ClipProgress += Csp_ClipProgress;
-                    //progBar.Length = csp.SamplesPerChannel;
+                    //timeBar.Length = csp.SamplesPerChannel;
                     break;
 
                 case AudioFileReader afr:
                     var p2 = afr.Position;
-                    //progBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
+                    //timeBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
                     break;
             }
 
@@ -306,7 +311,7 @@ namespace Ephemera.AudioLib.Test
                         wv2.Init(new NullSampleProvider());
 
                         LogLine($"Show {csp.GetInfoString()}");
-                        progBar.Length = csp.SamplesPerChannel;
+                        timeBar.Length = csp.SamplesPerChannel;
                     }
                     break;
                 case AudioFileReader afr:
@@ -329,14 +334,14 @@ namespace Ephemera.AudioLib.Test
 
                         afr.Rewind();
                         LogLine($"Show {afr.GetInfoString()}");
-                        progBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
+                        timeBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
                     }
                     break;
             }
 
-            progBar.Current = 0;
-            var thumb = wv1.RenderThumbnail(progBar.Width, progBar.Height, Color.Blue, Color.Pink, true);
-            progBar.Thumbnail = thumb;
+            timeBar.Current = 0;
+            var thumb = wv1.RenderThumbnail(timeBar.Width, timeBar.Height, Color.Blue, Color.Pink, true);
+            timeBar.Thumbnail = thumb;
         }
 
         /// <summary>
@@ -421,14 +426,14 @@ namespace Ephemera.AudioLib.Test
             if (btnRunBars.Checked)
             {
                 // Update progress bar.
-                progBar.Current += 1000; // not-realtime for testing
+                timeBar.Current += 1000; // not-realtime for testing
             }
             else
             {
                 switch (_prov)
                 {
-                    case ClipSampleProvider csp: progBar.Current = csp.SampleIndex; break;
-                    case AudioFileReader afr: progBar.Current = (int)(afr.Position / afr.WaveFormat.BitsPerSample / 4 / afr.WaveFormat.Channels); break;
+                    case ClipSampleProvider csp: timeBar.Current = csp.SampleIndex; break;
+                    case AudioFileReader afr: timeBar.Current = (int)(afr.Position / afr.WaveFormat.BitsPerSample / 4 / afr.WaveFormat.Channels); break;
                 }
             }
         }

@@ -10,7 +10,7 @@ using static Ephemera.AudioLib.Globals;
 namespace Ephemera.AudioLib
 {
     /// <summary>The control.</summary>
-    public partial class TimeBar.cs : UserControl
+    public partial class TimeBar : UserControl
     {
         #region Fields
         /// <summary>For tracking mouse moves.</summary>
@@ -96,7 +96,7 @@ namespace Ephemera.AudioLib
         /// <summary>
         /// Constructor.
         /// </summary>
-        public TimeBar.cs()
+        public TimeBar()
         {
             SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
             components = new Container();
