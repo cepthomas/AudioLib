@@ -7,23 +7,23 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib
 {
-    [Serializable]
-    public class AudioSettings
-    {
-        #region Persisted editable properties
-        [DisplayName("Wave Output Device")]
-        [Description("How to play the audio files.")]
-        [Browsable(true)]
-        [TypeConverter(typeof(AudioSettingsConverter))]
-        public string WavOutDevice { get; set; } = "Microsoft Sound Mapper";
+    //[Serializable]
+    //public class AudioSettings TODO-A remove, relocate file
+    //{
+    //    #region Persisted editable properties
+    //    [DisplayName("Wave Output Device")]
+    //    [Description("How to play the audio files.")]
+    //    [Browsable(true)]
+    //    [TypeConverter(typeof(AudioSettingsConverter))]
+    //    public string WavOutDevice { get; set; } = "Microsoft Sound Mapper";
 
-        [DisplayName("Latency")]
-        [Description("What's the hurry?")]
-        [Browsable(true)]
-        [TypeConverter(typeof(AudioSettingsConverter))]
-        public string Latency { get; set; } = "200";
-        #endregion
-    }
+    //    [DisplayName("Latency")]
+    //    [Description("What's the hurry?")]
+    //    [Browsable(true)]
+    //    [TypeConverter(typeof(AudioSettingsConverter))]
+    //    public string Latency { get; set; } = "200";
+    //    #endregion
+    //}
 
     /// <summary>Converter for selecting property value from known lists.</summary>
     public class AudioSettingsConverter : TypeConverter

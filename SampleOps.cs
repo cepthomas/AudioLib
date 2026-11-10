@@ -5,8 +5,8 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib
 {
-    /// <summary>Converters for samples.</summary>
-    public class SampleOps : IConverterOps
+    /// <summary>Converter for samples.</summary>
+    internal class SampleConverter : IConverter
     {
         #region Constants
         public const int SAMPLE_FINE_RESOLUTION = 1000;
@@ -14,8 +14,8 @@ namespace Ephemera.AudioLib
         #endregion
 
         #region Properties
-        ///// <inheritdoc />
-        //public WaveSelectionMode Mode { get { return WaveSelectionMode.Sample; } }
+        /// <inheritdoc />
+        public double BPM { get; set; }
         #endregion
 
         #region Public functions

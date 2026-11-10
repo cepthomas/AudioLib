@@ -6,8 +6,8 @@ using System.Linq;
 using System.Windows.Forms;
 using NAudio.Wave;
 using Ephemera.NBagOfTricks;
-using static Ephemera.AudioLib.Globals;
-using static Ephemera.AudioLib.ToolStripParamEditor;
+//using static Ephemera.AudioLib.Globals;
+//using static Ephemera.AudioLib.ToolStripParamEditor;
 
 //TODO-A straighten out gain/volume usage. Also Wavicler...
 
@@ -66,6 +66,7 @@ namespace Ephemera.AudioLib
         readonly Pen _penWave = new(Color.Black, 1);
         readonly Pen _penGrid = new(Color.LightGray, 1);
         readonly Pen _penMark = new(Color.Red, 1);
+        IConverter _converter = new SampleConverter();
         #endregion
 
         #region Designer fields
@@ -74,6 +75,9 @@ namespace Ephemera.AudioLib
         #endregion
 
         #region Properties
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public WaveSelectionMode SelectionMode { set => _converter = Utils.CreateConverter(value); }
+
         /// <summary>The waveform color.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public Color WaveColor { set { _penWave.Color = value; Invalidate(); } }
@@ -215,7 +219,7 @@ namespace Ephemera.AudioLib
             ContextMenuStrip.Items.Add(new ToolStripSeparator());
             ContextMenuStrip.Items.Add("Snap Coarse", null, (_, __) => SetSnap(SnapType.Coarse));
             ContextMenuStrip.Items.Add("Snap Fine", null, (_, __) => SetSnap(SnapType.Fine));
-            ContextMenuStrip.Items.Add("Snap Off", null, (_, __) => SetSnap(SnapType.Off));
+            ContextMenuStrip.Items.Add("Snap Off", null, (_, __) => SetSnap(SnapType.None));
 
             if (_marker >= 0)
             {
@@ -223,10 +227,11 @@ namespace Ephemera.AudioLib
                 ContextMenuStrip.Items.Add("Go To Marker", null, (_, __) => GoToMarker());
                 ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => Marker = -1 );
 
-                ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
-                ToolStripParamEditor edMarker = new() { Value = Marker };
-                edMarker.ParamChanged += (sender, args) => { Marker = args.Value; ContextMenuStrip.Close(); };
-                ContextMenuStrip.Items.Add(edMarker);
+                // TODO-A 
+                //ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
+                //ToolStripParamEditor edMarker = new() { Value = Marker };
+                //edMarker.ParamChanged += (sender, args) => { Marker = args.Value; ContextMenuStrip.Close(); };
+                //ContextMenuStrip.Items.Add(edMarker);
             }
 
             if (_selStart >= 0)
@@ -235,15 +240,15 @@ namespace Ephemera.AudioLib
                 ContextMenuStrip.Items.Add("Go To Selection", null, (_, __) => GoToSelection());
                 ContextMenuStrip.Items.Add("Remove Selection", null, (_, __) => { _selStart = -1; _selLength = 0; Invalidate(); });
 
-                ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
-                ToolStripParamEditor edSelStart = new() { Value = SelStart };
-                edSelStart.ParamChanged += (sender, args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
-                ContextMenuStrip.Items.Add(edSelStart);
+                //ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
+                //ToolStripParamEditor edSelStart = new() { Value = SelStart };
+                //edSelStart.ParamChanged += (sender, args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
+                //ContextMenuStrip.Items.Add(edSelStart);
 
-                ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
-                ToolStripParamEditor edSelLength = new() { Value = SelLength };
-                edSelLength.ParamChanged += (sender, args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
-                ContextMenuStrip.Items.Add(edSelLength);
+                //ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
+                //ToolStripParamEditor edSelLength = new() { Value = SelLength };
+                //edSelLength.ParamChanged += (sender, args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
+                //ContextMenuStrip.Items.Add(edSelLength);
             }
 
             // Owner might have something to add.
@@ -318,7 +323,7 @@ namespace Ephemera.AudioLib
         protected override void OnMouseClick(MouseEventArgs e)
         {
             var sample = PixelToSample(e.X);
-            sample = ConverterOps.Snap(sample, _snap);
+            sample = _converter.Snap(sample, _snap);
             ParamChange changed = ParamChange.None;
             int newval = -1;
 
@@ -371,8 +376,8 @@ namespace Ephemera.AudioLib
             if (e.X != _lastXPos)
             {
                 var sample = PixelToSample(e.X);
-                sample = ConverterOps.Snap(sample, _snap);
-                toolTip.SetToolTip(this, ConverterOps.Format(sample));
+                sample = _converter.Snap(sample, _snap);
+                toolTip.SetToolTip(this, _converter.Format(sample));
                 _lastXPos = e.X;
             }
 
@@ -410,7 +415,7 @@ namespace Ephemera.AudioLib
                     break;
 
                 case Keys.N: // snap none
-                    SetSnap(SnapType.Off);
+                    SetSnap(SnapType.None);
                     break;
 
                 default:
@@ -494,14 +499,14 @@ namespace Ephemera.AudioLib
             // Try coarse.
             for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
             {
-                set.Add(ConverterOps.Snap(incr, SnapType.Coarse));
+                set.Add(_converter.Snap(incr, SnapType.Coarse));
             }
             if (set.Count < 5)
             {
                 // Try fine.
                 for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
                 {
-                    set.Add(ConverterOps.Snap(incr, SnapType.Fine));
+                    set.Add(_converter.Snap(incr, SnapType.Fine));
                 }
             }
             var list = set.OrderBy(x => x).ToList();
@@ -527,7 +532,7 @@ namespace Ephemera.AudioLib
             {
                 float xGrid = MathUtils.Map(list[xs], VisibleStart, VisibleStart + VisibleLength, 0, Width);
                 pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
-                pe.Graphics.DrawString($"{ConverterOps.Format(list[xs])}", TextFont, _textBrush, xGrid, 10, _format);
+                pe.Graphics.DrawString($"{_converter.Format(list[xs])}", TextFont, _textBrush, xGrid, 10, _format);
             }
             _format.Alignment = StringAlignment.Center;
 
@@ -536,9 +541,9 @@ namespace Ephemera.AudioLib
             {
                 $"Gain:{_gain:0.00}",
                 $"Snap:{_snap}",
-                $"SelStart:{ConverterOps.Format(_selStart)}",
-                $"SelLength:{ConverterOps.Format(_selLength)}",
-                $"Marker:{ConverterOps.Format(_marker)}"
+                $"SelStart:{_converter.Format(_selStart)}",
+                $"SelLength:{_converter.Format(_selLength)}",
+                $"Marker:{_converter.Format(_marker)}"
             };
             //info.Add($"VisStart:{ConverterOps.Format(_visibleStart)}");
             //info.Add($"VisLength:{ConverterOps.Format(VisibleLength)}");

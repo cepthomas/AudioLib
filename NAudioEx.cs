@@ -223,7 +223,7 @@ namespace Ephemera.AudioLib
         }
 
         /// <summary>
-        /// Get provider info. Mainly for UI display.
+        /// Get provider info. Mainly for UI display. TODO-A should be extensions.
         /// </summary>
         /// <param name="prov"></param>
         /// <returns>Info chunks.</returns>

@@ -6,8 +6,8 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib
 {
-    /// <summary>Converters for musical time. 0-based not traditional 1-based.</summary>
-    public class BarOps : IConverterOps
+    /// <summary>Converter for music time. 0-based not traditional 1-based.</summary>
+    internal class BarConverter : IConverter
     {
         #region Constants
         const int SUBDIVS_PER_BEAT = 100;
@@ -16,8 +16,8 @@ namespace Ephemera.AudioLib
         #endregion
 
         #region Properties
-        ///// <inheritdoc />
-        //public WaveSelectionMode Mode { get { return WaveSelectionMode.Bar; } }
+        /// <inheritdoc />
+        public double BPM { get; set; } = 90;
         #endregion
 
         #region Types
@@ -99,7 +99,7 @@ namespace Ephemera.AudioLib
         /// <returns></returns>
         int SubdivToSample(int subdiv)
         {
-            double minPerBeat = 1.0 / Globals.BPM;
+            double minPerBeat = 1.0 / BPM;
             double secPerBeat = minPerBeat * 60;
             double smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
             double smplPerSubdiv = smplPerBeat / SUBDIVS_PER_BEAT;
@@ -114,7 +114,7 @@ namespace Ephemera.AudioLib
         /// <returns></returns>
         int SampleToSubdiv(int sample)
         {
-            double minPerBeat = 1.0 / Globals.BPM;
+            double minPerBeat = 1.0 / BPM;
             double secPerBeat = minPerBeat * 60;
             double smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
             double beats = sample / smplPerBeat;

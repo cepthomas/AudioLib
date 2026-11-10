@@ -14,13 +14,13 @@ namespace Ephemera.AudioLib
     public enum WaveSelectionMode { Bar, Time, Sample };
 
     /// <summary>How to snap.</summary>
-    public enum SnapType { Off, Fine, Coarse };
+    public enum SnapType { None, Fine, Coarse };
 
     /// <summary>Notification of param change.</summary>
     public enum ParamChange { None, Gain, Marker, SelStart, SelLength }
 
     /// <summary>Abstraction of selection mode. Does text parsing, formatting, snap.</summary>
-    public interface IConverterOps
+    public interface IConverter
     {
         /// <summary>Snap to neighbor.</summary>
         /// <param name="sample">Test sample.</param>
@@ -33,6 +33,9 @@ namespace Ephemera.AudioLib
         /// <returns>Corresponding sample.</returns>
         int Parse(string input);
 
+        /// <summary>Set tempo. Only used for Bar mode.</summary>
+        double BPM { get;  set; }
+
         /// <summary>Make a readable string.</summary>
         /// <param name="sample">Which sample.</param>
         /// <returns>The string.</returns>
@@ -40,23 +43,23 @@ namespace Ephemera.AudioLib
     }
     #endregion
 
-    #region Globals
-    public static class Globals
-    {
-        /// <summary>This abstracts the conversions for the different WaveSelectionModes.</summary>
-        public static IConverterOps ConverterOps { get; set; } = new SampleOps();
+    //#region Globals
+    //public static class Globals
+    //{
+    //    /// <summary>This abstracts the conversions for the different WaveSelectionModes.</summary>
+    //    public static IConverterOps ConverterOps { get; set; } = new SampleOps();
 
-        /// <summary>Global tempo if using Beat selection mode.</summary>
-        public static double BPM { get; set; } = 100.0f;
+    //    /// <summary>Global tempo if using Beat selection mode.</summary>
+    //    public static double BPM { get; set; } = 100.0f;
 
-        /// <summary>Colors.</summary>
-        public static Color DrawColor { get; set; } = Color.MediumOrchid;
-        public static Color WaveColor { get; set; } = Color.ForestGreen;
-        public static Color GridColor { get; set; } = Color.LightGray;
-        public static Color MarkColor { get; set; } = Color.Red;
-        public static Color TextColor { get; set; } = Color.DimGray;
-    }
-    #endregion
+    //    /// <summary>Colors.</summary>
+    //    public static Color DrawColor { get; set; } = Color.MediumOrchid;
+    //    public static Color WaveColor { get; set; } = Color.ForestGreen;
+    //    public static Color GridColor { get; set; } = Color.LightGray;
+    //    public static Color MarkColor { get; set; } = Color.Red;
+    //    public static Color TextColor { get; set; } = Color.DimGray;
+    //}
+    //#endregion
 
     #region Definitions
     public class AudioLibDefs
@@ -83,4 +86,19 @@ namespace Ephemera.AudioLib
         public const int MAX_CLIP_SIZE = 10;
     }
     #endregion
+
+    public class Utils
+    {
+        public static IConverter CreateConverter(WaveSelectionMode mode)
+        {
+            return mode switch
+            {
+                WaveSelectionMode.Time => new TimeConverter(),
+                WaveSelectionMode.Bar => new BarConverter(),
+                WaveSelectionMode.Sample => new SampleConverter(),
+                _ => throw new NotImplementedException(),
+            };
+        }
+    }
+
 }

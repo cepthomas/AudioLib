@@ -37,6 +37,10 @@ namespace Ephemera.AudioLib.Test
         /// <summary>Test stuff.</summary>
         readonly TestSettings _settings;
 
+        /// <summary>Test stuff.</summary>
+        IConverter _converter = Utils.CreateConverter(WaveSelectionMode.Sample);
+
+
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -61,20 +65,19 @@ namespace Ephemera.AudioLib.Test
                 Environment.Exit(1);
             }
 
-            ContextMenuStrip = contextMenuStrip1;
+            //ContextMenuStrip = contextMenuStrip1;
+            //// Context menu.
+            //ToolStripParamEditor ed1 = new(); // TODO-A not sure what for or if useful
+            //ed1.ParamChanged += (_, __) => { LogLine($"ed1:{ed1.Value}"); };
+            //ToolStripParamEditor ed2 = new();
+            //ed2.ParamChanged += (_, __) => { LogLine($"ed2:{ed2.Value}"); };
 
-            // Context menu.
-            ToolStripParamEditor ed1 = new();
-            ed1.ParamChanged += (_, __) => { LogLine($"ed1:{ed1.Value}"); };
-            ToolStripParamEditor ed2 = new();
-            ed2.ParamChanged += (_, __) => { LogLine($"ed2:{ed2.Value}"); };
-
-            ContextMenuStrip.Items.Add(new ToolStripLabel("Ed the first"));
-            ContextMenuStrip.Items.Add(ed1);
-            ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            ContextMenuStrip.Items.Add(new ToolStripLabel("Ed the second"));
-            ContextMenuStrip.Items.Add(ed2);
-            ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            //ContextMenuStrip.Items.Add(new ToolStripLabel("Ed the first"));
+            //ContextMenuStrip.Items.Add(ed1);
+            //ContextMenuStrip.Items.Add(new ToolStripSeparator());
+            //ContextMenuStrip.Items.Add(new ToolStripLabel("Ed the second"));
+            //ContextMenuStrip.Items.Add(ed2);
+            //ContextMenuStrip.Items.Add(new ToolStripSeparator());
 
             // The rest of the controls.
             tvInfo.WordWrap = true;
@@ -82,7 +85,7 @@ namespace Ephemera.AudioLib.Test
             tvInfo.Prompt = "> ";
             tvInfo.Matchers =
             [
-                new("! ", BgColor: Color.LightPink),
+                new("! ", BgColor: Color.YellowGreen),
                 new("ERR", BgColor: Color.LightPink),
                 new("WRN", BgColor: Color.Plum),
             ];
@@ -92,12 +95,21 @@ namespace Ephemera.AudioLib.Test
             cmbSelMode.Items.Add(WaveSelectionMode.Sample);
             cmbSelMode.SelectedIndexChanged += (_, __) =>
             {
-                switch (cmbSelMode.SelectedItem)
+                if (cmbSelMode.SelectedItem is not null)
                 {
-                    case WaveSelectionMode.Time: Globals.ConverterOps = new TimeOps(); break;
-                    case WaveSelectionMode.Bar: Globals.ConverterOps = new BarOps(); break;
-                    case WaveSelectionMode.Sample: Globals.ConverterOps = new SampleOps(); break;
+                    WaveSelectionMode mode = (WaveSelectionMode)cmbSelMode.SelectedItem;
+                    wv1.SelectionMode = mode;
+                    wv2.SelectionMode = mode;
+                    timeBar.SelectionMode = mode;
+                    _converter = Utils.CreateConverter(mode);
                 }
+                //_converter = Utils.CreateConverter(mode);
+                //switch (cmbSelMode.SelectedItem)
+                //{
+                //    case WaveSelectionMode.Time: Globals.ConverterOps = new TimeOps(); break;
+                //    case WaveSelectionMode.Bar: Globals.ConverterOps = new BarOps(); break;
+                //    case WaveSelectionMode.Sample: Globals.ConverterOps = new SampleOps(); break;
+                //}
                 wv1.Invalidate();
                 timeBar.Invalidate();
             };
@@ -106,7 +118,7 @@ namespace Ephemera.AudioLib.Test
             sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
 
             // Progress bar.
-            timeBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{Globals.ConverterOps.Format(timeBar.Current)}");
+            timeBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{_converter.Format(timeBar.Current)}");
             timeBar.ProgressColor = Color.Green;
             timeBar.TextColor = Color.White;
             timeBar.BackColor = Color.Cyan;

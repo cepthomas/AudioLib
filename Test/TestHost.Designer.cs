@@ -50,7 +50,7 @@
             this.cmsItem1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
             this.toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
-            this.toolStripParamEditor1 = new Ephemera.AudioLib.ToolStripParamEditor();
+//            this.toolStripParamEditor1 = new Ephemera.AudioLib.ToolStripParamEditor();
             this.toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             this.btnRewind = new System.Windows.Forms.Button();
             this.btnCaps = new System.Windows.Forms.ToolStripButton();
@@ -313,7 +313,7 @@
             this.cmsItem1ToolStripMenuItem,
             this.toolStripTextBox1,
             this.toolStripSeparator10,
-            this.toolStripParamEditor1,
+            //this.toolStripParamEditor1,
             this.toolStripSeparator11});
             this.contextMenuStrip1.Name = "contextMenuStrip1";
             this.contextMenuStrip1.Size = new System.Drawing.Size(232, 148);
@@ -353,10 +353,10 @@
             // 
             // toolStripParamEditor1
             // 
-            this.toolStripParamEditor1.AutoSize = false;
-            this.toolStripParamEditor1.Name = "toolStripParamEditor1";
-            this.toolStripParamEditor1.Size = new System.Drawing.Size(171, 20);
-            this.toolStripParamEditor1.Value = -1;
+            //this.toolStripParamEditor1.AutoSize = false;
+            //this.toolStripParamEditor1.Name = "toolStripParamEditor1";
+            //this.toolStripParamEditor1.Size = new System.Drawing.Size(171, 20);
+            //this.toolStripParamEditor1.Value = -1;
             // 
             // toolStripSeparator11
             // 
@@ -443,7 +443,7 @@
         private System.Windows.Forms.ToolStripMenuItem cmsItem1ToolStripMenuItem;
         private System.Windows.Forms.ToolStripTextBox toolStripTextBox1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
-        private ToolStripParamEditor toolStripParamEditor1;
+//        private ToolStripParamEditor toolStripParamEditor1;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.Button btnRewind;
         private System.Windows.Forms.ToolStripButton btnCaps;

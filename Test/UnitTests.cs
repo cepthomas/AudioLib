@@ -15,21 +15,21 @@ namespace Ephemera.AudioLib.Test
         public override void RunSuite()
         {
             // Sample <-> sample.
-            SampleOps ops = new();
+            var conv = Utils.CreateConverter(WaveSelectionMode.Sample);
 
-            int sout = ops.Snap(1234567, SnapType.Off);
+            int sout = conv.Snap(1234567, SnapType.None);
             Assert(sout == 1234567);
 
-            sout = ops.Snap(1234367, SnapType.Fine); // round down
+            sout = conv.Snap(1234367, SnapType.Fine); // round down
             Assert(sout == 1234000);
 
-            sout = ops.Snap(1234567, SnapType.Fine); // round up
+            sout = conv.Snap(1234567, SnapType.Fine); // round up
             Assert(sout == 1235000);
 
-            sout = ops.Snap(1234567, SnapType.Coarse); // round down
+            sout = conv.Snap(1234567, SnapType.Coarse); // round down
             Assert(sout == 1230000);
 
-            sout = ops.Snap(1235567, SnapType.Coarse); // round up
+            sout = conv.Snap(1235567, SnapType.Coarse); // round up
             Assert(sout == 1240000);
         }
     }
@@ -39,51 +39,51 @@ namespace Ephemera.AudioLib.Test
         public override void RunSuite()
         {
             // AudioTime <-> sample.
-            TimeOps ops = new();
+            var conv = Utils.CreateConverter(WaveSelectionMode.Time);
 
             int sample1 = 25354545;
             int sample2 = 1904788;
             int errmax = 25; // Roundtrip conversion error max.
 
-            Assert(ops.Format(sample1) == "09.34.933");
-            int sout = ops.Parse("9.34.933");
+            Assert(conv.Format(sample1) == "09.34.933");
+            int sout = conv.Parse("9.34.933");
             int err = Math.Abs(sample1 - sout);
             Debug.WriteLine($"AudioTime error:{err}");
             Assert(err < errmax);
 
-            Assert(ops.Format(sample2) == "00.43.192");
-            sout = ops.Parse("00.43.192");
+            Assert(conv.Format(sample2) == "00.43.192");
+            sout = conv.Parse("00.43.192");
             err = Math.Abs(sample2 - sout);
             Debug.WriteLine($"AudioTime error:{err}");
             Assert(err < errmax);
 
-            sout = ops.Snap(sample1, SnapType.Fine); // round down
-            Assert(ops.Format(sout) == "09.34.900");
+            sout = conv.Snap(sample1, SnapType.Fine); // round down
+            Assert(conv.Format(sout) == "09.34.900");
 
-            sout = ops.Snap(sample2, SnapType.Fine); // round up
-            Assert(ops.Format(sout) == "00.43.200");
+            sout = conv.Snap(sample2, SnapType.Fine); // round up
+            Assert(conv.Format(sout) == "00.43.200");
 
-            sout = ops.Snap(sample1, SnapType.Coarse); // round up
-            Assert(ops.Format(sout) == "09.35.000");
+            sout = conv.Snap(sample1, SnapType.Coarse); // round up
+            Assert(conv.Format(sout) == "09.35.000");
 
-            sout = ops.Snap(sample2, SnapType.Coarse); // round down
-            Assert(ops.Format(sout) == "00.43.000");
+            sout = conv.Snap(sample2, SnapType.Coarse); // round down
+            Assert(conv.Format(sout) == "00.43.000");
 
             // Parsing.
             // Good ones.
-            sout = ops.Parse("8.47.123");
+            sout = conv.Parse("8.47.123");
             Assert(sout == 23246124);
-            sout = ops.Parse("7.47.123");
+            sout = conv.Parse("7.47.123");
             Assert(sout == 20600124);
 
             // Bad ones.
-            sout = ops.Parse("1:2");
+            sout = conv.Parse("1:2");
             Assert(sout == -1);
-            sout = ops.Parse("1.2");
+            sout = conv.Parse("1.2");
             Assert(sout == -1);
-            sout = ops.Parse("1.2.9999");
+            sout = conv.Parse("1.2.9999");
             Assert(sout == -1);
-            sout = ops.Parse("dsdsd");
+            sout = conv.Parse("dsdsd");
             Assert(sout == -1);
         }
     }
@@ -97,60 +97,59 @@ namespace Ephemera.AudioLib.Test
             int sample2 = 9055612;
             int errmax = 100; // Roundtrip conversion error max.
 
-            BarOps ops = new();
+            var conv = Utils.CreateConverter(WaveSelectionMode.Bar);
+            conv.BPM = 76.58f;
 
-            Globals.BPM = 76.58f;
-
-            Assert(ops.Format(sample1) == "579.3.02");
-            int sout = ops.Parse("579.3.02");
+            Assert(conv.Format(sample1) == "579.3.02");
+            int sout = conv.Parse("579.3.02");
             int err = Math.Abs(sample1 - sout);
             Debug.WriteLine($"Bar error:{err}");
             Assert(err < errmax);
 
-            Globals.BPM = 117.02f;
+            conv.BPM = 117.02f;
 
-            Assert(ops.Format(sample2) == "100.0.49");
-            sout = ops.Parse("100.0.49");
+            Assert(conv.Format(sample2) == "100.0.49");
+            sout = conv.Parse("100.0.49");
             err = Math.Abs(sample2 - sout);
             Debug.WriteLine($"Bar error:{err}");
             Assert(err < errmax);
 
-            sout = ops.Parse("421.2.49");
-            sout = ops.Snap(sout, SnapType.Fine); // round beat down
-            Assert(ops.Format(sout) == "421.2.00");
+            sout = conv.Parse("421.2.49");
+            sout = conv.Snap(sout, SnapType.Fine); // round beat down
+            Assert(conv.Format(sout) == "421.2.00");
 
-            sout = ops.Parse("421.2.51");
-            sout = ops.Snap(sout, SnapType.Fine); // round beat up
-            Assert(ops.Format(sout) == "421.3.00");
+            sout = conv.Parse("421.2.51");
+            sout = conv.Snap(sout, SnapType.Fine); // round beat up
+            Assert(conv.Format(sout) == "421.3.00");
 
-            sout = ops.Parse("421.3.99");
-            sout = ops.Snap(sout, SnapType.Fine); // round beat up
-            Assert(ops.Format(sout) == "422.0.00");
+            sout = conv.Parse("421.3.99");
+            sout = conv.Snap(sout, SnapType.Fine); // round beat up
+            Assert(conv.Format(sout) == "422.0.00");
 
-            sout = ops.Parse("421.3.88");
-            sout = ops.Snap(sout, SnapType.Coarse); // round bar up
-            Assert(ops.Format(sout) == "422.0.00");
+            sout = conv.Parse("421.3.88");
+            sout = conv.Snap(sout, SnapType.Coarse); // round bar up
+            Assert(conv.Format(sout) == "422.0.00");
 
-            sout = ops.Parse("421.1.48");
-            sout = ops.Snap(sout, SnapType.Coarse); // round bar down
-            Assert(ops.Format(sout) == "421.0.00");
+            sout = conv.Parse("421.1.48");
+            sout = conv.Snap(sout, SnapType.Coarse); // round bar down
+            Assert(conv.Format(sout) == "421.0.00");
 
             // Parsing.
             // Good one.
-            sout = ops.Parse("32.2.78");
-            Assert(ops.Format(sout) == "32.2.78");
+            sout = conv.Parse("32.2.78");
+            Assert(conv.Format(sout) == "32.2.78");
 
             // Bad ones.
-            sout = ops.Parse("1:2");
+            sout = conv.Parse("1:2");
             Assert(sout == -1);
 
-            sout = ops.Parse("1.2");
+            sout = conv.Parse("1.2");
             Assert(sout == -1);
 
-            sout = ops.Parse("1.2.9999");
+            sout = conv.Parse("1.2.9999");
             Assert(sout == -1);
 
-            sout = ops.Parse("dsdsd");
+            sout = conv.Parse("dsdsd");
             Assert(sout == -1);
         }
     }

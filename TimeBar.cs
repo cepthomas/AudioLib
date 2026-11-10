@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
-using static Ephemera.AudioLib.Globals;
+//using static Ephemera.AudioLib.Globals;
 
 
 namespace Ephemera.AudioLib
@@ -38,6 +38,7 @@ namespace Ephemera.AudioLib
         int _length = 0;
         int _current = 0;
         Bitmap? _thumbnail = null;
+        IConverter _converter = new SampleConverter();
         #endregion
 
         #region Designer fields
@@ -46,6 +47,9 @@ namespace Ephemera.AudioLib
         #endregion
 
         #region Properties
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        public WaveSelectionMode SelectionMode { set => _converter =Utils.CreateConverter(value); }
+
         /// <summary>Where we be now in samples.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
         public int Current { get { return _current; } set { _current = value; Invalidate(); } } // Refresh
@@ -165,11 +169,11 @@ namespace Ephemera.AudioLib
 
             // Draw text.
             _format.Alignment = StringAlignment.Center;
-            pe.Graphics.DrawString(ConverterOps.Format(_current), FontLarge, _textBrush, ClientRectangle, _format);
+            pe.Graphics.DrawString(_converter.Format(_current), FontLarge, _textBrush, ClientRectangle, _format);
             //_format.Alignment = StringAlignment.Near;
             //pe.Graphics.DrawString(ConverterOps.Format(_selStart), FontSmall, _textBrush, ClientRectangle, _format);
             _format.Alignment = StringAlignment.Far;
-            pe.Graphics.DrawString(ConverterOps.Format(_length), FontSmall, _textBrush, ClientRectangle, _format);
+            pe.Graphics.DrawString(_converter.Format(_length), FontSmall, _textBrush, ClientRectangle, _format);
         }
         #endregion
 
@@ -182,8 +186,8 @@ namespace Ephemera.AudioLib
             if (e.X != _lastXPos)
             {
                 var sample = PixelToSample(e.X);
-                sample = ConverterOps.Snap(sample, _snap);
-                toolTip.SetToolTip(this, ConverterOps.Format(sample));
+                sample = _converter.Snap(sample, _snap);
+                toolTip.SetToolTip(this, _converter.Format(sample));
                 _lastXPos = e.X;
             }
 

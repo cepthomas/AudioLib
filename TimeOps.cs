@@ -6,8 +6,8 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib
 {
-    /// <summary>Converters for audio time.</summary>
-    public class TimeOps : IConverterOps
+    /// <summary>Converter for audio time.</summary>
+    internal class TimeConverter : IConverter
     {
         #region Constants
         internal const int MSEC_PER_SECOND = 1000;
@@ -15,8 +15,8 @@ namespace Ephemera.AudioLib
         #endregion
 
         #region Properties
-        ///// <inheritdoc />
-        //public WaveSelectionMode Mode { get { return WaveSelectionMode.Time; } }
+        /// <inheritdoc />
+        public double BPM { get; set; }
         #endregion
 
         #region Types
@@ -28,7 +28,9 @@ namespace Ephemera.AudioLib
             public int msec;
             public TimeDesc(int min, int sec, int msec) { this.min = min; this.sec = sec; this.msec = msec; }
             public TimeDesc() { min = -1; sec = -1; msec = -1; }
-            public bool Valid() { return min >= 0 && min < AudioLibDefs.MAX_CLIP_SIZE && sec >= 0 && sec < TimeOps.SEC_PER_MINUTE && msec >= 0 && msec < TimeOps.MSEC_PER_SECOND; }
+            public bool Valid() { return min >= 0 && min < AudioLibDefs.MAX_CLIP_SIZE &&
+                    sec >= 0 && sec < TimeConverter.SEC_PER_MINUTE &&
+                    msec >= 0 && msec < TimeConverter.MSEC_PER_SECOND; }
         }
         #endregion
 
