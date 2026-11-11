@@ -6,10 +6,7 @@ using System.Linq;
 using System.Windows.Forms;
 using NAudio.Wave;
 using Ephemera.NBagOfTricks;
-//using static Ephemera.AudioLib.Globals;
-//using static Ephemera.AudioLib.ToolStripParamEditor;
-
-//TODO-A straighten out gain/volume usage. Also Wavicler...
+using System.Data;
 
 
 namespace Ephemera.AudioLib
@@ -67,16 +64,14 @@ namespace Ephemera.AudioLib
         readonly Pen _penGrid = new(Color.LightGray, 1);
         readonly Pen _penMark = new(Color.Red, 1);
         IConverter _converter = new SampleConverter();
-        #endregion
 
-        #region Designer fields
         readonly ToolTip toolTip;
         readonly Container components;
         #endregion
 
         #region Properties
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public WaveSelectionMode SelectionMode { set => _converter = Utils.CreateConverter(value); }
+        public WaveSelectionMode SelectionMode { set => _converter = Converter.Create(value); }
 
         /// <summary>The waveform color.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -137,12 +132,23 @@ namespace Ephemera.AudioLib
 
         #region Events
         /// <summary>Value changed by user. Notify owner for display.</summary>
-        public event EventHandler<ViewerChangeEventArgs>? ViewerChange;
-        public class ViewerChangeEventArgs : EventArgs
+        public event EventHandler<StateChangeEventArgs>? StateChange;
+        public class StateChangeEventArgs : EventArgs
         {
-            public ParamChange Change { get; set; } = ParamChange.Marker;
-            public object? Value { get; set; } = null;
+            public float? Gain { get; set; } = null;
+            public int? Marker { get; set; } = null;
+            public int? SelStart { get; set; } = null;
+            public int? SelLength { get; set; } = null;
         }
+
+        ///// <summary>Value changed by user. Notify owner for display.</summary>
+        //public enum StateValue { Gain, Marker, SelStart, SelLength }
+        //public event EventHandler<StateChangeEventArgs>? StateChange;
+        //public class StateChangeEventArgs : EventArgs
+        //{
+        //    public ParamChange Change { get; set; } = ParamChange.Marker;
+        //    public object? Value { get; set; } = null;
+        //}
         #endregion
 
         #region Lifecycle
@@ -190,11 +196,11 @@ namespace Ephemera.AudioLib
         {
             if (disposing)
             {
-                toolTip.Dispose();
                 _penWave.Dispose();
                 _penGrid.Dispose();
                 _penMark.Dispose();
                 _format.Dispose();
+                toolTip.Dispose();
                 TextFont.Dispose();
                 components.Dispose();
             }
@@ -227,7 +233,7 @@ namespace Ephemera.AudioLib
                 ContextMenuStrip.Items.Add("Go To Marker", null, (_, __) => GoToMarker());
                 ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => Marker = -1 );
 
-                // TODO-A 
+                // TODO1 new marker.selection ui and logic. was ToolStripParamEditor + event EventHandler<ViewerChangeEventArgs>? ViewerChange;
                 //ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
                 //ToolStripParamEditor edMarker = new() { Value = Marker };
                 //edMarker.ParamChanged += (sender, args) => { Marker = args.Value; ContextMenuStrip.Close(); };
@@ -307,7 +313,7 @@ namespace Ephemera.AudioLib
                     {
                         _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
                         _gain = (float)MathUtils.Constrain(_gain, 0.0, AudioLibDefs.MAX_GAIN);
-                        ViewerChange?.Invoke(this, new() { Change = ParamChange.Gain, Value = _gain });
+                        StateChange?.Invoke(this, new() { Gain = _gain });
                         Invalidate();
                     }
                     break;
@@ -324,8 +330,7 @@ namespace Ephemera.AudioLib
         {
             var sample = PixelToSample(e.X);
             sample = _converter.Snap(sample, _snap);
-            ParamChange changed = ParamChange.None;
-            int newval = -1;
+            StateChangeEventArgs? args = null;
 
             if (sample >= 0)
             {
@@ -334,22 +339,19 @@ namespace Ephemera.AudioLib
                     case (MouseButtons.Left, Keys.Alt):
                         _marker = sample;
                         CheckProperties();
-                        changed = ParamChange.Marker;
-                        newval = _marker;
+                        args = new() { Marker = _marker };
                         break;
 
                     case (MouseButtons.Left, Keys.Control):
                         _selStart = sample;
                         CheckProperties();
-                        changed = ParamChange.SelStart;
-                        newval = _selStart;
+                        args = new() { SelStart = _selStart };
                         break;
 
                     case (MouseButtons.Left, Keys.Shift):
                         _selLength = sample - _selStart;
                         CheckProperties();
-                        changed = ParamChange.SelLength;
-                        newval = _selLength;
+                        args = new() { SelLength = _selLength };
                         break;
 
                     default:
@@ -357,9 +359,9 @@ namespace Ephemera.AudioLib
                         break;
                 }
 
-                if (changed != ParamChange.None)
+                if (args is not null)
                 {
-                    ViewerChange?.Invoke(this, new() { Change = changed, Value = newval });
+                    StateChange?.Invoke(this, args);
                     Invalidate();
                 }
             }
@@ -394,6 +396,10 @@ namespace Ephemera.AudioLib
 
             switch (e.KeyCode)
             {
+                case Keys.G: // reset to default
+                    ResetGain();
+                    break;
+
                 case Keys.H: // reset to initial full view
                     ResetView();
                     break;
@@ -684,6 +690,7 @@ namespace Ephemera.AudioLib
         {
             float max = Math.Max(Math.Abs(_max), Math.Abs(_min));
             Gain = 1.0f / max;
+            StateChange?.Invoke(this, new() { Gain = Gain });
         }
 
         /// <summary>
@@ -691,8 +698,8 @@ namespace Ephemera.AudioLib
         /// </summary>
         public void ResetGain()
         {
-            _gain = 1.0f;
-            Invalidate();
+            Gain = 1.0f;
+            StateChange?.Invoke(this, new() { Gain = Gain });
         }
 
         /// <summary>

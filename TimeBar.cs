@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using Ephemera.NBagOfTricks;
-//using static Ephemera.AudioLib.Globals;
 
 
 namespace Ephemera.AudioLib
@@ -48,7 +47,7 @@ namespace Ephemera.AudioLib
 
         #region Properties
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        public WaveSelectionMode SelectionMode { set => _converter =Utils.CreateConverter(value); }
+        public WaveSelectionMode SelectionMode { set => _converter = Converter.Create(value); }
 
         /// <summary>Where we be now in samples.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]

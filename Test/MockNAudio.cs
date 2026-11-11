@@ -7,8 +7,7 @@ using System.Text.Json.Serialization;
 using Ephemera.NBagOfTricks;
 
 
-// TODO-A??? Mock for entities in NAudio. See real class for doc.
-// Not currently used. May be useful in the future.
+// TODO Mock for entities in NAudio. See real class for doc. Not currently used, maybe future.
 
 
 namespace NAudio.Midi

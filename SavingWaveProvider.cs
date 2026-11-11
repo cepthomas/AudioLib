@@ -5,6 +5,7 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib
 {
+    /// <summary>From NAudio I think?</summary>
     public class SavingWaveProvider(IWaveProvider sourceWaveProvider, string wavFilePath) : IWaveProvider, IDisposable
     {
         public WaveFormat WaveFormat { get { return sourceWaveProvider.WaveFormat; } }

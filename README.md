@@ -1,7 +1,7 @@
-# AudioLib
+# AudioLib  TODO2 update
 
 - WinForms library of various audio components and controls.
-- This uses NAudio extensively but limits internal formats to IEEE 32bit fp 44100Hz. TODO-A expand caps.
+- This uses NAudio extensively but limits internal formats to IEEE 32bit fp 44100Hz. TODO2 expand caps.
 - For usage, see [Wavicler](https://github.com/cepthomas/Wavicler) which is a fairly comprehensive example
   that documents most of the features. Also see the Test project.
 - Requires VS2026 and .NET10.

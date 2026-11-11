@@ -15,7 +15,7 @@ namespace Ephemera.AudioLib.Test
         public override void RunSuite()
         {
             // Sample <-> sample.
-            var conv = Utils.CreateConverter(WaveSelectionMode.Sample);
+            var conv = Converter.Create(WaveSelectionMode.Sample);
 
             int sout = conv.Snap(1234567, SnapType.None);
             Assert(sout == 1234567);
@@ -39,7 +39,7 @@ namespace Ephemera.AudioLib.Test
         public override void RunSuite()
         {
             // AudioTime <-> sample.
-            var conv = Utils.CreateConverter(WaveSelectionMode.Time);
+            var conv = Converter.Create(WaveSelectionMode.Time);
 
             int sample1 = 25354545;
             int sample2 = 1904788;
@@ -97,7 +97,7 @@ namespace Ephemera.AudioLib.Test
             int sample2 = 9055612;
             int errmax = 100; // Roundtrip conversion error max.
 
-            var conv = Utils.CreateConverter(WaveSelectionMode.Bar);
+            var conv = Converter.Create(WaveSelectionMode.Bar);
             conv.BPM = 76.58f;
 
             Assert(conv.Format(sample1) == "579.3.02");

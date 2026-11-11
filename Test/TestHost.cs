@@ -7,6 +7,7 @@ using System.IO;
 using System.Windows.Forms;
 using System.Text.Json.Serialization;
 using System.Diagnostics;
+using System.Drawing.Design;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using Ephemera.NBagOfTricks;
@@ -38,7 +39,7 @@ namespace Ephemera.AudioLib.Test
         readonly TestSettings _settings;
 
         /// <summary>Test stuff.</summary>
-        IConverter _converter = Utils.CreateConverter(WaveSelectionMode.Sample);
+        IConverter _converter = Converter.Create(WaveSelectionMode.Sample);
 
 
         /// <summary>
@@ -67,7 +68,7 @@ namespace Ephemera.AudioLib.Test
 
             //ContextMenuStrip = contextMenuStrip1;
             //// Context menu.
-            //ToolStripParamEditor ed1 = new(); // TODO-A not sure what for or if useful
+            //ToolStripParamEditor ed1 = new();
             //ed1.ParamChanged += (_, __) => { LogLine($"ed1:{ed1.Value}"); };
             //ToolStripParamEditor ed2 = new();
             //ed2.ParamChanged += (_, __) => { LogLine($"ed2:{ed2.Value}"); };
@@ -101,7 +102,7 @@ namespace Ephemera.AudioLib.Test
                     wv1.SelectionMode = mode;
                     wv2.SelectionMode = mode;
                     timeBar.SelectionMode = mode;
-                    _converter = Utils.CreateConverter(mode);
+                    _converter = Converter.Create(mode);
                 }
                 //_converter = Utils.CreateConverter(mode);
                 //switch (cmbSelMode.SelectedItem)
@@ -126,7 +127,7 @@ namespace Ephemera.AudioLib.Test
             // Wave viewers.
             wv1.WaveColor = Color.Red;
             wv1.BackColor = Color.Cyan;
-            wv1.ViewerChange += ProcessViewerChange;
+            wv1.StateChange += ProcessViewerStateChange;
 
             // Add stuff to the wave viewer menu.
             wv1.ContextMenuStrip!.Items.Add("Test item", null, (_, __) => LogLine("Test item worked"));
@@ -134,12 +135,12 @@ namespace Ephemera.AudioLib.Test
 
             wv2.WaveColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;
-            wv2.ViewerChange += ProcessViewerChange;
+            wv2.StateChange += ProcessViewerStateChange;
 
             // Static swap provider.
             _provSwap = new ClipSampleProvider(Path.Join(_filesDir, "test.wav"), StereoCoercion.Mono);
 
-            // Create player.
+            // Create player. TODO2 fix volume, include gain. Probably midiplayerr too.
             _waveOutSwapper = new();
             _player = new(_settings.WavOutDevice, int.Parse(_settings.Latency), _waveOutSwapper) { Volume = 0.5f };
             _player.PlaybackStopped += (_, __) =>
@@ -235,43 +236,44 @@ namespace Ephemera.AudioLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ProcessViewerChange(object? sender, WaveViewer.ViewerChangeEventArgs e)
+        void ProcessViewerStateChange(object? sender, WaveViewer.StateChangeEventArgs e)
         {
-            LogLine($"{(sender as WaveViewer)!.Name} change: {e.Change}");
+            //LogLine($"{(sender as WaveViewer)!.Name}");
 
-            switch (e.Change)
+            if (sender == wv1)
             {
-                case ParamChange.Gain when sender == wv1:
+                if (e.Gain is not null)
+                {
                     sldGain.Value = wv1.Gain;
-                    break;
-
-                case ParamChange.SelStart when sender == wv1:
+                }
+                if (e.SelStart is not null)
+                {
                     timeBar.SelStart = wv1.SelStart;
                     switch (_prov)
                     {
                         case ClipSampleProvider csp: csp.SelStart = wv1.SelStart; break;
                     }
-                    break;
-
-                case ParamChange.SelLength when sender == wv1:
+                }
+                if (e.SelLength is not null)
+                {
                     timeBar.SelLength = wv1.SelLength;
                     switch (_prov)
                     {
                         case ClipSampleProvider csp: csp.SelLength = wv1.SelLength; break;
                     }
-                    break;
-
-                case ParamChange.Marker when sender == wv1:
+                }
+                if (e.Marker is not null)
+                {
                     //timeBar.SelLength = wv1.SelLength;
-                    break;
-
-                case ParamChange.Marker when sender == wv2:
+                }
+            }
+            else if (sender == wv2)
+            {
+                if (e.Marker is not null)
+                {
                     wv1.Recenter(wv2.Marker);
-                    break;
-
-                default:
-                    break;
-            };
+                }
+            }
         }
 
         /// <summary>
@@ -398,7 +400,7 @@ namespace Ephemera.AudioLib.Test
         void Resample_Click(object? sender, EventArgs e)
         {
             string fn = Path.Join(_filesDir, "test.wav");
-            NAudioEx.Convert(Conversion.Resample, fn);
+            Hold.Convert(Conversion.Resample, fn);
         }
 
         /// <summary>
@@ -544,13 +546,13 @@ namespace Ephemera.AudioLib.Test
         [DisplayName("Wave Output Device")]
         [Description("How to play the audio files.")]
         [Browsable(true)]
-        [TypeConverter(typeof(AudioSettingsConverter))]
+        [Editor(typeof(WaveOutputDeviceTypeEditor), typeof(UITypeEditor))]
         public string WavOutDevice { get; set; } = "Microsoft Sound Mapper";
 
         [DisplayName("Latency")]
         [Description("What's the hurry?")]
         [Browsable(true)]
-        [TypeConverter(typeof(AudioSettingsConverter))]
+        [Editor(typeof(LatencyTypeEditor), typeof(UITypeEditor))]
         public string Latency { get; set; } = "200";
     }
 }

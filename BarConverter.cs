@@ -6,7 +6,7 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib
 {
-    /// <summary>Converter for music time. 0-based not traditional 1-based.</summary>
+    /// <summary>Converter for music time. 0-based - not traditional 1-based.</summary>
     internal class BarConverter : IConverter
     {
         #region Constants
