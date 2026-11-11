@@ -233,11 +233,11 @@ namespace Ephemera.AudioLib
                 ContextMenuStrip.Items.Add("Go To Marker", null, (_, __) => GoToMarker());
                 ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => Marker = -1 );
 
-                // TODO1 new marker.selection ui and logic. was ToolStripParamEditor + event EventHandler<ViewerChangeEventArgs>? ViewerChange;
-                //ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
-                //ToolStripParamEditor edMarker = new() { Value = Marker };
-                //edMarker.ParamChanged += (sender, args) => { Marker = args.Value; ContextMenuStrip.Close(); };
-                //ContextMenuStrip.Items.Add(edMarker);
+                // TODO2?? New marker.selection ui and logic. was ToolStripParamEditor + event EventHandler<ViewerChangeEventArgs>? ViewerChange;
+                // ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
+                // ToolStripParamEditor edMarker = new() { Value = Marker };
+                // edMarker.ParamChanged += (sender, args) => { Marker = args.Value; ContextMenuStrip.Close(); };
+                // ContextMenuStrip.Items.Add(edMarker);
             }
 
             if (_selStart >= 0)
@@ -246,15 +246,15 @@ namespace Ephemera.AudioLib
                 ContextMenuStrip.Items.Add("Go To Selection", null, (_, __) => GoToSelection());
                 ContextMenuStrip.Items.Add("Remove Selection", null, (_, __) => { _selStart = -1; _selLength = 0; Invalidate(); });
 
-                //ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
-                //ToolStripParamEditor edSelStart = new() { Value = SelStart };
-                //edSelStart.ParamChanged += (sender, args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
-                //ContextMenuStrip.Items.Add(edSelStart);
+                // ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
+                // ToolStripParamEditor edSelStart = new() { Value = SelStart };
+                // edSelStart.ParamChanged += (sender, args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
+                // ContextMenuStrip.Items.Add(edSelStart);
 
-                //ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
-                //ToolStripParamEditor edSelLength = new() { Value = SelLength };
-                //edSelLength.ParamChanged += (sender, args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
-                //ContextMenuStrip.Items.Add(edSelLength);
+                // ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
+                // ToolStripParamEditor edSelLength = new() { Value = SelLength };
+                // edSelLength.ParamChanged += (sender, args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
+                // ContextMenuStrip.Items.Add(edSelLength);
             }
 
             // Owner might have something to add.

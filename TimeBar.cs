@@ -168,6 +168,7 @@ namespace Ephemera.AudioLib
 
             // Draw text.
             _format.Alignment = StringAlignment.Center;
+            var sss = _converter.Format(_current);
             pe.Graphics.DrawString(_converter.Format(_current), FontLarge, _textBrush, ClientRectangle, _format);
             //_format.Alignment = StringAlignment.Near;
             //pe.Graphics.DrawString(ConverterOps.Format(_selStart), FontSmall, _textBrush, ClientRectangle, _format);

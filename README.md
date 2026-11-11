@@ -1,4 +1,4 @@
-# AudioLib  TODO2 update
+# AudioLib  TODO2 update + more detail?
 
 - WinForms library of various audio components and controls.
 - This uses NAudio extensively but limits internal formats to IEEE 32bit fp 44100Hz. TODO2 expand caps.
@@ -15,10 +15,8 @@
 - ClipSampleProvider: Sample provider that encapsulates a client supplied piece of audio.
 - SwappableSampleProvider: Sample provider that supports hot swapping of input.
 - PeakProvider: Customized version of NAudio's IPeakProvider family for displayiing waveforms.
-- ToolStripParamEditor: UI component for editing internal values.
-- NAudioEx: NAudio compatible extension methods for the providers implemented here.
-- Converters: Between samples, Audio Time, milliseconds, Bar/Beat.
-- SampleOps, TimeOps, BarOps: Abstractions for the different formats user can select.
+- Extensions: NAudio compatible extension methods for the providers implemented here.
+- Converters: Between samples, Audio Time, Bar/Beat.
 
 # External Components
 

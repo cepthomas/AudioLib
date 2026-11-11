@@ -152,23 +152,10 @@ namespace Ephemera.AudioLib.Test
 
             // File openers.
             var ftypes = AudioLibDefs.AUDIO_FILE_TYPES.SplitByTokens("|;*");
-            Directory.GetFiles(_filesDir).ForEach(fn =>
-            {
-                if (ftypes.Contains(Path.GetExtension(fn)))
-                {
-                    btnLoad.DropDownItems.Add(fn, null, LoadFile_Click);
-                }
-            });
-
-            //// Source - https://stackoverflow.com/a/12927028
-            //var files = Directory.GetFiles("path_to_files").Where(file => Regex.IsMatch(file, @"^.+\.(wav|mp3|txt)$"));
-            //AUDIO_FILE_TYPES  "*.wav;*.mp3;*.m4a;*.flac"
-            //AudioLibDefs.AUDIO_FILE_TYPES.SplitByTokens("|;*")
+            Directory.GetFiles(_filesDir).ForEach(fn => { if (ftypes.Contains(Path.GetExtension(fn))) { btnLoad.DropDownItems.Add(fn, null, LoadFile_Click); } });
 
             chkPlay.Click += (_, __) => Play_Click();
-
             btnRewind.Click += (_, __) => _prov?.Rewind();
-
             btnTest.Click += (_, __) => UnitTests();
 
             // Go-go-go.
