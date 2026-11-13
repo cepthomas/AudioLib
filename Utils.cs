@@ -12,11 +12,11 @@ namespace Ephemera.AudioLib
     /// <summary>Conversion options.</summary>
     public enum Conversion { ToMonoWav, SplitStereo, Resample }
 
-
-    public class Hold // TODO2 only Convert()???
+    /// <summary>NAudio expansion. TODO2??</summary>
+    public class Utils
     {
         /// <summary>
-        /// Process a file.
+        /// Convert a file.
         /// </summary>
         /// <param name="conv">Specific operation.</param>
         /// <param name="fn">The input filename. Output file is the same with option appended.</param>

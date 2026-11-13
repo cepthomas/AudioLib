@@ -387,7 +387,7 @@ namespace Ephemera.AudioLib.Test
         void Resample_Click(object? sender, EventArgs e)
         {
             string fn = Path.Join(_filesDir, "test.wav");
-            Hold.Convert(Conversion.Resample, fn);
+            Utils.Convert(Conversion.Resample, fn);
         }
 
         /// <summary>
