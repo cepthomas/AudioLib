@@ -140,7 +140,7 @@ namespace Ephemera.AudioLib.Test
             // Static swap provider.
             _provSwap = new ClipSampleProvider(Path.Join(_filesDir, "test.wav"), StereoCoercion.Mono);
 
-            // Create player. TODO1 fix volume, include gain. Midiplayer too.
+            // Create player. TODO2 use gain - or volume?
             _waveOutSwapper = new();
             _player = new(_settings.WavOutDevice, int.Parse(_settings.Latency), _waveOutSwapper) { Volume = 0.5f };
             _player.PlaybackStopped += (_, __) =>

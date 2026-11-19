@@ -8,7 +8,6 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib
 {
-    /// <summary>Borrowed from NAudio. TODO1 combine?</summary>
     public class AudioFileInfo
     {
         /// <summary>
