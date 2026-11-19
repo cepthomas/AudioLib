@@ -9,7 +9,7 @@ namespace Ephemera.AudioLib
     /// <summary>Converter for music time. 0-based - not traditional 1-based.</summary>
     internal class BarConverter : IConverter
     {
-        #region Constants TODO2 like MidiLib
+        #region Constants
         const int SUBDIVS_PER_BEAT = 8;
         const int BEATS_PER_BAR = 4;
         const int SUBDIVS_PER_BAR = SUBDIVS_PER_BEAT * BEATS_PER_BAR;

@@ -233,7 +233,7 @@ namespace Ephemera.AudioLib
                 ContextMenuStrip.Items.Add("Go To Marker", null, (_, __) => GoToMarker());
                 ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => Marker = -1 );
 
-                // TODO2?? New marker.selection ui and logic. was ToolStripParamEditor + event EventHandler<ViewerChangeEventArgs>? ViewerChange;
+                // TODO1 New marker.selection ui and logic. was ToolStripParamEditor + event EventHandler<ViewerChangeEventArgs>? ViewerChange;
                 // ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
                 // ToolStripParamEditor edMarker = new() { Value = Marker };
                 // edMarker.ParamChanged += (sender, args) => { Marker = args.Value; ContextMenuStrip.Close(); };

@@ -12,7 +12,7 @@ namespace Ephemera.AudioLib
     /// <summary>Conversion options.</summary>
     public enum Conversion { ToMonoWav, SplitStereo, Resample }
 
-    /// <summary>NAudio expansion. TODO2??</summary>
+    /// <summary>NAudio extensions. TODO1 valid?</summary>
     public class AudioUtils
     {
         /// <summary>
