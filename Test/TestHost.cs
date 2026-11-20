@@ -66,20 +66,6 @@ namespace Ephemera.AudioLib.Test
                 Environment.Exit(1);
             }
 
-            //ContextMenuStrip = contextMenuStrip1;
-            //// Context menu.
-            //ToolStripParamEditor ed1 = new();
-            //ed1.ParamChanged += (_, __) => { LogLine($"ed1:{ed1.Value}"); };
-            //ToolStripParamEditor ed2 = new();
-            //ed2.ParamChanged += (_, __) => { LogLine($"ed2:{ed2.Value}"); };
-
-            //ContextMenuStrip.Items.Add(new ToolStripLabel("Ed the first"));
-            //ContextMenuStrip.Items.Add(ed1);
-            //ContextMenuStrip.Items.Add(new ToolStripSeparator());
-            //ContextMenuStrip.Items.Add(new ToolStripLabel("Ed the second"));
-            //ContextMenuStrip.Items.Add(ed2);
-            //ContextMenuStrip.Items.Add(new ToolStripSeparator());
-
             // The rest of the controls.
             tvInfo.WordWrap = true;
             tvInfo.BackColor = _settings.BackColor;
@@ -104,13 +90,7 @@ namespace Ephemera.AudioLib.Test
                     timeBar.SelectionMode = mode;
                     _converter = Converter.Create(mode);
                 }
-                //_converter = Utils.CreateConverter(mode);
-                //switch (cmbSelMode.SelectedItem)
-                //{
-                //    case WaveSelectionMode.Time: Globals.ConverterOps = new TimeOps(); break;
-                //    case WaveSelectionMode.Bar: Globals.ConverterOps = new BarOps(); break;
-                //    case WaveSelectionMode.Sample: Globals.ConverterOps = new SampleOps(); break;
-                //}
+
                 wv1.Invalidate();
                 timeBar.Invalidate();
             };
@@ -229,40 +209,44 @@ namespace Ephemera.AudioLib.Test
         {
             //LogLine($"{(sender as WaveViewer)!.Name}");
 
-            StoppedEventArgs args = new();
-
             if (sender == wv1)
             {
-                if (e.Gain is not null)
+                switch (e.Which)
                 {
-                    sldGain.Value = wv1.Gain;
-                }
-                if (e.SelStart is not null)
-                {
-                    timeBar.SelStart = wv1.SelStart;
-                    switch (_prov)
-                    {
-                        case ClipSampleProvider csp: csp.SelStart = wv1.SelStart; break;
-                    }
-                }
-                if (e.SelLength is not null)
-                {
-                    timeBar.SelLength = wv1.SelLength;
-                    switch (_prov)
-                    {
-                        case ClipSampleProvider csp: csp.SelLength = wv1.SelLength; break;
-                    }
-                }
-                if (e.Marker is not null)
-                {
-                    //timeBar.SelLength = wv1.SelLength;
+                    case WaveViewer.UiChange.Gain:
+                        sldGain.Value = wv1.Gain;
+                        break;
+
+                    case WaveViewer.UiChange.SelStart:
+                        timeBar.SelStart = wv1.SelStart;
+                        switch (_prov)
+                        {
+                            case ClipSampleProvider csp: csp.SelStart = wv1.SelStart; break;
+                        }
+                        break;
+
+                    case WaveViewer.UiChange.SelLength:
+                        timeBar.SelLength = wv1.SelLength;
+                        switch (_prov)
+                        {
+                            case ClipSampleProvider csp: csp.SelLength = wv1.SelLength; break;
+                        }
+                        break;
+
+                    default:
+                        break;
                 }
             }
             else if (sender == wv2)
             {
-                if (e.Marker is not null)
+                switch (e.Which)
                 {
-                    wv1.Recenter(wv2.Marker);
+                    case WaveViewer.UiChange.Marker:
+                        wv1.Recenter(wv2.Marker);
+                        break;
+
+                    default:
+                        break;
                 }
             }
         }
@@ -445,8 +429,12 @@ namespace Ephemera.AudioLib.Test
             {
                 switch (_prov)
                 {
-                    case ClipSampleProvider csp: timeBar.Current = csp.SampleIndex; break;
-                    case AudioFileReader afr: timeBar.Current = (int)(afr.Position / afr.WaveFormat.BitsPerSample / 4 / afr.WaveFormat.Channels); break;
+                    case ClipSampleProvider csp:
+                        timeBar.Current = csp.SampleIndex;
+                        break;
+                    case AudioFileReader afr:
+                        timeBar.Current = (int)(afr.Position / afr.WaveFormat.BitsPerSample / afr.WaveFormat.Channels * 8);
+                        break;
                 }
             }
         }

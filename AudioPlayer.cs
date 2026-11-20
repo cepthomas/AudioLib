@@ -58,9 +58,10 @@ namespace Ephemera.AudioLib
         /// <param name="smpl">Provider.</param>
         public AudioPlayer(string wavOutDevice, int latency, ISampleProvider smpl)
         {
-            //DesiredLatency is replaced by BufferMilliseconds. This is a compile break with no shim, and the meaning changed:
-            //DesiredLatency was the total across all buffers, whereas BufferMilliseconds (default 100) sizes each individual buffer.
-            //With the default NumberOfBuffers = 2, DesiredLatency = 300 becomes BufferMilliseconds = 150.
+            // NAudio3 changes:
+            // DesiredLatency is replaced by BufferMilliseconds. This is a compile break with no shim, and the meaning changed:
+            // DesiredLatency was the total across all buffers, whereas BufferMilliseconds (default 100) sizes each individual buffer.
+            // With the default NumberOfBuffers = 2, DesiredLatency = 300 becomes BufferMilliseconds = 150.
 
             // Create output device. –1 indicates the default output device, while 0 is the first output device.
             for (int i = -1; i < WaveOut.DeviceCount; i++)

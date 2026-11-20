@@ -62,26 +62,26 @@
             // 
             tvInfo.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             tvInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            tvInfo.Location = new System.Drawing.Point(6, 410);
+            tvInfo.Location = new System.Drawing.Point(6, 463);
             tvInfo.Name = "tvInfo";
-            tvInfo.Size = new System.Drawing.Size(985, 154);
+            tvInfo.Size = new System.Drawing.Size(985, 163);
             tvInfo.TabIndex = 29;
             // 
             // timeBar
             // 
             timeBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            timeBar.Location = new System.Drawing.Point(332, 42);
+            timeBar.Location = new System.Drawing.Point(6, 95);
             timeBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             timeBar.Name = "timeBar";
-            timeBar.Size = new System.Drawing.Size(659, 46);
+            timeBar.Size = new System.Drawing.Size(985, 46);
             timeBar.TabIndex = 24;
             // 
             // wv1
             // 
             wv1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             wv1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            wv1.Location = new System.Drawing.Point(6, 95);
+            wv1.Location = new System.Drawing.Point(6, 148);
             wv1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             wv1.Name = "wv1";
             wv1.Size = new System.Drawing.Size(985, 150);
@@ -91,7 +91,7 @@
             // 
             wv2.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             wv2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            wv2.Location = new System.Drawing.Point(6, 253);
+            wv2.Location = new System.Drawing.Point(6, 306);
             wv2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             wv2.Name = "wv2";
             wv2.Size = new System.Drawing.Size(985, 150);
@@ -311,7 +311,7 @@
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1000, 576);
+            ClientSize = new System.Drawing.Size(1000, 638);
             Controls.Add(btnRewind);
             Controls.Add(chkPlay);
             Controls.Add(tvInfo);

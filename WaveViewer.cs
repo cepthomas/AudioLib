@@ -131,24 +131,24 @@ namespace Ephemera.AudioLib
         #endregion
 
         #region Events
-        /// <summary>Value changed by user. Notify owner for display.</summary>
-        public event EventHandler<StateChangeEventArgs>? StateChange;
-        public class StateChangeEventArgs : EventArgs
-        {
-            public float? Gain { get; set; } = null;
-            public int? Marker { get; set; } = null;
-            public int? SelStart { get; set; } = null;
-            public int? SelLength { get; set; } = null;
-        }
-
         ///// <summary>Value changed by user. Notify owner for display.</summary>
-        //public enum StateValue { Gain, Marker, SelStart, SelLength }
         //public event EventHandler<StateChangeEventArgs>? StateChange;
         //public class StateChangeEventArgs : EventArgs
         //{
-        //    public ParamChange Change { get; set; } = ParamChange.Marker;
-        //    public object? Value { get; set; } = null;
+        //    public float? Gain { get; set; } = null;
+        //    public int? Marker { get; set; } = null;
+        //    public int? SelStart { get; set; } = null;
+        //    public int? SelLength { get; set; } = null;
         //}
+
+        /// <summary>Value changed by user. Notify owner for display.</summary>
+        public enum UiChange { None, Gain, Marker, SelStart, SelLength }
+        public event EventHandler<StateChangeEventArgs>? StateChange;
+        public class StateChangeEventArgs : EventArgs
+        {
+            public UiChange Which { get; set; } = UiChange.None;
+            public object? Value { get; set; } = null;
+        }
         #endregion
 
         #region Lifecycle
@@ -313,7 +313,7 @@ namespace Ephemera.AudioLib
                     {
                         _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
                         _gain = (float)MathUtils.Constrain(_gain, 0.0, AudioLibDefs.MAX_GAIN);
-                        StateChange?.Invoke(this, new() { Gain = _gain });
+                        StateChange?.Invoke(this, new() { Value =  Gain = _gain });
                         Invalidate();
                     }
                     break;
@@ -339,19 +339,19 @@ namespace Ephemera.AudioLib
                     case (MouseButtons.Left, Keys.Alt):
                         _marker = sample;
                         CheckProperties();
-                        args = new() { Marker = _marker };
+                        args = new() { Which = UiChange.Marker };
                         break;
 
                     case (MouseButtons.Left, Keys.Control):
                         _selStart = sample;
                         CheckProperties();
-                        args = new() { SelStart = _selStart };
+                        args = new() { Which = UiChange.SelStart };
                         break;
 
                     case (MouseButtons.Left, Keys.Shift):
                         _selLength = sample - _selStart;
                         CheckProperties();
-                        args = new() { SelLength = _selLength };
+                        args = new() { Which = UiChange.SelLength };
                         break;
 
                     default:
@@ -690,7 +690,7 @@ namespace Ephemera.AudioLib
         {
             float max = Math.Max(Math.Abs(_max), Math.Abs(_min));
             Gain = 1.0f / max;
-            StateChange?.Invoke(this, new() { Gain = Gain });
+            StateChange?.Invoke(this, new() { Which = UiChange.Gain });
         }
 
         /// <summary>
@@ -699,7 +699,7 @@ namespace Ephemera.AudioLib
         public void ResetGain()
         {
             Gain = 1.0f;
-            StateChange?.Invoke(this, new() { Gain = Gain });
+            StateChange?.Invoke(this, new() { Which = UiChange.Gain });
         }
 
         /// <summary>
