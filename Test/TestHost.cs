@@ -127,7 +127,7 @@ namespace Ephemera.AudioLib.Test
             // Wave viewers.
             wv1.WaveColor = Color.Red;
             wv1.BackColor = Color.Cyan;
-            wv1.StateChange += ProcessViewerStateChange;
+            wv1.StateChange += ViewerStateChange;
 
             // Add stuff to the wave viewer menu.
             wv1.ContextMenuStrip!.Items.Add("Test item", null, (_, __) => LogLine("Test item worked"));
@@ -135,12 +135,12 @@ namespace Ephemera.AudioLib.Test
 
             wv2.WaveColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;
-            wv2.StateChange += ProcessViewerStateChange;
+            wv2.StateChange += ViewerStateChange;
 
             // Static swap provider.
             _provSwap = new ClipSampleProvider(Path.Join(_filesDir, "test.wav"), StereoCoercion.Mono);
 
-            // Create player. TODO2 use gain - or volume?
+            // Create player. TODO1 use gain - or volume?
             _waveOutSwapper = new();
             _player = new(_settings.WavOutDevice, int.Parse(_settings.Latency), _waveOutSwapper) { Volume = 0.5f };
             _player.PlaybackStopped += (_, __) =>
@@ -225,9 +225,11 @@ namespace Ephemera.AudioLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void ProcessViewerStateChange(object? sender, WaveViewer.StateChangeEventArgs e)
+        void ViewerStateChange(object? sender, WaveViewer.StateChangeEventArgs e)
         {
             //LogLine($"{(sender as WaveViewer)!.Name}");
+
+            StoppedEventArgs args = new();
 
             if (sender == wv1)
             {
