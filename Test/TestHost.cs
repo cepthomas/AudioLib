@@ -152,7 +152,13 @@ namespace Ephemera.AudioLib.Test
 
             // File openers.
             var ftypes = AudioLibDefs.AUDIO_FILE_TYPES.SplitByTokens("|;*");
-            Directory.GetFiles(_filesDir).ForEach(fn => { if (ftypes.Contains(Path.GetExtension(fn))) { btnLoad.DropDownItems.Add(fn, null, LoadFile_Click); } });
+            Directory.GetFiles(_filesDir).ForEach(fn =>
+            {
+                if (ftypes.Contains(Path.GetExtension(fn)))
+                {
+                    btnOpen.DropDownItems.Add(fn, null, OpenFile_Click);
+                }
+            });
 
             chkPlay.Click += (_, __) => Play_Click();
             btnRewind.Click += (_, __) => _prov?.Rewind();
@@ -168,7 +174,7 @@ namespace Ephemera.AudioLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        void LoadFile_Click(object? sender, EventArgs args)
+        void OpenFile_Click(object? sender, EventArgs args)
         {
             _player.Run(false);
             chkPlay.Checked = false;
@@ -197,16 +203,12 @@ namespace Ephemera.AudioLib.Test
                         break;
 
                     default: // Create reader type.
-                        if (btnAfReader.Checked)
-                        {
-                            prov = new AudioFileReader(fn);
-                        }
-                        else
-                        {
-                            var csp = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                            //csp.ClipProgress += Csp_ClipProgress;
-                            prov = csp;
-                        }
+                        // pick one:
+                        prov = new AudioFileReader(fn);
+
+                        //var csp = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                        ////csp.ClipProgress += Csp_ClipProgress;
+                        //prov = csp;
                         break;
                 }
                 
