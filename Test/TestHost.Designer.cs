@@ -62,9 +62,9 @@
             // 
             tvInfo.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             tvInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            tvInfo.Location = new System.Drawing.Point(6, 408);
+            tvInfo.Location = new System.Drawing.Point(6, 410);
             tvInfo.Name = "tvInfo";
-            tvInfo.Size = new System.Drawing.Size(985, 128);
+            tvInfo.Size = new System.Drawing.Size(985, 154);
             tvInfo.TabIndex = 29;
             // 
             // timeBar
@@ -84,17 +84,17 @@
             wv1.Location = new System.Drawing.Point(6, 95);
             wv1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             wv1.Name = "wv1";
-            wv1.Size = new System.Drawing.Size(985, 186);
+            wv1.Size = new System.Drawing.Size(985, 150);
             wv1.TabIndex = 26;
             // 
             // wv2
             // 
             wv2.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             wv2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            wv2.Location = new System.Drawing.Point(6, 289);
+            wv2.Location = new System.Drawing.Point(6, 253);
             wv2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             wv2.Name = "wv2";
-            wv2.Size = new System.Drawing.Size(985, 112);
+            wv2.Size = new System.Drawing.Size(985, 150);
             wv2.TabIndex = 32;
             // 
             // toolStrip1
@@ -311,7 +311,7 @@
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1000, 547);
+            ClientSize = new System.Drawing.Size(1000, 576);
             Controls.Add(btnRewind);
             Controls.Add(chkPlay);
             Controls.Add(tvInfo);
