@@ -15,30 +15,21 @@ using Ephemera.NBagOfTricks.PNUT;
 using Ephemera.NBagOfUis;
 using Ephemera.AudioLib;
 
-//TODO1 >>> - limits internal formats to IEEE 32bit fp 44100Hz. TODO1 expand caps.
-// Type     ,File                                                      ,Params            
-// Audio    ,C:\Dev\Misc\TestAudioFiles\08 Bag Pipe Groove 01 48000.wav,Encoding:Pcm      ,SampleRate:48000     ,Channels:2                        ,BitsPerSample:16,Length:1644295
-// Audio    ,C:\Dev\Misc\TestAudioFiles\ambi_swoosh.flac               ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:176400 
-// Audio    ,C:\Dev\Misc\TestAudioFiles\avTouch_sample_22050.m4a       ,Encoding:Pcm      ,SampleRate:22050     ,Channels:1                        ,BitsPerSample:16,Length:450559 
-// Audio    ,C:\Dev\Misc\TestAudioFiles\bass_woodsy_c.flac             ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:529200 
-// Audio    ,C:\Dev\Misc\TestAudioFiles\bass_woodsy_c.wav              ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:573699 
-// Audio    ,C:\Dev\Misc\TestAudioFiles\Cave Ceremony 01.wav           ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:846720 
-// Audio    ,C:\Dev\Misc\TestAudioFiles\Fat Box 01.wav                 ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:16,Length:211831 
-// Audio    ,C:\Dev\Misc\TestAudioFiles\Horns 01.wav                   ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:24,Length:1306721
-// Audio    ,C:\Dev\Misc\TestAudioFiles\one-sec.mp3                    ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:16,Length:92157  
-// Audio    ,C:\Dev\Misc\TestAudioFiles\one-sec.wav                    ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:16,Length:88383  
-// Audio    ,C:\Dev\Misc\TestAudioFiles\Orchestra 03.wav               ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:24,Length:605330 
-// Audio    ,C:\Dev\Misc\TestAudioFiles\ref-stereo.wav                 ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:176400 
-// Audio    ,C:\Dev\Misc\TestAudioFiles\sin-stereo-audible.wav         ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:176400 
-// Audio    ,C:\Dev\Misc\TestAudioFiles\sin.wav                        ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:16,Length:88200  
-// Audio    ,C:\Dev\Misc\TestAudioFiles\test.wav                       ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:16,Length:447487 
-// Audio    ,C:\Dev\Misc\TestAudioFiles\Tracy.m4a                      ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:4956155
+//TODO1 >>> - limits internal formats to IEEE 32bit fp 44100Hz. C:\Dev\Misc\TestAudioFiles. TODO1 expand caps.
+// Type  ,File                            ,Params            
+// Audio ,08 Bag Pipe Groove 01 48000.wav ,SampleRate:48000, Channels:2, BitsPerSample:16, Length:1644295
+// Audio ,ambi_swoosh.flac                ,SampleRate:44100, Channels:2, BitsPerSample:16, Length:176400 
+// Audio ,avTouch_sample_22050.m4a        ,SampleRate:22050, Channels:1, BitsPerSample:16, Length:450559 
+// Audio ,Fat Box 01.wav                  ,SampleRate:44100, Channels:1, BitsPerSample:16, Length:211831 
+// Audio ,Horns 01.wav                    ,SampleRate:44100, Channels:2, BitsPerSample:24, Length:1306721
 
 
 namespace Ephemera.AudioLib.Test
 {
     public partial class TestHost : Form
     {
+        readonly Color _bgColor;
+
         /// <summary>Where the files are.</summary>
         readonly string _filesDir;
 
@@ -68,6 +59,8 @@ namespace Ephemera.AudioLib.Test
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
 
+            _bgColor = BackColor;
+
             // Get settings.
             _settings = (TestSettings)SettingsCore.Load(MiscUtils.GetSourcePath(), typeof(TestSettings));
 
@@ -86,7 +79,7 @@ namespace Ephemera.AudioLib.Test
 
             // The rest of the controls.
             tvInfo.WordWrap = true;
-            tvInfo.BackColor = _settings.BackColor;
+            //tvInfo.BackColor = _settings.BackColor;
             tvInfo.Prompt = "> ";
             tvInfo.Matchers =
             [
@@ -135,6 +128,20 @@ namespace Ephemera.AudioLib.Test
             wv2.BackColor = Color.LightYellow;
             wv2.StateChange += ViewerStateChange;
 
+            // Init controls. Typically voloume and state would be persisted per output.
+            cc1.Volume = 0.8;
+            cc1.State = ChannelState.Solo;
+            cc1.DrawColor = _settings.DrawColor;
+            cc1.SelectedColor = _settings.SelectedColor;
+            cc1.InfoClick += Cc_InfoClick;
+
+            cc2.Volume = 0.7;
+            cc2.State = ChannelState.Normal;
+            cc2.DrawColor = _settings.DrawColor;
+            cc2.SelectedColor = _settings.SelectedColor;
+            cc2.InfoClick += Cc_InfoClick;
+
+
             // Static swap provider.
             _provSwap = new ClipSampleProvider(Path.Join(_filesDir, "test.wav"), StereoCoercion.Mono);
 
@@ -169,11 +176,15 @@ namespace Ephemera.AudioLib.Test
             chkPlay.Click += (_, __) => Play_Click();
             btnRewind.Click += (_, __) => _prov?.Rewind();
             btnTest.Click += (_, __) => UnitTests();
-            Tell($">>> 10 {WaveOut.DeviceCount}");
 
             // Go-go-go.
             timer1.Interval = 100;
             timer1.Enabled = true;
+        }
+
+        void Cc_InfoClick(object? sender, ChannelControl.InfoClickEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>
@@ -388,7 +399,6 @@ namespace Ephemera.AudioLib.Test
                 }
                 else   
                 {
-                    Tell($">>> 60 {WaveOut.DeviceCount}");
                     _player.Run(chkPlay.Checked);
                 }
             }
@@ -414,7 +424,7 @@ namespace Ephemera.AudioLib.Test
         {
             if (_prov is null)
             {
-                Tell("open a file first please");
+                Tell("Open a file first please");
             }
             else
             {
@@ -475,7 +485,6 @@ namespace Ephemera.AudioLib.Test
             for (int id = -1; id < WaveOut.DeviceCount; id++)
             {
                 var cap = WaveOut.GetCapabilities(id);
-                Tell($"+++ {cap.ProductName}");
             }
         }
 
@@ -530,17 +539,30 @@ namespace Ephemera.AudioLib.Test
         }
     }
 
+    // public bool Selected
+    // public ChannelState State { get; set; }
+
+    // public string Info1
+    // public string Info2
+    // public double Pan
+    // public double Volume
+
+    // public event EventHandler<InfoClickEventArgs>? InfoClick;
+    // public event EventHandler<SelectionChangeEventArgs>? SelectionChange;
+    // public event EventHandler<StateChangeEventArgs>? StateChange;
+
+    //cc1.DrawColor = _settings.DrawColor;
+    //        cc1.SelectedColor = _settings.SelectedColor;
+    //        cc1.InfoClick += ChannelControl_InfoClick;
+
     public class TestSettings : SettingsCore
     {
-        [DisplayName("Background Color")]
-        [Description("The color used for overall background.")]
-        [Browsable(true)]
         [JsonConverter(typeof(JsonColorConverter))]
-        public Color BackColor { get; set; } = Color.AliceBlue;
+        public Color SelectedColor { get; set; } = Color.AliceBlue;
 
-        [DisplayName("Default Selection Mode")]
-        [Description("Edit midi settings.")]
-        [Browsable(true)]
+        [JsonConverter(typeof(JsonColorConverter))]
+        public Color DrawColor { get; set; } = Color.Green;
+
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public WaveSelectionMode DefaultSelectionMode { get; set; } = WaveSelectionMode.Time;
 

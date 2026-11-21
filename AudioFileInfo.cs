@@ -54,14 +54,14 @@ namespace Ephemera.AudioLib
 
             try
             {
-                // Class for reading any file that Media Foundation can play Automatically converts to PCM.
+                // Class for reading any file that Media Foundation can play. Automatically converts to PCM.
                 MediaFoundationReader mfr = new(fileName);
                 var wf = mfr.WaveFormat;
                 ls =
                 [
                     "Audio",
                     fileName,
-                    $"Encoding:{wf.Encoding}",
+                    //$"Encoding:{wf.Encoding}",
                     $"SampleRate:{wf.SampleRate}",
                     $"Channels:{wf.Channels}",
                     $"BitsPerSample:{wf.BitsPerSample}",

@@ -32,20 +32,6 @@ namespace Ephemera.AudioLib
         #endregion
 
         #region Properties - functional
-        ///// <summary>Display options.</summary>
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        //[EditorBrowsable(EditorBrowsableState.Never)]
-        //public DisplayOptions Options { get; set; } = DisplayOptions.All;
-        //
-        // Options:  def=volume/level/info/Solo/Mute   all=meter(s)/fx/pan
-        //     public bool ShowSoloMute { get; set; } = false;
-        //     public bool ShowPan { get; set; } = false;
-        //     public bool ShowFx { get; set; } = false;
-        //     public bool ShowMeter { get; set; } = false;
-        //     /// <summary>Some flavors of control may need to be defeatured.</summary>
-        //     [Flags]
-        //     public enum DisplayOptions { None = 0x00, SoloMute = 0x01, Fx = 0x02, Pan = 0x04, All = 0x0F, }
-
         /// <summary>For muting/soloing.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]

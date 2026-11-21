@@ -50,8 +50,8 @@
             toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             btnRewind = new System.Windows.Forms.Button();
-            channelControl1 = new ChannelControl();
-            channelControl2 = new ChannelControl();
+            cc1 = new ChannelControl();
+            cc2 = new ChannelControl();
             toolStrip1.SuspendLayout();
             contextMenuStrip1.SuspendLayout();
             SuspendLayout();
@@ -309,29 +309,29 @@
             btnRewind.Text = "Rewind";
             btnRewind.UseVisualStyleBackColor = false;
             // 
-            // channelControl1
+            // cc1
             // 
-            channelControl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            channelControl1.Location = new System.Drawing.Point(288, 46);
-            channelControl1.Name = "channelControl1";
-            channelControl1.Size = new System.Drawing.Size(282, 64);
-            channelControl1.TabIndex = 38;
+            cc1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            cc1.Location = new System.Drawing.Point(288, 46);
+            cc1.Name = "cc1";
+            cc1.Size = new System.Drawing.Size(282, 64);
+            cc1.TabIndex = 38;
             // 
-            // channelControl2
+            // cc2
             // 
-            channelControl2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            channelControl2.Location = new System.Drawing.Point(577, 44);
-            channelControl2.Name = "channelControl2";
-            channelControl2.Size = new System.Drawing.Size(286, 66);
-            channelControl2.TabIndex = 39;
+            cc2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            cc2.Location = new System.Drawing.Point(577, 44);
+            cc2.Name = "cc2";
+            cc2.Size = new System.Drawing.Size(286, 66);
+            cc2.TabIndex = 39;
             // 
             // TestHost
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             ClientSize = new System.Drawing.Size(1000, 739);
-            Controls.Add(channelControl2);
-            Controls.Add(channelControl1);
+            Controls.Add(cc2);
+            Controls.Add(cc1);
             Controls.Add(btnRewind);
             Controls.Add(chkPlay);
             Controls.Add(tvInfo);
@@ -387,7 +387,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.Button btnRewind;
         private System.Windows.Forms.ToolStripButton btnCaps;
-        private ChannelControl channelControl1;
-        private ChannelControl channelControl2;
+        private ChannelControl cc1;
+        private ChannelControl cc2;
     }
 }

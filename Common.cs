@@ -15,14 +15,10 @@ namespace Ephemera.AudioLib
 
     /// <summary>How to snap.</summary>
     public enum SnapType { None, Fine, Coarse };
-    #endregion
-
-
 
     /// <summary>Library error.</summary>
     public class AudioLibException(string message) : Exception(message) { }
-
-
+    #endregion
 
     #region Definitions
     public class AudioLibDefs
