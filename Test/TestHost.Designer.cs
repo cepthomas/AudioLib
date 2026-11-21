@@ -50,6 +50,8 @@
             toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
             toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             btnRewind = new System.Windows.Forms.Button();
+            channelControl1 = new ChannelControl();
+            channelControl2 = new ChannelControl();
             toolStrip1.SuspendLayout();
             contextMenuStrip1.SuspendLayout();
             SuspendLayout();
@@ -62,16 +64,16 @@
             // 
             tvInfo.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             tvInfo.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            tvInfo.Location = new System.Drawing.Point(6, 463);
+            tvInfo.Location = new System.Drawing.Point(6, 485);
             tvInfo.Name = "tvInfo";
-            tvInfo.Size = new System.Drawing.Size(985, 163);
+            tvInfo.Size = new System.Drawing.Size(985, 242);
             tvInfo.TabIndex = 29;
             // 
             // timeBar
             // 
             timeBar.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             timeBar.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            timeBar.Location = new System.Drawing.Point(6, 95);
+            timeBar.Location = new System.Drawing.Point(6, 117);
             timeBar.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             timeBar.Name = "timeBar";
             timeBar.Size = new System.Drawing.Size(985, 46);
@@ -81,7 +83,7 @@
             // 
             wv1.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             wv1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            wv1.Location = new System.Drawing.Point(6, 148);
+            wv1.Location = new System.Drawing.Point(6, 170);
             wv1.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             wv1.Name = "wv1";
             wv1.Size = new System.Drawing.Size(985, 150);
@@ -91,7 +93,7 @@
             // 
             wv2.Anchor = System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right;
             wv2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            wv2.Location = new System.Drawing.Point(6, 306);
+            wv2.Location = new System.Drawing.Point(6, 328);
             wv2.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             wv2.Name = "wv2";
             wv2.Size = new System.Drawing.Size(985, 150);
@@ -307,11 +309,29 @@
             btnRewind.Text = "Rewind";
             btnRewind.UseVisualStyleBackColor = false;
             // 
+            // channelControl1
+            // 
+            channelControl1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            channelControl1.Location = new System.Drawing.Point(288, 46);
+            channelControl1.Name = "channelControl1";
+            channelControl1.Size = new System.Drawing.Size(282, 64);
+            channelControl1.TabIndex = 38;
+            // 
+            // channelControl2
+            // 
+            channelControl2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            channelControl2.Location = new System.Drawing.Point(577, 44);
+            channelControl2.Name = "channelControl2";
+            channelControl2.Size = new System.Drawing.Size(286, 66);
+            channelControl2.TabIndex = 39;
+            // 
             // TestHost
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            ClientSize = new System.Drawing.Size(1000, 638);
+            ClientSize = new System.Drawing.Size(1000, 739);
+            Controls.Add(channelControl2);
+            Controls.Add(channelControl1);
             Controls.Add(btnRewind);
             Controls.Add(chkPlay);
             Controls.Add(tvInfo);
@@ -367,5 +387,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.Button btnRewind;
         private System.Windows.Forms.ToolStripButton btnCaps;
+        private ChannelControl channelControl1;
+        private ChannelControl channelControl2;
     }
 }

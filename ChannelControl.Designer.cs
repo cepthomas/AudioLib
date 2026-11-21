@@ -4,7 +4,7 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.AudioLib
 {
-    partial class ChannelControl2
+    partial class ChannelControl
     {
         /// <summary> 
         /// Required designer variable.
@@ -113,7 +113,7 @@ namespace Ephemera.AudioLib
             meter2.Size = new System.Drawing.Size(20, 61);
             meter2.TabIndex = 8;
             // 
-            // ChannelControl2
+            // ChannelControl
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -125,7 +125,7 @@ namespace Ephemera.AudioLib
             Controls.Add(panChannel);
             Controls.Add(sldVolume);
             Controls.Add(lblInfo);
-            Name = "ChannelControl2";
+            Name = "ChannelControl";
             Size = new System.Drawing.Size(284, 65);
             ResumeLayout(false);
         }

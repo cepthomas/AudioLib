@@ -15,7 +15,24 @@ using Ephemera.NBagOfTricks.PNUT;
 using Ephemera.NBagOfUis;
 using Ephemera.AudioLib;
 
-//TODO1 >>> - limits internal formats to IEEE 32bit fp 44100Hz. TODO1 expand caps.  dump audio file info in test files  C:\Dev\Misc\TestAudioFiles
+//TODO1 >>> - limits internal formats to IEEE 32bit fp 44100Hz. TODO1 expand caps.
+// Type     ,File                                                      ,Params            
+// Audio    ,C:\Dev\Misc\TestAudioFiles\08 Bag Pipe Groove 01 48000.wav,Encoding:Pcm      ,SampleRate:48000     ,Channels:2                        ,BitsPerSample:16,Length:1644295
+// Audio    ,C:\Dev\Misc\TestAudioFiles\ambi_swoosh.flac               ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:176400 
+// Audio    ,C:\Dev\Misc\TestAudioFiles\avTouch_sample_22050.m4a       ,Encoding:Pcm      ,SampleRate:22050     ,Channels:1                        ,BitsPerSample:16,Length:450559 
+// Audio    ,C:\Dev\Misc\TestAudioFiles\bass_woodsy_c.flac             ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:529200 
+// Audio    ,C:\Dev\Misc\TestAudioFiles\bass_woodsy_c.wav              ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:573699 
+// Audio    ,C:\Dev\Misc\TestAudioFiles\Cave Ceremony 01.wav           ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:846720 
+// Audio    ,C:\Dev\Misc\TestAudioFiles\Fat Box 01.wav                 ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:16,Length:211831 
+// Audio    ,C:\Dev\Misc\TestAudioFiles\Horns 01.wav                   ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:24,Length:1306721
+// Audio    ,C:\Dev\Misc\TestAudioFiles\one-sec.mp3                    ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:16,Length:92157  
+// Audio    ,C:\Dev\Misc\TestAudioFiles\one-sec.wav                    ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:16,Length:88383  
+// Audio    ,C:\Dev\Misc\TestAudioFiles\Orchestra 03.wav               ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:24,Length:605330 
+// Audio    ,C:\Dev\Misc\TestAudioFiles\ref-stereo.wav                 ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:176400 
+// Audio    ,C:\Dev\Misc\TestAudioFiles\sin-stereo-audible.wav         ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:176400 
+// Audio    ,C:\Dev\Misc\TestAudioFiles\sin.wav                        ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:16,Length:88200  
+// Audio    ,C:\Dev\Misc\TestAudioFiles\test.wav                       ,Encoding:Pcm      ,SampleRate:44100     ,Channels:1                        ,BitsPerSample:16,Length:447487 
+// Audio    ,C:\Dev\Misc\TestAudioFiles\Tracy.m4a                      ,Encoding:Pcm      ,SampleRate:44100     ,Channels:2                        ,BitsPerSample:16,Length:4956155
 
 
 namespace Ephemera.AudioLib.Test
@@ -100,7 +117,7 @@ namespace Ephemera.AudioLib.Test
             sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
 
             // Progress bar.
-            timeBar.CurrentChanged += (_, __) => LogLine($"Current timebar:{_converter.Format(timeBar.Current)}");
+            timeBar.CurrentChanged += (_, __) => Tell($"Current timebar:{_converter.Format(timeBar.Current)}");
             timeBar.ProgressColor = Color.Green;
             timeBar.TextColor = Color.White;
             timeBar.BackColor = Color.Cyan;
@@ -111,8 +128,8 @@ namespace Ephemera.AudioLib.Test
             wv1.StateChange += ViewerStateChange;
 
             // Add stuff to the wave viewer menu.
-            wv1.ContextMenuStrip!.Items.Add("Test item", null, (_, __) => LogLine("Test item worked"));
-            toolStripMenuItem1.Click += (_, __) => LogLine($"Log it worked");
+            wv1.ContextMenuStrip!.Items.Add("Test item", null, (_, __) => Tell("Test item worked"));
+            toolStripMenuItem1.Click += (_, __) => Tell($"Log it worked");
 
             wv2.WaveColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;
@@ -122,14 +139,22 @@ namespace Ephemera.AudioLib.Test
             _provSwap = new ClipSampleProvider(Path.Join(_filesDir, "test.wav"), StereoCoercion.Mono);
 
             // Create player.
-            _waveOutSwapper = new();
-            _player = new(_settings.WavOutDevice, int.Parse(_settings.Latency), _waveOutSwapper) { Volume = 0.5f };
-            _player.PlaybackStopped += (_, __) =>
+            try
             {
-                LogLine("Player finished");
-                this.InvokeIfRequired(_ => chkPlay.Checked = false);
-                _prov?.Rewind();
-            };
+                _waveOutSwapper = new();
+                _player = new(_settings.WavOutDevice, int.Parse(_settings.Latency), _waveOutSwapper) { Volume = 0.5f };
+                _player.PlaybackStopped += (_, __) =>
+                {
+                    Tell("Player finished");
+                    this.InvokeIfRequired(_ => chkPlay.Checked = false);
+                    _prov?.Rewind();
+                };
+
+            }
+            catch (Exception ex)
+            {
+                Tell($"ERR init failed: {ex}");
+            }
 
             // File openers.
             var ftypes = AudioLibDefs.AUDIO_FILE_TYPES.SplitByTokens("|;*");
@@ -144,6 +169,7 @@ namespace Ephemera.AudioLib.Test
             chkPlay.Click += (_, __) => Play_Click();
             btnRewind.Click += (_, __) => _prov?.Rewind();
             btnTest.Click += (_, __) => UnitTests();
+            Tell($">>> 10 {WaveOut.DeviceCount}");
 
             // Go-go-go.
             timer1.Interval = 100;
@@ -157,6 +183,7 @@ namespace Ephemera.AudioLib.Test
         /// <param name="args"></param>
         void OpenFile_Click(object? sender, EventArgs args)
         {
+            // Reset.
             _player.Run(false);
             chkPlay.Checked = false;
             btnSwap.Checked = false;
@@ -197,7 +224,7 @@ namespace Ephemera.AudioLib.Test
             }
             catch (Exception e)
             {
-                LogLine("ERR " + e.Message);
+                Tell("ERR " + e.Message);
             }
         }
 
@@ -208,8 +235,6 @@ namespace Ephemera.AudioLib.Test
         /// <param name="e"></param>
         void ViewerStateChange(object? sender, WaveViewer.StateChangeEventArgs e)
         {
-            //LogLine($"{(sender as WaveViewer)!.Name}");
-
             if (sender == wv1)
             {
                 switch (e.Which)
@@ -307,7 +332,7 @@ namespace Ephemera.AudioLib.Test
 
                         wv2.Init(new NullSampleProvider());
 
-                        LogLine($"Show {csp.GetInfoString()}");
+                        Tell($"Show {csp.GetInfoString()}");
                         timeBar.Length = csp.SamplesPerChannel;
                     }
                     break;
@@ -330,7 +355,7 @@ namespace Ephemera.AudioLib.Test
                         }
 
                         afr.Rewind();
-                        LogLine($"Show {afr.GetInfoString()}");
+                        Tell($"Show {afr.GetInfoString()}");
                         timeBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
                     }
                     break;
@@ -348,21 +373,22 @@ namespace Ephemera.AudioLib.Test
         {
             if (_prov is null)
             {
-                LogLine("open a file first please");
+                Tell("open a file first please");
             }
             else
             {
                 if (chkPlay.Checked)
-                {  
+                {
                     _player.Run(true);
                     if (!_player.Playing)
                     {
-                        LogLine("ERR: can't run clip!");
+                        Tell("ERR: can't run clip!");
                         chkPlay.Checked = false;
                     }
                 }
                 else   
                 {
+                    Tell($">>> 60 {WaveOut.DeviceCount}");
                     _player.Run(chkPlay.Checked);
                 }
             }
@@ -388,14 +414,14 @@ namespace Ephemera.AudioLib.Test
         {
             if (_prov is null)
             {
-                LogLine("open a file first please");
+                Tell("open a file first please");
             }
             else
             {
                 var newProv = btnSwap.Checked ? _provSwap : _prov;
                 _waveOutSwapper.SetInput(newProv); // For listen.
                 ShowWave(newProv);
-                LogLine($"Swapped");
+                Tell($"Swapped");
             }
         }
 
@@ -408,8 +434,8 @@ namespace Ephemera.AudioLib.Test
         {
             // Dump all test files.
             bool verbose = false;
-            LogLine($"Type{AudioFileInfo.DELIM}File{AudioFileInfo.DELIM}Params");
-            Directory.GetFiles(_filesDir).ForEach(f => { LogLine(AudioFileInfo.GetFileInfo(f, verbose)); });
+            Tell($"Type{AudioFileInfo.DELIM}File{AudioFileInfo.DELIM}Params");
+            Directory.GetFiles(_filesDir).ForEach(f => { Tell(AudioFileInfo.GetFileInfo(f, verbose)); });
         }
 
         /// <summary>
@@ -448,7 +474,8 @@ namespace Ephemera.AudioLib.Test
             // –1 indicates the default output device, while 0 is the first output device.
             for (int id = -1; id < WaveOut.DeviceCount; id++)
             {
-                _ = WaveOut.GetCapabilities(id);
+                var cap = WaveOut.GetCapabilities(id);
+                Tell($"+++ {cap.ProductName}");
             }
         }
 
@@ -461,14 +488,14 @@ namespace Ephemera.AudioLib.Test
         {
             SettingsEditor.Edit(_settings, "howdy!!!", 400);
             _settings.Save();
-            LogLine("You better restart!");
+            Tell("You better restart!");
         }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="s"></param>
-        void LogLine(string s)
+        void Tell(string s)
         {
             this.InvokeIfRequired(_ => { tvInfo.Append(s); });
         }
@@ -481,7 +508,7 @@ namespace Ephemera.AudioLib.Test
             TestRunner runner = new(OutputFormat.Readable);
             var torun = new[] { "CONVERT" };
             runner.RunSuites(torun);
-            runner.Context.OutputLines.ForEach(l => LogLine(l));
+            runner.Context.OutputLines.ForEach(l => Tell(l));
         }
 
         /// <summary>

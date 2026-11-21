@@ -10,20 +10,6 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfUis;
 
 
-// old - useful???
-// - UserRenderer
-//     - Used to add UI or graphics to a customized `ChannelControl`.
-//
-// Options:  def=volume/level/info/Solo/Mute   all=meter(s)/fx/pan
-//     public bool ShowSoloMute { get; set; } = false;
-//     public bool ShowPan { get; set; } = false;
-//     public bool ShowFx { get; set; } = false;
-//     public bool ShowMeter { get; set; } = false;
-//     /// <summary>Some flavors of control may need to be defeatured.</summary>
-//     [Flags]
-//     public enum DisplayOptions { None = 0x00, SoloMute = 0x01, Fx = 0x02, Pan = 0x04, All = 0x0F, }
-
-
 namespace Ephemera.AudioLib
 {
     #region Types
@@ -33,48 +19,67 @@ namespace Ephemera.AudioLib
 
 
     [DesignTimeVisible(true)]
-    public partial class ChannelControl2 : UserControl
+    public partial class ChannelControl : UserControl
     {
         #region Fields
         /// <summary>Initial bg color.</summary>
         Color _bgColor;
 
+        readonly Color _selectedColor = Color.Red;
+
         /// <summary>Control is selected</summary>
         bool _selected = false;
-
-        ChannelState _state = ChannelState.Normal;
-
-        // backing:
-        //UserRenderer? _userRenderer = null;
-
-        Color _selectedColor = Color.Red;
-
-        ///// <summary>Control is selected</summary>
-        //bool _selected = false;
         #endregion
 
-        #region Properties
+        #region Properties - functional
         ///// <summary>Display options.</summary>
         //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         //[EditorBrowsable(EditorBrowsableState.Never)]
         //public DisplayOptions Options { get; set; } = DisplayOptions.All;
+        //
+        // Options:  def=volume/level/info/Solo/Mute   all=meter(s)/fx/pan
+        //     public bool ShowSoloMute { get; set; } = false;
+        //     public bool ShowPan { get; set; } = false;
+        //     public bool ShowFx { get; set; } = false;
+        //     public bool ShowMeter { get; set; } = false;
+        //     /// <summary>Some flavors of control may need to be defeatured.</summary>
+        //     [Flags]
+        //     public enum DisplayOptions { None = 0x00, SoloMute = 0x01, Fx = 0x02, Pan = 0x04, All = 0x0F, }
 
         /// <summary>For muting/soloing.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
-        public ChannelState State
-        {
-           get { return _state; }
-            set { _state = value; }// UpdateUi(); }
-        }
+        public ChannelState State { get; set; }
 
         /// <summary>User selection.</summary>
         public bool Selected
         {
-           get { return _selected; }
-           private set { _selected = value; lblInfo.BackColor = _selected ? SelectedColor : BackColor; }
+            get { return _selected; }
+            private set { _selected = value; BackColor = _selected ? SelectedColor : _bgColor; }
         }
 
+        /// <summary>Current volume.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Browsable(false)]
+        public double Volume
+        {
+            get { return sldVolume.Value; }
+            set { sldVolume.Value = value; }
+        }
+
+        /// <summary>Current pan.</summary>
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
+        [EditorBrowsable(EditorBrowsableState.Never)]
+        [Browsable(false)]
+        public double Pan
+        {
+            get { return panChannel.Value; }
+            set { panChannel.Value = value; }
+        }
+        #endregion
+
+        #region Properties - cosmetic
         /// <summary>Main info for user.</summary>
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
@@ -103,6 +108,7 @@ namespace Ephemera.AudioLib
             {
                 sldVolume.DrawColor = value;
                 panChannel.DrawColor = value;
+                //  >>>>  and others
             }
             get
             {
@@ -114,31 +120,6 @@ namespace Ephemera.AudioLib
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         [EditorBrowsable(EditorBrowsableState.Never)]
         public Color SelectedColor { get; set; } = Color.LightPink;
-
-        ///// <summary>For muting/soloing.</summary>
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        ////[EditorBrowsable(EditorBrowsableState.Never)]
-        //[Browsable(false)]
-        //public ChannelState State { get; set; }
-
-        /// <summary>Current volume.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [Browsable(false)]
-        public double Volume
-        {
-            get { return sldVolume.Value; }
-            set { sldVolume.Value = value; }
-        }
-
-        ///// <summary>User selection.</summary>
-        //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-        //[Browsable(false)]
-        //public bool Selected
-        //{
-        //    get { return _selected; }
-        //    set { _selected = value; BackColor = _selected ? SelectedColor : _bgColor;  }
-        //}
         #endregion
 
 
@@ -160,7 +141,7 @@ namespace Ephemera.AudioLib
         /// <summary>
         /// Normal constructor.
         /// </summary>
-        public ChannelControl2()
+        public ChannelControl()
         {
             SetStyle(ControlStyles.DoubleBuffer | ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint, true);
 
@@ -169,6 +150,43 @@ namespace Ephemera.AudioLib
             //BoundChannel = new OutputChannel(dev, 9, 0);
 
             InitializeComponent();
+
+            _bgColor = BackColor;
+
+
+            lblInfo.Click += ChannelInfo_Click;
+            //sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
+            lblSolo.Click += SoloMute_Click;
+            lblMute.Click += SoloMute_Click;
+
+            //??? if (Options.HasFlag(DisplayOptions.Fx))
+
+            // Volume slider.
+            sldVolume.Minimum = 0.0;
+            sldVolume.Maximum = AudioLibDefs.MAX_VOLUME;
+            sldVolume.Resolution = AudioLibDefs.RES_VOLUME;
+            sldVolume.Label = "volume";
+            //sldVolume.ValueChanged += Volume_ValueChanged;
+
+            // Pan
+            panChannel.Value = 0;
+            //panChannel.ValueChanged += PanChannel_ValueChanged;
+
+            // Solo/mute checkboxes.
+            lblSolo.Text = "S";
+            lblSolo.Click += SoloMute_Click;
+            lblMute.Text = "M";
+            lblMute.Click += SoloMute_Click;
+
+            // FX
+            btnFx.Click += Fx_Click;
+
+            // Info textbox.
+            lblInfo.AutoEllipsis = true;
+            lblInfo.Click += ChannelInfo_Click;
+
+            // Finalize the control.
+            toolTip.InitialDelay = 100;
         }
 
         /// <summary>
@@ -177,99 +195,27 @@ namespace Ephemera.AudioLib
         /// <param name="e"></param>
         protected override void OnLoad(EventArgs e)
         {
-            _bgColor = BackColor;
-            toolTip.InitialDelay = 100;
-
-
-            lblInfo.Click += ChannelInfo_Click;
-//            sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
-            lblSolo.Click += SoloMute_Click;
-            lblMute.Click += SoloMute_Click;
-
-            //if (Options.HasFlag(DisplayOptions.Fx))
-            //{
-  
-            //}
-
-            //if (_userRenderer is not null)
-            //{
-            //    _userRenderer.Location = new(PAD, 100 + PAD);
-            //    //_userRenderer.Location = new(PAD, yMax + PAD);
-            //    //xMax = Math.Max(_userRenderer.Right, xPos);
-            //    //yMax = Math.Max(_userRenderer.Bottom, yMax);
-            //    Controls.Add(_userRenderer);
-            //}
-
-            // Control itself.
-//            Size = new Size(xMax + PAD, yMax + PAD);
-
-            //// Other inits.
-            //sldVolume.Value = BoundChannel.Volume;
-            //UpdateUi();
-
-
-            // Volume slider.
-            sldVolume.Minimum = 0.0;
-            sldVolume.Maximum = AudioLibDefs.MAX_VOLUME;
-            sldVolume.Resolution = AudioLibDefs.RES_VOLUME;
-            sldVolume.Label = "volume";
-            sldVolume.ValueChanged += SldVolume_ValueChanged;
-
-            //if (Options.HasFlag(DisplayOptions.SoloMute))
-            {
-                // Solo/mute checkboxes.
-                lblSolo.Text = "S";
-                lblSolo.Click += SoloMute_Click;
-
-                lblMute.Text = "M";
-                lblMute.Click += SoloMute_Click;
-            }
-
-            // Info textbox.
-            lblInfo.AutoEllipsis = true;
-            lblInfo.Click += ChannelInfo_Click;
-
-            // Finalize the control.
-            toolTip.InitialDelay = 100;
-
             base.OnLoad(e);
         }
-
-        ///// <summary>
-        ///// A custom renderer - optional.
-        ///// </summary>
-        ///// <param name="rend"></param>
-        //public void SetRenderer(UserRenderer rend)
-        //{
-        //    _userRenderer = rend;
-
-        //    //// Handle custom renderer events. Fix the channel number.
-        //    //rend.SendMidi += (object? sender, BaseEvent e) =>
-        //    //{
-        //    //    e.ChannelNumber = BoundChannel.ChannelNumber;
-        //    //    BoundChannel.Send(e);
-        //    // //   SendMidi?.Invoke(this, e);
-        //    //};
-
-        //    rend.Location = new(PAD, Height);
-        //    Height += rend.Height + PAD;
-        //    Controls.Add(rend);
-        //}
         #endregion
 
         #region Handlers for user selections
-        // /// <summary>User clicked info aka selected it. Maybe host would like to do something.</summary>
+        /// <summary>
+        /// User clicked info aka selected it. Maybe host would like to do something.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void ChannelInfo_Click(object? sender, EventArgs e)
         {
             InfoClick?.Invoke(this, new());
         }
 
-        /// <summary>User changed volume. Usually not needed by host.</summary>
-        void SldVolume_ValueChanged(object? sender, EventArgs e)
-        {
-        }
-
-        /// <summary>Handles solo and mute.</summary>
+        /// <summary>
+        /// Handles solo and mute.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <exception cref="AudioLibException"></exception>
         void SoloMute_Click(object? sender, EventArgs e)
         {
             var lbl = sender as Label;
@@ -313,6 +259,17 @@ namespace Ephemera.AudioLib
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        /// <exception cref="NotImplementedException"></exception>
+        void Fx_Click(object? sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
         /// User item selection(s).
         /// </summary>
         /// <param name="e"></param>
@@ -344,22 +301,6 @@ namespace Ephemera.AudioLib
         #endregion
 
         #region Misc
-        // /// <summary>Draw mode checkboxes etc.</summary>
-        // void UpdateUi()
-        // {
-        //     StringBuilder sb = new();
-
-        //     sb.AppendLine($"Channel {BoundChannel.ChannelNumber} {BoundChannel.ChannelName}");
-        //     sb.AppendLine($"{BoundChannel.PatchName} {BoundChannel.Patch:000}");
-        //     sb.AppendLine(BoundChannel.DeviceInfo);
-        //     toolTip.SetToolTip(lblInfo, sb.ToString());
-
-        //     lblInfo.Text = HandleOps.Format(BoundChannel.Handle);
-
-        //     lblSolo.BackColor = _state == ChannelState.Solo ? SelectedColor :  BackColor;
-        //     lblMute.BackColor = _state == ChannelState.Mute ? SelectedColor : BackColor;
-        // }
-
         /// <summary>Read me.</summary>
         public override string ToString()
         {
@@ -367,28 +308,4 @@ namespace Ephemera.AudioLib
         }
         #endregion
     }
-
-    #region Supplementary classes
-    // /// <summary>Notify host of UI changes.</summary>
-    // public class ChannelChangeEventArgs : EventArgs
-    // {
-    //     /// <summary>User clicked info.</summary>
-    //     public bool Info { get; set; } = false;
-    //     /// <summary>Solo/mute.</summary>
-    //     public bool State { get; set; } = false;
-    // }
-
-    ///// <summary>Base class for custom renderers.</summary>
-    //public class UserRenderer : UserControl
-    //{
-    //    /// <summary>Parent hooks this.</summary>
-    //    public event EventHandler<BaseEvent>? SendMidi;
-
-    //    /// <summary>Derived control helper.</summary>
-    //    protected void OnSendMidi(BaseEvent e)
-    //    {
-    //        SendMidi?.Invoke(this, e);
-    //    }
-    //}
-    #endregion
 }

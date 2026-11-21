@@ -81,6 +81,11 @@ namespace Ephemera.AudioLib
                     break;
                 }
             }
+
+            if (_waveOut is null)
+            {
+                throw new AudioLibException($"Invalid device: {wavOutDevice}");
+            }
         }
 
         /// <summary> 
