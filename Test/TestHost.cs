@@ -15,6 +15,8 @@ using Ephemera.NBagOfTricks.PNUT;
 using Ephemera.NBagOfUis;
 using Ephemera.AudioLib;
 
+//TODO1 >>> - limits internal formats to IEEE 32bit fp 44100Hz. TODO1 expand caps.  dump audio file info in test files  C:\Dev\Misc\TestAudioFiles
+
 
 namespace Ephemera.AudioLib.Test
 {
@@ -40,7 +42,6 @@ namespace Ephemera.AudioLib.Test
 
         /// <summary>Test stuff.</summary>
         IConverter _converter = Converter.Create(WaveSelectionMode.Sample);
-
 
         /// <summary>
         /// Constructor.
@@ -120,7 +121,7 @@ namespace Ephemera.AudioLib.Test
             // Static swap provider.
             _provSwap = new ClipSampleProvider(Path.Join(_filesDir, "test.wav"), StereoCoercion.Mono);
 
-            // Create player. TODO1 use gain - or volume?
+            // Create player.
             _waveOutSwapper = new();
             _player = new(_settings.WavOutDevice, int.Parse(_settings.Latency), _waveOutSwapper) { Volume = 0.5f };
             _player.PlaybackStopped += (_, __) =>
@@ -407,10 +408,8 @@ namespace Ephemera.AudioLib.Test
         {
             // Dump all test files.
             bool verbose = false;
-            Directory.GetFiles(_filesDir).ForEach(f =>
-            {
-                LogLine(AudioFileInfo.GetFileInfo(f, verbose));
-            });
+            LogLine($"Type{AudioFileInfo.DELIM}File{AudioFileInfo.DELIM}Params");
+            Directory.GetFiles(_filesDir).ForEach(f => { LogLine(AudioFileInfo.GetFileInfo(f, verbose)); });
         }
 
         /// <summary>

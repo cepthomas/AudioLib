@@ -17,6 +17,13 @@ namespace Ephemera.AudioLib
     public enum SnapType { None, Fine, Coarse };
     #endregion
 
+
+
+    /// <summary>Library error.</summary>
+    public class AudioLibException(string message) : Exception(message) { }
+
+
+
     #region Definitions
     public class AudioLibDefs
     {
@@ -25,6 +32,9 @@ namespace Ephemera.AudioLib
 
         /// <summary>NAudio doesn't publish this for their API.</summary>
         public const float MAX_VOLUME = 1.0f;
+
+        /// <summary>Resolution of UI.</summary>
+        public const double RES_VOLUME = MAX_VOLUME / 50;
 
         /// <summary>Maximum gain.</summary>
         public const float MAX_GAIN = 5.0f;

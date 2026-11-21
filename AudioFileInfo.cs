@@ -4,12 +4,17 @@ using System.IO;
 using NAudio.Wave;
 using NAudio.SoundFont;
 using Ephemera.NBagOfTricks;
+using System.Linq;
 
 
 namespace Ephemera.AudioLib
 {
     public class AudioFileInfo
     {
+#pragma warning disable CA2211 // Non-constant fields should not be visible
+        public static string DELIM = ",";
+#pragma warning restore
+
         /// <summary>
         /// Top level function to get file info.
         /// </summary>
@@ -19,89 +24,102 @@ namespace Ephemera.AudioLib
         public static string GetFileInfo(string fileName, bool verbose)
         {
             FileInfo fi = new(fileName);
+
             string sinfo = fi.Extension.ToLower() switch
             {
-                ".wav"  => GetInfoWav(fileName, verbose),
-                ".m4a"  => GetInfoOther(fileName, verbose),
-                ".flac" => GetInfoOther(fileName, verbose),
-                ".mp3"  => GetInfoMp3(fileName, verbose),
+                ".wav"  => GetInfoMfr(fileName, verbose),
+                ".mp3" => GetInfoMfr(fileName, verbose),
                 ".sf2" => GetInfoSf(fileName, verbose),
+                ".m4a" => GetInfoMfr(fileName, verbose),
+                ".flac" => GetInfoMfr(fileName, verbose),
+                ".mid" => GetInfoMidi(fileName, verbose),
+                ".prs" => GetInfoMidi(fileName, verbose),
+                ".sty" => GetInfoMidi(fileName, verbose),
+                ".pcs" => GetInfoMidi(fileName, verbose),
+                ".sst" => GetInfoMidi(fileName, verbose),
                 _ => GetInfoOther(fileName, verbose),
             };
             return sinfo;
         }
 
         /// <summary>
-        /// Get info for mp3 file.
+        /// Get info for file using MediaFoundationReader.
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="verbose"></param>
         /// <returns></returns>
-        public static string GetInfoMp3(string fileName, bool verbose)
+        static string GetInfoMfr(string fileName, bool verbose)
         {
-            var ls = new List<string>
+            List<string> ls;
+
+            try
             {
-                $"============= mp3 file:{fileName} ================="
-            };
+                // Class for reading any file that Media Foundation can play Automatically converts to PCM.
+                MediaFoundationReader mfr = new(fileName);
+                var wf = mfr.WaveFormat;
+                ls =
+                [
+                    "Audio",
+                    fileName,
+                    $"Encoding:{wf.Encoding}",
+                    $"SampleRate:{wf.SampleRate}",
+                    $"Channels:{wf.Channels}",
+                    $"BitsPerSample:{wf.BitsPerSample}",
+                    $"Length:{mfr.Length}",
+                ];
 
-            using (var rd = new Mp3FileReader(fileName))
+                // verbose?
+                //$"AverageBytesPerSecond:{wf.AverageBytesPerSecond}"
+                //$"TotalTime:{mfr.TotalTime}"
+            }
+            catch (Exception ex)
             {
-                var wf = rd.Mp3WaveFormat;
-                ls.AddRange(FormatWaveFormat(wf));
-                ls.Add($"Length:{rd.Length}");
-                ls.Add($"TotalTime:{rd.TotalTime}");
-
-                if (verbose)
-                {
-                    ls.Add($"Extra Size:{wf.ExtraSize} Block Align:{wf.BlockAlign}");
-                    ls.Add($"ID:{wf.id} Flags:{wf.flags} BlockSize:{wf.blockSize} FramesPerBlock:{wf.framesPerBlock}");
-                    ls.Add($"ID3v1Tag:{rd.Id3v1Tag} ID3v2Tag:{rd.Id3v2Tag}");
-
-                    Mp3Frame frame;
-                    while ((frame = rd.ReadNextFrame()) != null)
-                    {
-                        ls.Add($"Frame:{frame.MpegVersion},{frame.MpegLayer},{frame.SampleRate}Hz,{frame.ChannelMode},{frame.BitRate}bps, length {frame.FrameLength}");
-                    }
-                }
+                ls =
+                [
+                    "SoundFont",
+                    fileName,
+                    $"Error{ex}",
+                ];
             }
 
-            return string.Join(Environment.NewLine, ls);
+            return string.Join(DELIM, ls);
         }
 
         /// <summary>
-        /// Get info for wav file.
+        /// Get info for midi (incl style) file.
         /// </summary>
         /// <param name="fileName"></param>
         /// <param name="verbose"></param>
         /// <returns></returns>
-        public static string GetInfoWav(string fileName, bool verbose)
+        static string GetInfoMidi(string fileName, bool verbose)
         {
-            var ls = new List<string>
+            List<string> ls;
+
+            try
             {
-                $"============= wav file:{fileName} ================="
-            };
+                var mfile = new NAudio.Midi.MidiFile(fileName, true);
+                ls =
+                [
+                    "Midi",
+                    fileName,
+                    $"FileFormat:{mfile.FileFormat}",
+                    $"Tracks:{mfile.Tracks}",
+                    $"Events:{mfile.Events.ToList().Count}",
+                ];
 
-            using (var rd = new WaveFileReader(fileName))
+                // verbose?
+            }
+            catch (Exception ex)
             {
-                var wf = rd.WaveFormat;
-                ls.AddRange(FormatWaveFormat(wf));
-                ls.Add($"Length:{rd.Length}");
-                ls.Add($"TotalTime:{rd.TotalTime}");
-
-                if (verbose)
-                {
-                    ls.Add($"ExtraSize:{wf.ExtraSize} BlockAlign:{wf.BlockAlign}");
-
-                    foreach (RiffChunk chunk in rd.Chunks) // was ExtraChunks
-                    {
-                        ls.Add($"Chunk:{chunk.IdentifierAsString} Length:{chunk.Length}");
-                        //byte[] data = rd.GetChunkData(chunk);
-                        //DescribeChunk(chunk, sb, data);
-                    }
-                }
+                ls =
+                [
+                    "SoundFont",
+                    fileName,
+                    $"Error{ex}",
+                ];
             }
 
-            return string.Join(Environment.NewLine, ls);
+            return string.Join(DELIM, ls);
         }
 
         /// <summary>
@@ -110,42 +128,75 @@ namespace Ephemera.AudioLib
         /// <param name="fileName"></param>
         /// <param name="verbose"></param>
         /// <returns></returns>
-        public static string GetInfoSf(string fileName, bool verbose)
+        static string GetInfoSf(string fileName, bool verbose)
         {
-            var ls = new List<string>
+            List<string> ls;
+
+            try
             {
-                $"============= sf file:{fileName} ================="
-            };
+                SoundFont sf = new(fileName);
+                var fi = sf.FileInfo;
+                // SoundFont,C:\Dev\Misc\TestAudioFiles\4XW6-Perc.sf2,
+                //
+                // //Bank Name:User Bank,Sound Engine:E-mu 10K1,SoundFont Version:NAudio.SoundFont.SFVersion
 
-            SoundFont sf = new(fileName);
-            ls.Add($"{sf.FileInfo}");
+                ls =
+                [
+                    "SoundFont",
+                    fileName,
+                    $"BankName:{fi.BankName}",
+                    $"SoundEngine:{fi.WaveTableSoundEngine}",
+                    $"Version:{fi.SoundFontVersion}",
+                ];
 
-            if (verbose)
-            {
-                foreach (Preset p in sf.Presets)
+                // verbose?
+                // public SFVersion ROMVersion { get; set; }
+                // public string Author { get; set; }
+                // public string Comments { get; set; }
+                // public string Copyright { get; set; }
+                // public string CreationDate { get; set; }
+                // public string DataROM { get; set; }
+                // public string TargetProduct { get; set; }
+                // public string Tools { get; set; }
+
+                if (verbose)
                 {
-                    ls.Add($"Preset:{p}");
-                    p.Zones.ForEach(z => 
-                    {
-                        ls.Add($"  Zone:{z}");
-                        z.Generators.ForEach(g => ls.Add($"    Generator:{g}"));
-                        z.Modulators.ForEach(m => ls.Add($"    Modulator:{m}"));
-                    });
-                }
+                    List<string> lsv = [];
 
-                foreach (Instrument i in sf.Instruments)
-                {
-                    ls.Add($"Instrument:{i}");
-                    i.Zones.ForEach(z => 
+                    foreach (Preset p in sf.Presets)
                     {
-                        ls.Add($"  Zone:{z}");
-                        z.Generators.ForEach(g => ls.Add($"    Generator:{g}"));
-                        z.Modulators.ForEach(m => ls.Add($"    Modulator:{m}"));
-                    });
+                        lsv.Add($"Preset:{p}");
+                        p.Zones.ForEach(z =>
+                        {
+                            lsv.Add($"  Zone:{z}");
+                            z.Generators.ForEach(g => lsv.Add($"    Generator:{g}"));
+                            z.Modulators.ForEach(m => lsv.Add($"    Modulator:{m}"));
+                        });
+                    }
+
+                    foreach (Instrument i in sf.Instruments)
+                    {
+                        lsv.Add($"Instrument:{i}");
+                        i.Zones.ForEach(z =>
+                        {
+                            lsv.Add($"  Zone:{z}");
+                            z.Generators.ForEach(g => lsv.Add($"    Generator:{g}"));
+                            z.Modulators.ForEach(m => lsv.Add($"    Modulator:{m}"));
+                        });
+                    }
                 }
             }
+            catch (Exception ex)
+            {
+                ls =
+                [
+                    "SoundFont",
+                    fileName,
+                    $"Error{ex}",
+                ];
+            }
 
-            return string.Join(Environment.NewLine, ls);
+            return string.Join(DELIM, ls);
         }
 
         /// <summary>
@@ -154,50 +205,9 @@ namespace Ephemera.AudioLib
         /// <param name="fileName"></param>
         /// <param name="verbose"></param>
         /// <returns></returns>
-        public static string GetInfoOther(string fileName, bool verbose)
+        static string GetInfoOther(string fileName, bool verbose)
         {
-            try
-            {
-                var ls = new List<string>
-                {
-                    $"============= mfr file:{fileName} ================="
-                };
-
-                MediaFoundationReader mfr = new(fileName);
-
-                var wf = mfr.WaveFormat;
-                ls.AddRange(FormatWaveFormat(wf));
-                ls.Add($"Length:{mfr.Length}");
-                ls.Add($"TotalTime:{mfr.TotalTime}");
-
-                if (verbose)
-                {
-                }
-
-                return string.Join(Environment.NewLine, ls);
-            }
-            catch (Exception)
-            {
-                return $"============= Can't get info for {fileName} =================";
-            }
-        }
-
-        /// <summary>
-        /// Helper.
-        /// </summary>
-        /// <param name="wf"></param>
-        /// <returns></returns>
-        static List<string> FormatWaveFormat(WaveFormat wf)
-        {
-            var ls = new List<string>
-            {
-                $"Encoding:{wf.Encoding}",
-                $"SampleRate:{wf.SampleRate}",
-                $"Channels:{wf.Channels}",
-                $"BitsPerSample:{wf.BitsPerSample}",
-                $"AverageBytesPerSecond:{wf.AverageBytesPerSecond}"
-            };
-            return ls;
+            return $"Other{DELIM}{fileName}";
         }
     }
 }    
