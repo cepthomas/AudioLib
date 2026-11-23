@@ -6,137 +6,135 @@ using NAudio.Wave.SampleProviders;
 using Ephemera.NBagOfTricks;
 
 
-namespace Ephemera.AudioLib
+namespace Ephemera.AudioLib;
+
+/// <summary>A simple audio file player.</summary>
+public sealed class AudioPlayer : IDisposable
 {
-    /// <summary>A simple audio file player.</summary>
-    public sealed class AudioPlayer : IDisposable
+    #region Fields
+    /// <summary>Wave output play device.</summary>
+    readonly WaveOut? _waveOut = null;
+    #endregion
+
+    #region Backing fields
+    float _volume = AudioLibDefs.MAX_VOLUME * 0.7f;
+    #endregion
+
+    #region Events
+    /// <summary>Wave playing done.</summary>
+    public event EventHandler<StoppedEventArgs>? PlaybackStopped;
+    #endregion
+
+    #region Properties
+    /// <summary>Are we ok?</summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+    public bool Valid { get { return _waveOut is not null; } }
+
+    /// <summary>Volume.</summary>
+    public float Volume
     {
-        #region Fields
-        /// <summary>Wave output play device.</summary>
-        readonly WaveOut? _waveOut = null;
-        #endregion
-
-        #region Backing fields
-        float _volume = AudioLibDefs.MAX_VOLUME * 0.7f;
-        #endregion
-
-        #region Events
-        /// <summary>Wave playing done.</summary>
-        public event EventHandler<StoppedEventArgs>? PlaybackStopped;
-        #endregion
-
-        #region Properties
-        /// <summary>Are we ok?</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public bool Valid { get { return _waveOut is not null; } }
-
-        /// <summary>Volume.</summary>
-        public float Volume
+        get
         {
-            get
+            return _volume;
+        }
+        set 
+        {
+            _volume = (float)MathUtils.Constrain(value, 0.0f, AudioLibDefs.MAX_VOLUME);
+            if (_waveOut is not null) { _waveOut.Volume = _volume; }
+        }
+    }
+
+    /// <summary>State.</summary>
+    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+    public bool Playing { get; private set; }
+    #endregion
+
+    #region Lifecycle
+    /// <summary>
+    /// Normal constructor.
+    /// </summary>
+    /// <param name="wavOutDevice">Device name.</param>
+    /// <param name="latency">How slow.</param>
+    /// <param name="smpl">Provider.</param>
+    public AudioPlayer(string wavOutDevice, int latency, ISampleProvider smpl)
+    {
+        // NAudio3 changes:
+        // DesiredLatency is replaced by BufferMilliseconds. This is a compile break with no shim, and the meaning changed:
+        // DesiredLatency was the total across all buffers, whereas BufferMilliseconds (default 100) sizes each individual buffer.
+        // With the default NumberOfBuffers = 2, DesiredLatency = 300 becomes BufferMilliseconds = 150.
+
+        // Create output device. –1 indicates the default output device, while 0 is the first output device.
+        for (int i = -1; i < WaveOut.DeviceCount; i++)
+        {
+            var cap = WaveOut.GetCapabilities(i);
+            if (wavOutDevice == cap.ProductName)
             {
-                return _volume;
-            }
-            set 
-            {
-                _volume = (float)MathUtils.Constrain(value, 0.0f, AudioLibDefs.MAX_VOLUME);
-                if (_waveOut is not null) { _waveOut.Volume = _volume; }
+                _waveOut = new WaveOut
+                {
+                    DeviceNumber = i,
+                    NumberOfBuffers = 2,
+                    BufferMilliseconds = latency / 2,
+                    Volume = Volume                         
+                };
+                _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
+                _waveOut.Init(smpl);
+                break;
             }
         }
 
-        /// <summary>State.</summary>
-        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-        public bool Playing { get; private set; }
-        #endregion
-
-        #region Lifecycle
-        /// <summary>
-        /// Normal constructor.
-        /// </summary>
-        /// <param name="wavOutDevice">Device name.</param>
-        /// <param name="latency">How slow.</param>
-        /// <param name="smpl">Provider.</param>
-        public AudioPlayer(string wavOutDevice, int latency, ISampleProvider smpl)
+        if (_waveOut is null)
         {
-            // NAudio3 changes:
-            // DesiredLatency is replaced by BufferMilliseconds. This is a compile break with no shim, and the meaning changed:
-            // DesiredLatency was the total across all buffers, whereas BufferMilliseconds (default 100) sizes each individual buffer.
-            // With the default NumberOfBuffers = 2, DesiredLatency = 300 becomes BufferMilliseconds = 150.
-
-            // Create output device. –1 indicates the default output device, while 0 is the first output device.
-            for (int i = -1; i < WaveOut.DeviceCount; i++)
-            {
-                var cap = WaveOut.GetCapabilities(i);
-                if (wavOutDevice == cap.ProductName)
-                {
-                    _waveOut = new WaveOut
-                    {
-                        DeviceNumber = i,
-                        NumberOfBuffers = 2,
-                        BufferMilliseconds = latency / 2, //NumberOfBuffers, // WaveOut.DesiredLatency is gone — use BufferMilliseconds, which sizes each individual buffer rather than the - total across all of them.
-                        Volume = Volume                         
-                    };
-                    _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
-                    _waveOut.Init(smpl);
-                    break;
-                }
-            }
-
-            if (_waveOut is null)
-            {
-                throw new AudioLibException($"Invalid device: {wavOutDevice}");
-            }
+            throw new AudioLibException($"Invalid device: {wavOutDevice}");
         }
+    }
 
-        /// <summary> 
-        /// Clean up any resources being used.
-        /// </summary>
-        public void Dispose()
-        {
-            _waveOut?.Stop();
-            _waveOut?.Dispose();
-        }
-        #endregion
+    /// <summary> 
+    /// Clean up any resources being used.
+    /// </summary>
+    public void Dispose()
+    {
+        _waveOut?.Stop();
+        _waveOut?.Dispose();
+    }
+    #endregion
 
-        #region Public functions
-        /// <summary>
-        /// Start/stop everything.
-        /// </summary>
-        /// <param name="go">Or no.</param>
-        public void Run(bool go)
+    #region Public functions
+    /// <summary>
+    /// Start/stop everything.
+    /// </summary>
+    /// <param name="go">Or no.</param>
+    public void Run(bool go)
+    {
+        if (_waveOut is not null)
         {
-            if (_waveOut is not null)
+            if (go)
             {
-                if (go)
-                {
-                    _waveOut.Play();
-                    Playing = _waveOut.PlaybackState == PlaybackState.Playing;
-                }
-                else
-                {
-                    _waveOut.Pause(); // or Stop?
-                    Playing = false;
-                }
+                _waveOut.Play();
+                Playing = _waveOut.PlaybackState == PlaybackState.Playing;
             }
             else
             {
+                _waveOut.Pause(); // or Stop?
                 Playing = false;
             }
         }
-        #endregion
-
-        #region Private functions
-        /// <summary>
-        /// Usually end of file but could be error. Client can handle.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void WaveOut_PlaybackStopped(object? sender, StoppedEventArgs e)
+        else
         {
-            // Debug.WriteLine($"WaveOut_PlaybackStopped()");
             Playing = false;
-            PlaybackStopped?.Invoke(this, e);
         }
-        #endregion
     }
+    #endregion
+
+    #region Private functions
+    /// <summary>
+    /// Usually end of file but could be error. Client can handle.
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="e"></param>
+    void WaveOut_PlaybackStopped(object? sender, StoppedEventArgs e)
+    {
+        Playing = false;
+        PlaybackStopped?.Invoke(this, e);
+    }
+    #endregion
 }

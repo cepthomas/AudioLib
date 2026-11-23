@@ -15,7 +15,7 @@ using Ephemera.NBagOfTricks.PNUT;
 using Ephemera.NBagOfUis;
 using Ephemera.AudioLib;
 
-//TODO1 >>> - limits internal formats to IEEE 32bit fp 44100Hz. C:\Dev\Misc\TestAudioFiles. TODO1 expand caps.
+// - limits internal formats to IEEE 32bit fp 44100Hz. C:\Dev\Misc\TestAudioFiles. TODO1 expand caps.
 // Type  ,File                            ,Params            
 // Audio ,08 Bag Pipe Groove 01 48000.wav ,SampleRate:48000, Channels:2, BitsPerSample:16, Length:1644295
 // Audio ,ambi_swoosh.flac                ,SampleRate:44100, Channels:2, BitsPerSample:16, Length:176400 
@@ -24,12 +24,11 @@ using Ephemera.AudioLib;
 // Audio ,Horns 01.wav                    ,SampleRate:44100, Channels:2, BitsPerSample:24, Length:1306721
 
 
+
 namespace Ephemera.AudioLib.Test
 {
     public partial class TestHost : Form
     {
-        readonly Color _bgColor;
-
         /// <summary>Where the files are.</summary>
         readonly string _filesDir;
 
@@ -43,7 +42,7 @@ namespace Ephemera.AudioLib.Test
         readonly SwappableSampleProvider _waveOutSwapper;
 
         /// <summary>Renders to audio.</summary>
-        readonly AudioPlayer _player;
+        readonly AudioPlayer? _player;
 
         /// <summary>Test stuff.</summary>
         readonly TestSettings _settings;
@@ -58,8 +57,6 @@ namespace Ephemera.AudioLib.Test
         {
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
-
-            _bgColor = BackColor;
 
             // Get settings.
             _settings = (TestSettings)SettingsCore.Load(MiscUtils.GetSourcePath(), typeof(TestSettings));
@@ -88,6 +85,7 @@ namespace Ephemera.AudioLib.Test
                 new("WRN", BgColor: Color.Plum),
             ];
 
+            // Selection mode.
             cmbSelMode.Items.Add(WaveSelectionMode.Time);
             cmbSelMode.Items.Add(WaveSelectionMode.Bar);
             cmbSelMode.Items.Add(WaveSelectionMode.Sample);
@@ -107,6 +105,7 @@ namespace Ephemera.AudioLib.Test
             };
             cmbSelMode.SelectedItem = _settings.DefaultSelectionMode;
 
+            // Gain control.
             sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
 
             // Progress bar.
@@ -119,28 +118,36 @@ namespace Ephemera.AudioLib.Test
             wv1.WaveColor = Color.Red;
             wv1.BackColor = Color.Cyan;
             wv1.StateChange += ViewerStateChange;
-
-            // Add stuff to the wave viewer menu.
             wv1.ContextMenuStrip!.Items.Add("Test item", null, (_, __) => Tell("Test item worked"));
-            toolStripMenuItem1.Click += (_, __) => Tell($"Log it worked");
 
             wv2.WaveColor = Color.Blue;
             wv2.BackColor = Color.LightYellow;
             wv2.StateChange += ViewerStateChange;
 
-            // Init controls. Typically voloume and state would be persisted per output.
-            cc1.Volume = 0.8;
-            cc1.State = ChannelState.Solo;
+            // Channel controls. Typically voloume/pan/state/selected?? would be persisted per output.
             cc1.DrawColor = _settings.DrawColor;
             cc1.SelectedColor = _settings.SelectedColor;
+            cc1.Volume = 0.8;
+            cc1.Pan = -0.6;
+            cc1.Info1 = "Channel 111";
+            cc2.Info1 = "We can always carry this a step further.";
+            cc1.State = ChannelState.Solo;
+            cc1.Selected = false;
             cc1.InfoClick += Cc_InfoClick;
+            cc1.StateChange += Cc_StateChange;
+            cc1.SelectChange += Cc_SelectChange;
 
-            cc2.Volume = 0.7;
-            cc2.State = ChannelState.Normal;
             cc2.DrawColor = _settings.DrawColor;
             cc2.SelectedColor = _settings.SelectedColor;
+            cc2.Volume = 0.7;
+            cc2.Pan = 0.1;
+            cc2.Info1 = "Channel 222";
+            cc2.Info2 = "There's really no end to this.";
+            cc2.State = ChannelState.Normal;
+            cc2.Selected = true;
             cc2.InfoClick += Cc_InfoClick;
-
+            cc2.StateChange += Cc_StateChange;
+            cc2.SelectChange += Cc_SelectChange;
 
             // Static swap provider.
             _provSwap = new ClipSampleProvider(Path.Join(_filesDir, "test.wav"), StereoCoercion.Mono);
@@ -150,11 +157,11 @@ namespace Ephemera.AudioLib.Test
             {
                 _waveOutSwapper = new();
                 _player = new(_settings.WavOutDevice, int.Parse(_settings.Latency), _waveOutSwapper) { Volume = 0.5f };
-                _player.PlaybackStopped += (_, __) =>
+                _player?.PlaybackStopped += (_, __) =>
                 {
                     Tell("Player finished");
                     this.InvokeIfRequired(_ => chkPlay.Checked = false);
-                    _prov?.Rewind();
+///                    _prov?.Rewind();
                 };
 
             }
@@ -173,19 +180,43 @@ namespace Ephemera.AudioLib.Test
                 }
             });
 
+            // Transport control etc.
             chkPlay.Click += (_, __) => Play_Click();
-            btnRewind.Click += (_, __) => _prov?.Rewind();
+            //TODO1 these:
+            //btnRewind.Click += (_, __) => _prov?.Rewind();
+            //btnResample.Click += Resample_Click;
+            //btnSwap.Click += Swap_Click;
+
+            btnSettings.Click += Settings_Click;
+            btnFileInfo.Click += FileInfo_Click;
+            btnCaps.Click += Caps_Click;
             btnTest.Click += (_, __) => UnitTests();
 
             // Go-go-go.
             timer1.Interval = 100;
+            timer1.Tick += Timer1_Tick;
             timer1.Enabled = true;
+        }
+
+
+////////////////////////////////////////////////////////////////////////////////////
+        void Cc_SelectChange(object? sender, ChannelControl.SelectChangeEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        void Cc_StateChange(object? sender, ChannelControl.StateChangeEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         void Cc_InfoClick(object? sender, ChannelControl.InfoClickEventArgs e)
         {
             throw new NotImplementedException();
         }
+////////////////////////////////////////////////////////////////////////////////////
+
+
 
         /// <summary>
         /// 
@@ -194,17 +225,25 @@ namespace Ephemera.AudioLib.Test
         /// <param name="args"></param>
         void OpenFile_Click(object? sender, EventArgs args)
         {
+            string fn = sender!.ToString()!;
+            OpenFile(fn);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fn"></param>
+        void OpenFile(string fn)
+        {
             // Reset.
-            _player.Run(false);
+            _player?.Run(false);
             chkPlay.Checked = false;
             btnSwap.Checked = false;
 
-            var ext = Path.GetExtension(sender!.ToString());
-
             try
             {
+                var ext = Path.GetExtension(fn);
                 ISampleProvider? prov = null;
-                string fn = sender!.ToString()!;
 
                 switch (ext)
                 {
@@ -222,16 +261,16 @@ namespace Ephemera.AudioLib.Test
                         break;
 
                     default: // Create reader type.
-                        // pick one:
-                        prov = new AudioFileReader(fn);
+                        // pick one:  TODDO1??
+                        prov = new ResamplingAudioFileReader(fn, AudioLibDefs.SAMPLE_RATE);
 
                         //var csp = new ClipSampleProvider(fn, StereoCoercion.Mono);
                         ////csp.ClipProgress += Csp_ClipProgress;
                         //prov = csp;
                         break;
                 }
-                
-                SetProvider(prov);
+
+                ShowWave(prov);
             }
             catch (Exception e)
             {
@@ -288,44 +327,53 @@ namespace Ephemera.AudioLib.Test
             }
         }
 
-        /// <summary>
-        /// Helper to manage resources.
-        /// </summary>
-        /// <param name="prov"></param>
-        void SetProvider(ISampleProvider prov)
-        {
-            // Clean up old?
-            switch (_prov)
-            {
-                case ClipSampleProvider csp:
-                    var p = csp.SampleIndex;
-                    //csp.ClipProgress -= Csp_ClipProgress;
-                    break;
+        ///// <summary>
+        ///// Helper to manage resources.
+        ///// </summary>
+        ///// <param name="prov"></param>
+        //void SetProvider(ISampleProvider prov)
+        //{
+        //    // Clean up old?
+        //    switch (_prov)
+        //    {
+        //        case ClipSampleProvider csp:
+        //            var p = csp.SampleIndex;
+        //            //csp.ClipProgress -= Csp_ClipProgress;
+        //            break;
 
-                case AudioFileReader afr:
-                    afr!.Dispose();
-                    break;
-            }
+        //        case ResamplingAudioFileReader afr:
+        //            afr!.Dispose();
+        //            break;
 
-            // New swap.
-            switch (prov)
-            {
-                case ClipSampleProvider csp:
-                    var p = csp.SampleIndex;
-                    //csp.ClipProgress += Csp_ClipProgress;
-                    //timeBar.Length = csp.SamplesPerChannel;
-                    break;
+        //        case AudioFileReader afr:
+        //            afr!.Dispose();
+        //            break;
+        //    }
 
-                case AudioFileReader afr:
-                    var p2 = afr.Position;
-                    //timeBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
-                    break;
-            }
+        //    // New swap.
+        //    switch (prov)
+        //    {
+        //        case ClipSampleProvider csp:
+        //            var p = csp.SampleIndex;
+        //            //csp.ClipProgress += Csp_ClipProgress;
+        //            //timeBar.Length = csp.SamplesPerChannel;
+        //            break;
 
-            _prov = prov;
-            ShowWave(_prov);
-            _waveOutSwapper.SetInput(_prov);
-        }
+        //        case ResamplingAudioFileReader afr:
+        //            var p2 = afr.Position;
+        //            //timeBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
+        //            break;
+
+        //        case AudioFileReader afr:
+        //            var p2 = afr.Position;
+        //            //timeBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
+        //            break;
+        //    }
+
+        //    _prov = prov;
+        //    ShowWave(_prov);
+        //    _waveOutSwapper.SetInput(_prov);
+        //}
 
         /// <summary>
         /// Boilerplate helper.
@@ -343,11 +391,13 @@ namespace Ephemera.AudioLib.Test
 
                         wv2.Init(new NullSampleProvider());
 
-                        Tell($"Show {csp.GetInfoString()}");
+                        Tell($"Show {csp.GetInfo()}");
                         timeBar.Length = csp.SamplesPerChannel;
+                        break;
                     }
-                    break;
-                case AudioFileReader afr:
+
+                //case AudioFileReader afr:
+                case ResamplingAudioFileReader afr:
                     {
                         // If it's stereo split into two monos. This is not really how to do things.
                         if (afr.WaveFormat.Channels == 2) // stereo
@@ -366,10 +416,10 @@ namespace Ephemera.AudioLib.Test
                         }
 
                         afr.Rewind();
-                        Tell($"Show {afr.GetInfoString()}");
+                        Tell($"Show {afr.GetInfo()}");
                         timeBar.Length = (int)(afr.Length / (prov.WaveFormat.BitsPerSample / 8) / prov.WaveFormat.Channels);
+                        break;
                     }
-                    break;
             }
 
             timeBar.Current = 0;
@@ -384,7 +434,11 @@ namespace Ephemera.AudioLib.Test
         {
             if (_prov is null)
             {
-                Tell("open a file first please");
+                Tell("ERR open a file first please");
+            }
+            else if (_player is null)
+            {
+                Tell("ERR dead player");
             }
             else
             {
@@ -397,43 +451,43 @@ namespace Ephemera.AudioLib.Test
                         chkPlay.Checked = false;
                     }
                 }
-                else   
+                else
                 {
                     _player.Run(chkPlay.Checked);
                 }
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Resample_Click(object? sender, EventArgs e)
-        {
-            string fn = Path.Join(_filesDir, "test.wav");
-            AudioUtils.Convert(Conversion.Resample, fn);
-        }
+        ///// <summary>
+        ///// 
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="e"></param>
+        //void Resample_Click(object? sender, EventArgs e)
+        //{
+        //    string fn = Path.Join(_filesDir, "test.wav");
+        //    AudioUtils.Convert(Conversion.Resample, fn);
+        //}
 
-        /// <summary>
-        /// Swap test for SwappableSampleProvider.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
-        void Swap_Click(object? sender, EventArgs args)
-        {
-            if (_prov is null)
-            {
-                Tell("Open a file first please");
-            }
-            else
-            {
-                var newProv = btnSwap.Checked ? _provSwap : _prov;
-                _waveOutSwapper.SetInput(newProv); // For listen.
-                ShowWave(newProv);
-                Tell($"Swapped");
-            }
-        }
+        ///// <summary>
+        ///// Swap test for SwappableSampleProvider.
+        ///// </summary>
+        ///// <param name="sender"></param>
+        ///// <param name="args"></param>
+        //void Swap_Click(object? sender, EventArgs args)
+        //{
+        //    if (_prov is null)
+        //    {
+        //        Tell("Open a file first please");
+        //    }
+        //    else
+        //    {
+        //        var newProv = btnSwap.Checked ? _provSwap : _prov;
+        //        _waveOutSwapper.SetInput(newProv); // For listen.
+        //        ShowWave(newProv);
+        //        Tell($"Swapped");
+        //    }
+        //}
 
         /// <summary>
         /// 
@@ -467,7 +521,8 @@ namespace Ephemera.AudioLib.Test
                     case ClipSampleProvider csp:
                         timeBar.Current = csp.SampleIndex;
                         break;
-                    case AudioFileReader afr:
+
+                    case ResamplingAudioFileReader afr:
                         timeBar.Current = (int)(afr.Position / afr.WaveFormat.BitsPerSample / afr.WaveFormat.Channels * 8);
                         break;
                 }
@@ -485,6 +540,13 @@ namespace Ephemera.AudioLib.Test
             for (int id = -1; id < WaveOut.DeviceCount; id++)
             {
                 var cap = WaveOut.GetCapabilities(id);
+                Tell($"dev out {id}: [{cap.ProductName}]({cap.Channels})");
+            }
+
+            for (int id = -1; id < WaveIn.DeviceCount; id++)
+            {
+                var cap = WaveIn.GetCapabilities(id);
+                Tell($"dev in {id}: [{cap.ProductName}]({cap.Channels})");
             }
         }
 
@@ -493,7 +555,7 @@ namespace Ephemera.AudioLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Settings_Click(object sender, EventArgs e)
+        void Settings_Click(object? sender, EventArgs e)
         {
             SettingsEditor.Edit(_settings, "howdy!!!", 400);
             _settings.Save();
@@ -531,55 +593,11 @@ namespace Ephemera.AudioLib.Test
                 components.Dispose();
             }
 
-            SetProvider(new NullSampleProvider());
+            ShowWave(new NullSampleProvider());
 
             _player?.Dispose();
 
             base.Dispose(disposing);
         }
-    }
-
-    // public bool Selected
-    // public ChannelState State { get; set; }
-
-    // public string Info1
-    // public string Info2
-    // public double Pan
-    // public double Volume
-
-    // public event EventHandler<InfoClickEventArgs>? InfoClick;
-    // public event EventHandler<SelectionChangeEventArgs>? SelectionChange;
-    // public event EventHandler<StateChangeEventArgs>? StateChange;
-
-    //cc1.DrawColor = _settings.DrawColor;
-    //        cc1.SelectedColor = _settings.SelectedColor;
-    //        cc1.InfoClick += ChannelControl_InfoClick;
-
-    public class TestSettings : SettingsCore
-    {
-        [JsonConverter(typeof(JsonColorConverter))]
-        public Color SelectedColor { get; set; } = Color.AliceBlue;
-
-        [JsonConverter(typeof(JsonColorConverter))]
-        public Color DrawColor { get; set; } = Color.Green;
-
-        [JsonConverter(typeof(JsonStringEnumConverter))]
-        public WaveSelectionMode DefaultSelectionMode { get; set; } = WaveSelectionMode.Time;
-
-        [DisplayName("Default BPM")]
-        [Browsable(true)]
-        public double DefaultBPM { get; set; } = 100.0;
-
-        [DisplayName("Wave Output Device")]
-        [Description("How to play the audio files.")]
-        [Browsable(true)]
-        [Editor(typeof(WaveOutputDeviceTypeEditor), typeof(UITypeEditor))]
-        public string WavOutDevice { get; set; } = "Microsoft Sound Mapper";
-
-        [DisplayName("Latency")]
-        [Description("What's the hurry?")]
-        [Browsable(true)]
-        [Editor(typeof(LatencyTypeEditor), typeof(UITypeEditor))]
-        public string Latency { get; set; } = "200";
     }
 }

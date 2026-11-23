@@ -3,38 +3,37 @@ using NAudio.Wave;
 using Ephemera.NBagOfTricks;
 
 
-namespace Ephemera.AudioLib
+namespace Ephemera.AudioLib;
+
+/// <summary>From NAudio I think?</summary>
+public class SavingWaveProvider(IWaveProvider sourceWaveProvider, string wavFilePath) : IWaveProvider, IDisposable
 {
-    /// <summary>From NAudio I think?</summary>
-    public class SavingWaveProvider(IWaveProvider sourceWaveProvider, string wavFilePath) : IWaveProvider, IDisposable
+    public WaveFormat WaveFormat { get { return sourceWaveProvider.WaveFormat; } }
+
+    private readonly IWaveProvider sourceWaveProvider = sourceWaveProvider;
+    private readonly WaveFileWriter writer = new(wavFilePath, sourceWaveProvider.WaveFormat);
+    private bool isWriterDisposed;
+
+    public int Read(Span<byte> buffer)
     {
-        public WaveFormat WaveFormat { get { return sourceWaveProvider.WaveFormat; } }
-
-        private readonly IWaveProvider sourceWaveProvider = sourceWaveProvider;
-        private readonly WaveFileWriter writer = new(wavFilePath, sourceWaveProvider.WaveFormat);
-        private bool isWriterDisposed;
-
-        public int Read(Span<byte> buffer)
+        var read = sourceWaveProvider.Read(buffer);
+        if (buffer.Length > 0 && !isWriterDisposed)
         {
-            var read = sourceWaveProvider.Read(buffer);
-            if (buffer.Length > 0 && !isWriterDisposed)
-            {
-                writer.Write(buffer);
-            }
-            if (buffer.Length == 0)
-            {
-                Dispose(); // auto-dispose in case users forget
-            }
-            return read;
+            writer.Write(buffer);
         }
-
-        public void Dispose()
+        if (buffer.Length == 0)
         {
-            if (!isWriterDisposed)
-            {
-                isWriterDisposed = true;
-                writer.Dispose();
-            }
+            Dispose(); // auto-dispose in case users forget
+        }
+        return read;
+    }
+
+    public void Dispose()
+    {
+        if (!isWriterDisposed)
+        {
+            isWriterDisposed = true;
+            writer.Dispose();
         }
     }
 }

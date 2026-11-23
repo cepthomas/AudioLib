@@ -42,23 +42,11 @@
             btnTest = new System.Windows.Forms.ToolStripButton();
             sldGain = new Ephemera.NBagOfUis.Slider();
             chkPlay = new System.Windows.Forms.CheckBox();
-            contextMenuStrip1 = new System.Windows.Forms.ContextMenuStrip(components);
-            toolStripComboBox1 = new System.Windows.Forms.ToolStripComboBox();
-            toolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
-            cmsItem1ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            toolStripTextBox1 = new System.Windows.Forms.ToolStripTextBox();
-            toolStripSeparator10 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripSeparator11 = new System.Windows.Forms.ToolStripSeparator();
             btnRewind = new System.Windows.Forms.Button();
             cc1 = new ChannelControl();
             cc2 = new ChannelControl();
             toolStrip1.SuspendLayout();
-            contextMenuStrip1.SuspendLayout();
             SuspendLayout();
-            // 
-            // timer1
-            // 
-            timer1.Tick += Timer1_Tick;
             // 
             // tvInfo
             // 
@@ -130,7 +118,7 @@
             btnSettings.Name = "btnSettings";
             btnSettings.Size = new System.Drawing.Size(61, 24);
             btnSettings.Text = "settings";
-            btnSettings.Click += Settings_Click;
+            timer1.Tick += Timer1_Tick;
             // 
             // toolStripSeparator2
             // 
@@ -158,7 +146,7 @@
             btnSwap.Name = "btnSwap";
             btnSwap.Size = new System.Drawing.Size(44, 24);
             btnSwap.Text = "swap";
-            btnSwap.Click += Swap_Click;
+            timer1.Tick += Timer1_Tick;
             // 
             // toolStripSeparator5
             // 
@@ -172,7 +160,7 @@
             btnFileInfo.Name = "btnFileInfo";
             btnFileInfo.Size = new System.Drawing.Size(57, 24);
             btnFileInfo.Text = "file info";
-            btnFileInfo.Click += FileInfo_Click;
+            timer1.Tick += Timer1_Tick;
             // 
             // toolStripSeparator6
             // 
@@ -186,7 +174,7 @@
             btnResample.Name = "btnResample";
             btnResample.Size = new System.Drawing.Size(68, 24);
             btnResample.Text = "resample";
-            btnResample.Click += Resample_Click;
+            timer1.Tick += Timer1_Tick;
             // 
             // toolStripSeparator7
             // 
@@ -200,7 +188,7 @@
             btnCaps.Name = "btnCaps";
             btnCaps.Size = new System.Drawing.Size(40, 24);
             btnCaps.Text = "caps";
-            btnCaps.Click += Caps_Click;
+            timer1.Tick += Timer1_Tick;
             // 
             // toolStripSeparator8
             // 
@@ -255,48 +243,6 @@
             chkPlay.Text = "play";
             chkPlay.UseVisualStyleBackColor = false;
             // 
-            // contextMenuStrip1
-            // 
-            contextMenuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            contextMenuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { toolStripComboBox1, toolStripMenuItem1, cmsItem1ToolStripMenuItem, toolStripTextBox1, toolStripSeparator10, toolStripSeparator11 });
-            contextMenuStrip1.Name = "contextMenuStrip1";
-            contextMenuStrip1.Size = new System.Drawing.Size(182, 123);
-            // 
-            // toolStripComboBox1
-            // 
-            toolStripComboBox1.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            toolStripComboBox1.Items.AddRange(new object[] { "sel1", "sel2", "sel3" });
-            toolStripComboBox1.Name = "toolStripComboBox1";
-            toolStripComboBox1.Size = new System.Drawing.Size(121, 27);
-            // 
-            // toolStripMenuItem1
-            // 
-            toolStripMenuItem1.Name = "toolStripMenuItem1";
-            toolStripMenuItem1.Size = new System.Drawing.Size(181, 24);
-            toolStripMenuItem1.Text = "Log it";
-            // 
-            // cmsItem1ToolStripMenuItem
-            // 
-            cmsItem1ToolStripMenuItem.Name = "cmsItem1ToolStripMenuItem";
-            cmsItem1ToolStripMenuItem.Size = new System.Drawing.Size(181, 24);
-            cmsItem1ToolStripMenuItem.Text = "MenuItem1";
-            // 
-            // toolStripTextBox1
-            // 
-            toolStripTextBox1.Name = "toolStripTextBox1";
-            toolStripTextBox1.Size = new System.Drawing.Size(100, 26);
-            toolStripTextBox1.Text = "This is a textbox";
-            // 
-            // toolStripSeparator10
-            // 
-            toolStripSeparator10.Name = "toolStripSeparator10";
-            toolStripSeparator10.Size = new System.Drawing.Size(178, 6);
-            // 
-            // toolStripSeparator11
-            // 
-            toolStripSeparator11.Name = "toolStripSeparator11";
-            toolStripSeparator11.Size = new System.Drawing.Size(178, 6);
-            // 
             // btnRewind
             // 
             btnRewind.BackColor = System.Drawing.SystemColors.Control;
@@ -345,8 +291,6 @@
             Text = "TestHost";
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
-            contextMenuStrip1.ResumeLayout(false);
-            contextMenuStrip1.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
 
@@ -378,13 +322,6 @@
         private System.Windows.Forms.ToolStripComboBox cmbSelMode;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
         private System.Windows.Forms.ToolStripLabel toolStripLabel1;
-        private System.Windows.Forms.ContextMenuStrip contextMenuStrip1;
-        private System.Windows.Forms.ToolStripComboBox toolStripComboBox1;
-        private System.Windows.Forms.ToolStripMenuItem toolStripMenuItem1;
-        private System.Windows.Forms.ToolStripMenuItem cmsItem1ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripTextBox toolStripTextBox1;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator10;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator11;
         private System.Windows.Forms.Button btnRewind;
         private System.Windows.Forms.ToolStripButton btnCaps;
         private ChannelControl cc1;

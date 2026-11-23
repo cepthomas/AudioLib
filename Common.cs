@@ -4,48 +4,47 @@ using System.Drawing;
 using Ephemera.NBagOfTricks;
 
 
-namespace Ephemera.AudioLib
+namespace Ephemera.AudioLib;
+
+#region Types
+/// <summary>How to handle stereo files.</summary>
+public enum StereoCoercion { None, Left, Right, Mono }
+
+/// <summary>How to select.</summary>
+public enum WaveSelectionMode { Bar, Time, Sample };
+
+/// <summary>How to snap.</summary>
+public enum SnapType { None, Fine, Coarse };
+
+/// <summary>Library error.</summary>
+public class AudioLibException(string message) : Exception(message) { }
+#endregion
+
+#region Definitions
+public class AudioLibDefs
 {
-    #region Types
-    /// <summary>How to handle stereo files.</summary>
-    public enum StereoCoercion { None, Left, Right, Mono }
+    /// <summary>Supported types.</summary>
+    public const string AUDIO_FILE_TYPES = "*.wav;*.mp3;*.m4a;*.flac";
 
-    /// <summary>How to select.</summary>
-    public enum WaveSelectionMode { Bar, Time, Sample };
+    /// <summary>NAudio doesn't publish this for their API.</summary>
+    public const float MAX_VOLUME = 1.0f;
 
-    /// <summary>How to snap.</summary>
-    public enum SnapType { None, Fine, Coarse };
+    /// <summary>Resolution of UI.</summary>
+    public const double RES_VOLUME = MAX_VOLUME / 50;
 
-    /// <summary>Library error.</summary>
-    public class AudioLibException(string message) : Exception(message) { }
-    #endregion
+    /// <summary>Maximum gain.</summary>
+    public const float MAX_GAIN = 5.0f;
 
-    #region Definitions
-    public class AudioLibDefs
-    {
-        /// <summary>Supported types.</summary>
-        public const string AUDIO_FILE_TYPES = "*.wav;*.mp3;*.m4a;*.flac";
+    /// <summary>Everything internal.</summary>
+    public const int SAMPLE_RATE = 44100; //TODO1 should come from settings maybe. Other consts too?
 
-        /// <summary>NAudio doesn't publish this for their API.</summary>
-        public const float MAX_VOLUME = 1.0f;
+    /// <summary>Stream buffer size.</summary>
+    public const int READ_BUFF_SIZE = SAMPLE_RATE;
 
-        /// <summary>Resolution of UI.</summary>
-        public const double RES_VOLUME = MAX_VOLUME / 50;
+    /// <summary>Standard formatting.</summary>
+    public const string TS_FORMAT = @"mm\.ss\.fff";
 
-        /// <summary>Maximum gain.</summary>
-        public const float MAX_GAIN = 5.0f;
-
-        /// <summary>Everything internal.</summary>
-        public const int SAMPLE_RATE = 44100;
-
-        /// <summary>Stream buffer size.</summary>
-        public const int READ_BUFF_SIZE = SAMPLE_RATE;
-
-        /// <summary>Standard formatting.</summary>
-        public const string TS_FORMAT = @"mm\.ss\.fff";
-
-        /// <summary>Max clip size in minutes. Has a direct effect on memory usage.</summary>
-        public const int MAX_CLIP_SIZE = 10;
-    }
-    #endregion
+    /// <summary>Max clip size in minutes. Has a direct effect on memory usage.</summary>
+    public const int MAX_CLIP_SIZE = 10;
 }
+#endregion
