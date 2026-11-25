@@ -10,7 +10,7 @@ namespace Ephemera.AudioLib;
 /// <summary>
 /// Customized version of NAudio's IPeakProvider family.
 /// </summary>
-public class PeakProvider
+public class PeakProvider //TODO1 this is not a provider!!!
 {
     /// <summary>
     /// Get wave peak values for UI display.
@@ -30,10 +30,10 @@ public class PeakProvider
         List<(float max, float min)> scaledVals = new();
         int pixelCount = 0;
 
-        if(samplesPerPixel > 0)
+        if (samplesPerPixel > 0)
         {
             // Uses buckets with min/max. Could also implement average, rms, max/min, ...
-            for(int srcIndex = startIndex;
+            for (int srcIndex = startIndex;
                 srcIndex < vals.Length && pixelCount < totalPixels;
                 srcIndex += samplesPerPixel, pixelCount++)
             {

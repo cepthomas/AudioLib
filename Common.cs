@@ -20,11 +20,20 @@ public enum SnapType { None, Fine, Coarse };
 public class AudioLibException(string message) : Exception(message) { }
 #endregion
 
+
 #region Definitions
 public class AudioLibDefs
 {
+    //TODO1 these should come from client. Others?
     /// <summary>Supported types.</summary>
-    public const string AUDIO_FILE_TYPES = "*.wav;*.mp3;*.m4a;*.flac";
+    public const string AUDIO_FILE_TYPES = "*.wav;*.mp3;*.m4a;*.flac;*.txt";
+
+    /// <summary>Everything internal.</summary>
+    public const int SAMPLE_RATE = 44100;
+    /////////////////////////////////////////
+
+
+
 
     /// <summary>NAudio doesn't publish this for their API.</summary>
     public const float MAX_VOLUME = 1.0f;
@@ -35,9 +44,6 @@ public class AudioLibDefs
     /// <summary>Maximum gain.</summary>
     public const float MAX_GAIN = 5.0f;
 
-    /// <summary>Everything internal.</summary>
-    public const int SAMPLE_RATE = 44100; //TODO1 should come from settings maybe. Other consts too?
-
     /// <summary>Stream buffer size.</summary>
     public const int READ_BUFF_SIZE = SAMPLE_RATE;
 
@@ -45,6 +51,10 @@ public class AudioLibDefs
     public const string TS_FORMAT = @"mm\.ss\.fff";
 
     /// <summary>Max clip size in minutes. Has a direct effect on memory usage.</summary>
-    public const int MAX_CLIP_SIZE = 10;
+    public const int MAX_CLIP_MINUTES = 10;
+
+    /// <summary>Max clip size in samples. Has a direct effect on memory usage.</summary>
+    public const int MAX_SAMPLES = MAX_CLIP_MINUTES * 60 * SAMPLE_RATE;
+
 }
 #endregion

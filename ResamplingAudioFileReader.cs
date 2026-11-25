@@ -9,8 +9,9 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib;
 
-public class ResamplingAudioFileReader : ISampleProvider, IDisposable //TODO1 ?? : AudioFileReader
+public class ResamplingAudioFileReader_XX : ISampleProvider, IDisposable // TODO1 delete me
 {
+
     AudioFileReader _afr;
 
     ISampleProvider _prov;
@@ -22,7 +23,7 @@ public class ResamplingAudioFileReader : ISampleProvider, IDisposable //TODO1 ??
     /// </summary>
     /// <param name="fileName">The file to open</param>
     /// <param name="sampleRate">Ensure sample rate</param>
-    public ResamplingAudioFileReader(string fileName, int sampleRate)
+    public ResamplingAudioFileReader_XX(string fileName, int sampleRate)
     {
         _afr = new AudioFileReader(fileName);
 
@@ -77,4 +78,5 @@ public class ResamplingAudioFileReader : ISampleProvider, IDisposable //TODO1 ??
 
         return string.Join("  ", ls);
     }
+
 }

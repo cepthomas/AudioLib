@@ -22,13 +22,7 @@ public enum ChannelState { Normal, Solo, Mute }
 public partial class ChannelControl : UserControl
 {
     #region Fields
-    /// <summary>Initial bg color.</summary>
-    Color _bgColor;
 
-    readonly Color _selectedColor = Color.Red;
-
-    /// <summary>Control is selected</summary>
-    bool _selected = false;
     #endregion
 
     #region Properties - functional
@@ -37,14 +31,15 @@ public partial class ChannelControl : UserControl
     [EditorBrowsable(EditorBrowsableState.Never)]
     public ChannelState State { get; set; }
 
-    /// <summary>User selection.</summary>
+    /// <summary>Control is selected</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     [EditorBrowsable(EditorBrowsableState.Never)]
     public bool Selected
     {
         get { return _selected; }
-        set { _selected = value; BackColor = _selected ? SelectedColor : _bgColor; }
+        set { _selected = value; BackColor = _selected ? SelectedColor : BackColor; }
     }
+    bool _selected = false;
 
     /// <summary>Current volume.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -139,9 +134,6 @@ public partial class ChannelControl : UserControl
 
         InitializeComponent();
 
-        _bgColor = BackColor;
-
-
         lblInfo.Click += ChannelInfo_Click;
         //sldVolume.ValueChanged += (sender, e) => BoundChannel.Volume = (sender as Slider)!.Value;
         lblSolo.Click += SoloMute_Click;
@@ -172,6 +164,8 @@ public partial class ChannelControl : UserControl
         // Info textbox.
         lblInfo.AutoEllipsis = true;
         lblInfo.Click += ChannelInfo_Click;
+
+        // TODO1 hook up meter(s).
 
         // Finalize the control.
         toolTip.InitialDelay = 100;
@@ -214,13 +208,13 @@ public partial class ChannelControl : UserControl
             if (lblSolo.BackColor == DrawColor) // on
             {
                 State = ChannelState.Normal;
-                lblSolo.BackColor = _bgColor;
+                lblSolo.BackColor = BackColor;
             }
             else // off
             {
                 State = ChannelState.Solo;
                 lblSolo.BackColor = DrawColor;
-                lblMute.BackColor = _bgColor;
+                lblMute.BackColor = BackColor;
             }
         }
         else if (lbl == lblMute)
@@ -228,13 +222,13 @@ public partial class ChannelControl : UserControl
             if (lblMute.BackColor == DrawColor) // on
             {
                 State = ChannelState.Normal;
-                lblMute.BackColor = _bgColor;
+                lblMute.BackColor = BackColor;
             }
             else // off
             {
                 State = ChannelState.Mute;
                 lblMute.BackColor = DrawColor;
-                lblSolo.BackColor = _bgColor;
+                lblSolo.BackColor = BackColor;
             }
         }
         else
@@ -285,7 +279,6 @@ public partial class ChannelControl : UserControl
     // protected override void OnMouseLeave(EventArgs e)
     // protected override void OnMouseDown(MouseEventArgs e)
     // protected override void OnMouseUp(MouseEventArgs e)
-
     #endregion
 
     #region Misc

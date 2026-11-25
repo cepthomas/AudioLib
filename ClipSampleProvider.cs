@@ -1,9 +1,11 @@
 using System;
 using System.Diagnostics;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics.Tensors;
 using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using Ephemera.NBagOfTricks;
-using System.Collections.Generic;
 
 
 namespace Ephemera.AudioLib;
@@ -16,16 +18,14 @@ namespace Ephemera.AudioLib;
 public class ClipSampleProvider : ISampleProvider
 {
     #region Fields
-    /// <summary>The full buffer from client.</summary>
+    /// <summary>The full buffer from source.</summary>
     float[] _vals = [];
-
-    ///// <summary>For notifications.</summary>
-    //int _sampleCount = 0;
     #endregion
 
-    #region Backing fields
-    int _sampleIndex = 0;
-    #endregion
+    //original file name
+    string _fileName = "";
+    bool _resampled = false;
+
 
     #region Properties
     /// <inheritdoc />
@@ -40,12 +40,13 @@ public class ClipSampleProvider : ISampleProvider
     /// <summary>The total time.</summary>
     public TimeSpan TotalTime { get { return TimeSpan.FromMilliseconds((int)(1000.0f * _vals.Length / WaveFormat.SampleRate)); } }
 
-    /// <summary>Make this class sort of look like a stream.</summary>
+    /// <summary>Where we are in the buffer.</summary>
     public int SampleIndex
     {
        get { return _sampleIndex; }
        set { _sampleIndex = _vals.Length > 0 ? MathUtils.Constrain(value, 0, _vals.Length - 1) : 0; }
     }
+    int _sampleIndex = 0;
 
     /// <summary>The current time.</summary>
     public TimeSpan CurrentTime { get { return TimeSpan.FromMilliseconds((int)(1000.0f * _sampleIndex / WaveFormat.SampleRate)); } }
@@ -55,9 +56,6 @@ public class ClipSampleProvider : ISampleProvider
 
     /// <summary>Selection length in samples. 0 means to the end.</summary>
     public int SelLength { get; set; } = 0;
-
-    ///// <summary>Number of samples per notification.</summary>
-    //public int SamplesPerNotification { get; set; } = 5000;
     #endregion
 
     #region Events
@@ -66,43 +64,92 @@ public class ClipSampleProvider : ISampleProvider
 
     #region Constructors
     /// <summary>
-    /// Constructor from a sample provider. Coerces stereo to mono.
+    /// Constructor from a sample provider. Splits or merges stereo per client request.
     /// </summary>
     /// <param name="source">Source provider to use.</param>
     /// <param name="mode">How to handle stereo files.</param>
     public ClipSampleProvider(ISampleProvider source, StereoCoercion mode)
     {
-        ReadSource(source, mode);
+        ISampleProvider prov;
+
+        switch (source.WaveFormat.Channels)
+        {
+            case 1:
+                // Mono, read as is.
+                prov = source;
+                break;
+
+            case 2:
+                // Stereo, pick an op.
+                prov = new StereoToMonoSampleProvider(source)
+                {
+                    LeftVolume = mode == StereoCoercion.Mono ? 0.5f : (mode == StereoCoercion.Left ? 1.0f : 0.0f),
+                    RightVolume = mode == StereoCoercion.Mono ? 0.5f : (mode == StereoCoercion.Right ? 1.0f : 0.0f)
+                };
+                break;
+
+            default:
+                throw new AudioLibException($"Unsupported number of channels: {source.WaveFormat.Channels}");
+        }
+
+        // Maybe resample.
+        if (prov.WaveFormat.SampleRate != AudioLibDefs.SAMPLE_RATE)
+        {
+            prov = new WdlResamplingSampleProvider(prov, AudioLibDefs.SAMPLE_RATE);
+            _resampled = true;
+        }
+
+        _vals = AudioUtils.ReadAll(prov);
+
+        //// Accumulate chunks from provider.
+        //var buffs = new List<(float[] d, int n)>();
+        //int totalRead = 0;
+        //do
+        //{
+        //    var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
+        //    int numRead = prov.Read(buff.AsSpan(0, buff.Length));
+        //    if (numRead == 0) break;
+        //    // else
+        //    totalRead += numRead;
+        //    buffs.Add((buff, numRead));
+        //}
+        //while (true);
+
+        //// Concat and store all.
+        //_vals = new float[totalRead];
+        //int ind = 0;
+        //buffs.ForEach(buff =>
+        //{
+        //    var src = buff.d.AsSpan(0, buff.n);
+        //    var dest = _vals.AsSpan(ind, buff.n);
+        //    src.CopyTo(dest);
+        //    ind += src.Length;  // buff.n;
+        //});
     }
 
     /// <summary>
-    /// Constructor from a buffer. Mono only.
+    /// Constructor from a file. Splits/merges stereo per client.
+    /// </summary>
+    /// <param name="fn">File to use.</param>
+    /// <param name="mode">How to handle stereo files.</param>
+    public ClipSampleProvider(string fn, StereoCoercion mode) : this(new AudioFileReader(fn), mode)
+    {
+        _fileName = fn;
+    }
+
+    /// <summary>
+    /// Constructor from a supplied buffer.
     /// </summary>
     /// <param name="vals">The data to use.</param>
     public ClipSampleProvider(float[] vals)
     {
         _vals = vals;
     }
-
-    /// <summary>
-    /// Constructor from a file. Coerces stereo to client's choice.
-    /// </summary>
-    /// <param name="fn">File to use.</param>
-    /// <param name="mode">How to handle stereo files.</param>
-    public ClipSampleProvider(string fn, StereoCoercion mode)
-    {
-        using var prov = new ResamplingAudioFileReader(fn, AudioLibDefs.SAMPLE_RATE);
-//        using var prov = new AudioFileReader(fn);
-
-        ReadSource(prov, mode);
-    }
     #endregion
 
     #region Public functions
     /// <summary>
-    /// Reads samples from this sample provider with adjustments for volume.
-    /// Honors user selection if specified.
-    /// ISampleProvider implementation.
+    /// Reads samples from this sample provider. Honors user selection if specified.
     /// </summary>
     /// <param name="buffer">Sample buffer.</param>
     /// <returns>Number of samples read.</returns>
@@ -110,7 +157,7 @@ public class ClipSampleProvider : ISampleProvider
     {
         int numRead = 0;
 
-        // Find the end. Is it a specific selection?
+        // Is it a specific selection? Find the end.
         int end = SelStart >= 0 && SelLength > 0 ?
             MathUtils.Constrain(SelStart + SelLength, 0, _vals.Length) :
             _vals.Length;
@@ -122,23 +169,7 @@ public class ClipSampleProvider : ISampleProvider
             buffer[n] = _vals[_sampleIndex] * Gain;
             numRead++;
             _sampleIndex++;
-            //_sampleCount++;
-
-            //// Check for time to notify.
-            //if (_sampleCount >= SamplesPerNotification)
-            //{
-            //    _args.Position = _sampleIndex;
-            //    ClipProgress?.Invoke(this, _args);
-            //    _sampleCount = 0;
-            //}
         }
-
-        //if (numRead == 0) // last one
-        //{
-        //    _args.Position = _sampleIndex;
-        //    ClipProgress?.Invoke(this, _args);
-        //    _sampleCount = 0;
-        //}
 
         return numRead;
     }
@@ -178,27 +209,30 @@ public class ClipSampleProvider : ISampleProvider
     #endregion
 
     #region Private functions
-    /// <summary>
-    /// Common buff loader. Coerces stereo to mono per client request.
-    /// </summary>
-    /// <param name="source">Source provider to use.</param>
-    /// <param name="mode">How to handle stereo files.</param>
-    void ReadSource(ISampleProvider source, StereoCoercion mode)
-    {
-        if (source.WaveFormat.Channels == 2)
-        {
-            source = new StereoToMonoSampleProvider(source)
-            {
-                LeftVolume = mode == StereoCoercion.Mono ? 0.5f : (mode == StereoCoercion.Left ? 1.0f : 0.0f),
-                RightVolume = mode == StereoCoercion.Mono ? 0.5f : (mode == StereoCoercion.Right ? 1.0f : 0.0f)
-            };
-            _vals = AudioUtils.ReadAll(source);
-        }
-        else
-        {
-            // Mono, read as is.
-            _vals = AudioUtils.ReadAll(source);
-        }
-    }
+    ///// <summary>
+    ///// Common buff loader.
+    ///// </summary>
+    ///// <param name="source">Source provider to use.</param>
+    ///// <param name="mode">How to handle stereo files.</param>
+    //void ReadSource(ISampleProvider source, StereoCoercion mode)
+    //{
+    //    ISampleProvider prov;
+
+    //    if (source.WaveFormat.Channels == 2)
+    //    {
+    //        prov = new StereoToMonoSampleProvider(source)
+    //        {
+    //            LeftVolume = mode == StereoCoercion.Mono ? 0.5f : (mode == StereoCoercion.Left ? 1.0f : 0.0f),
+    //            RightVolume = mode == StereoCoercion.Mono ? 0.5f : (mode == StereoCoercion.Right ? 1.0f : 0.0f)
+    //        };
+    //    }
+    //    else
+    //    {
+    //        // Mono, read as is.
+    //        prov = source;
+    //    }
+
+    //    _vals = AudioUtils.ReadAll(prov);
+    //}
     #endregion
 }

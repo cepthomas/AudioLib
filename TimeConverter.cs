@@ -28,7 +28,7 @@ internal class TimeConverter : IConverter
         public int msec;
         public TimeDesc(int min, int sec, int msec) { this.min = min; this.sec = sec; this.msec = msec; }
         public TimeDesc() { min = -1; sec = -1; msec = -1; }
-        public bool Valid() { return min >= 0 && min < AudioLibDefs.MAX_CLIP_SIZE &&
+        public bool Valid() { return min >= 0 && min < AudioLibDefs.MAX_CLIP_MINUTES &&
                 sec >= 0 && sec < TimeConverter.SEC_PER_MINUTE &&
                 msec >= 0 && msec < TimeConverter.MSEC_PER_SECOND; }
     }

@@ -31,10 +31,10 @@ public class SwappableSampleProvider : ISampleProvider
     {
         // Everything is good.
         _currentInput = input;
-        if (_currentInput is not null)
-        {
-            AudioUtils.Rewind(_currentInput);
-        }
+        //if (_currentInput is not null)
+        //{
+        //    AudioUtils.Rewind(_currentInput);
+        //}
     }
 
     /// <summary>

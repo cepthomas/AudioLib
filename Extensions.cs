@@ -14,53 +14,54 @@ namespace Ephemera.AudioLib;
 /// </summary>
 public static class Extensions // TODO1 combine wwith AudioUtils??
 {
-    ///// <summary>
-    ///// Make a buffer from the provider contents. Mono only.
-    ///// </summary>
-    ///// <param name="prov">The provider.</param>
-    ///// <returns>Values.</returns>
-    //public static float[] ReadAll(this ISampleProvider prov)
-    //{
-    //    //prov.Rewind();
 
-    //    var data = new List<float>(AudioLibDefs.READ_BUFF_SIZE);
-    //    var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
-    //    int numRead;
-    //    int totalRead = 0;
-    //    int maxSamples = AudioLibDefs.MAX_CLIP_SIZE * AudioLibDefs.SAMPLE_RATE * 60;
+/*
+    
+    /// <summary>
+    /// Make a buffer from the provider contents. Mono only.
+    /// </summary>
+    /// <param name="prov">The provider.</param>
+    /// <returns>Values.</returns>
+    public static float[] ReadAll(this ISampleProvider prov)
+    {
+       //prov.Rewind();
 
-    //    while ((numRead = prov.Read(buff.AsSpan(0, buff.Length))) > 0)
-    //    {
-    //        data.AddRange(buff.Take(numRead));
+       var data = new List<float>(AudioLibDefs.READ_BUFF_SIZE);
+       var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
+       int numRead;
+       int totalRead = 0;
+       int maxSamples = AudioLibDefs.MAX_CLIP_SIZE * AudioLibDefs.SAMPLE_RATE * 60;
 
-    //        // Test for max size.
-    //        totalRead += numRead;
-    //        if (totalRead > maxSamples)
-    //        {
-    //            throw new InvalidOperationException($"Provider/file too large");
-    //        }
-    //    }
+       while ((numRead = prov.Read(buff.AsSpan(0, buff.Length))) > 0)
+       {
+           data.AddRange(buff.Take(numRead));
 
-    //    return data.ToArray();
-    //}
+           // Test for max size.
+           totalRead += numRead;
+           if (totalRead > maxSamples)
+           {
+               throw new InvalidOperationException($"Provider/file too large");
+           }
+       }
 
-    ///// <summary>
-    ///// Agnostic stream position setter. TODO1???
-    ///// </summary>
-    ///// <param name="prov"></param>
-    //public static void Rewind(this ISampleProvider prov)
-    //{
-    //    switch (prov)
-    //    {
-    //        case ClipSampleProvider csp: csp.SampleIndex = csp.SelStart; break;
-    //        case ResamplingAudioFileReader afr: afr.Rewind(); break;
-    //        case WdlResamplingSampleProvider afr: afr.Rewind(); break;
-    //        case AudioFileReader afr: afr.Rewind(); break;
-    //        default: throw new AudioLibException("TODO1");
-    //    }
-    //}
+       return data.ToArray();
+    }
 
-    /*
+    /// <summary>
+    /// Agnostic stream position setter. TODO1???
+    /// </summary>
+    /// <param name="prov"></param>
+    public static void Rewind(this ISampleProvider prov)
+    {
+       switch (prov)
+       {
+           case ClipSampleProvider csp: csp.SampleIndex = csp.SelStart; break;
+           case ResamplingAudioFileReader afr: afr.Rewind(); break;
+           case WdlResamplingSampleProvider afr: afr.Rewind(); break;
+           case AudioFileReader afr: afr.Rewind(); break;
+           default: throw new AudioLibException("TODO1");
+       }
+    }
 
     /// <summary>
     /// Sanity check for only 32bit fp, 44100Hz, mono.

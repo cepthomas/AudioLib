@@ -11,9 +11,9 @@ namespace Ephemera.AudioLib;
 
 public class AudioFileInfo
 {
-// #pragma warning disable CA2211 // Non-constant fields should not be visible
-    public static string DELIM = ",";
-// #pragma warning restore
+    /// <summary>For dumping.</summary>
+    public static string DELIM { get; set; } = ",";
+
 
     /// <summary>
     /// Top level function to get file info.

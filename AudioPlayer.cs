@@ -8,7 +8,7 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib;
 
-/// <summary>A simple audio file player.</summary>
+/// <summary>A simple audio player.</summary>
 public sealed class AudioPlayer : IDisposable
 {
     #region Fields
@@ -33,15 +33,8 @@ public sealed class AudioPlayer : IDisposable
     /// <summary>Volume.</summary>
     public float Volume
     {
-        get
-        {
-            return _volume;
-        }
-        set 
-        {
-            _volume = (float)MathUtils.Constrain(value, 0.0f, AudioLibDefs.MAX_VOLUME);
-            if (_waveOut is not null) { _waveOut.Volume = _volume; }
-        }
+        get { return _volume; }
+        set { _volume = (float)MathUtils.Constrain(value, 0.0f, AudioLibDefs.MAX_VOLUME);  _waveOut?.Volume = _volume; }
     }
 
     /// <summary>State.</summary>
@@ -107,6 +100,8 @@ public sealed class AudioPlayer : IDisposable
     {
         if (_waveOut is not null)
         {
+           // _waveOut.
+
             if (go)
             {
                 _waveOut.Play();

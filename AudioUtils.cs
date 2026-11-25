@@ -20,26 +20,73 @@ public class AudioUtils
     {
         //AudioUtils.Rewind(prov);
 
-        var data = new List<float>(AudioLibDefs.READ_BUFF_SIZE);
-        var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
-        int numRead;
+        // Accumulate chunks from provider.
+        var buffs = new List<(float[] d, int n)>();
         int totalRead = 0;
-        int maxSamples = AudioLibDefs.MAX_CLIP_SIZE * AudioLibDefs.SAMPLE_RATE * 60;
-
-        while ((numRead = prov.Read(buff.AsSpan(0, buff.Length))) > 0)
+        do
         {
-            data.AddRange(buff.Take(numRead));
-
-            // Test for max size.
+            var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
+            int numRead = prov.Read(buff.AsSpan(0, buff.Length));
+            if (numRead == 0) break;
+            // else
             totalRead += numRead;
-            if (totalRead > maxSamples)
-            {
-                throw new InvalidOperationException($"Provider/file too large");
-            }
+            buffs.Add((buff, numRead));
         }
+        while (true);
 
-        return data.ToArray();
+        // Concat and store all.
+        var vals = new float[totalRead];
+        int ind = 0;
+        buffs.ForEach(buff =>
+        {
+            var src = buff.d.AsSpan(0, buff.n);
+            var dest = vals.AsSpan(ind, buff.n);
+            src.CopyTo(dest);
+            ind += src.Length;  // buff.n;
+        });
+
+        return vals;
     }
+
+    /*
+
+/// <summary>
+/// Make a buffer from the provider contents. Mono only.
+/// </summary>
+/// <param name="prov">The provider.</param>
+/// <returns>Values.</returns>
+public static float[] ReadAll(ISampleProvider prov) <<<< original version
+{
+    //AudioUtils.Rewind(prov);
+
+    var data = new List<float>(AudioLibDefs.READ_BUFF_SIZE);
+    var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
+    int numRead;
+    int totalRead = 0;
+    //int maxSamples = AudioLibDefs.MAX_CLIP_SIZE * AudioLibDefs.SAMPLE_RATE * 60;
+
+    while ((numRead = prov.Read(buff.AsSpan(0, buff.Length))) > 0)
+    {
+        data.AddRange(buff.Take(numRead));
+
+        // Test for max size.
+        totalRead += numRead;
+        if (totalRead > AudioLibDefs.MAX_SAMPLES)
+        {
+            throw new InvalidOperationException($"Provider/file too large");
+        }
+    }
+
+    return [.. data];
+}
+
+
+
+
+/// <summary>Conversion options.</summary>
+public enum Conversion { ToMonoWav, SplitStereo, Resample }
+
+
 
     /// <summary>
     /// Agnostic stream position setter. TODO1??? what exactly needs to be rewound? def AFRx2
@@ -56,25 +103,6 @@ public class AudioUtils
             default: throw new AudioLibException("Hey!!!!");
         }
     }
-}
-
-
-
-
-/*
-
-/// <summary>Conversion options.</summary>
-public enum Conversion { ToMonoWav, SplitStereo, Resample }
-
-
-public class DefsXXX
-{
-    //public static int BitsPerSample { get; set; } = 16;
-
-    public static int SampleRate { get; set; } = 44100;
-
-    //[JsonConverter(typeof(JsonColorConverter))]
-    //public static Color DrawColor { get; set; } = Color.MediumOrchid;
 }
 
 
@@ -167,5 +195,5 @@ public class AudioUtils
         prov = new WdlResamplingSampleProvider(prov, AudioLibDefs.SAMPLE_RATE);
         WaveFileWriter.CreateWaveFile16(newfn, prov);
     }
-}
 */
+}
