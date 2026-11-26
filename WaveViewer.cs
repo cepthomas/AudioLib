@@ -547,7 +547,7 @@ public partial class WaveViewer : UserControl
         // Then the data.
         if (_samplesPerPixel > 0)
         {
-            var peaks = PeakProvider.GetPeaks(_vals, _visibleStart, _samplesPerPixel, Width);
+            var peaks = AudioUtils.GetPeaks(_vals, _visibleStart, _samplesPerPixel, Width);
 
             for (int i = 0; i < peaks.Count; i++)
             {
@@ -638,7 +638,7 @@ public partial class WaveViewer : UserControl
 
             if (samplesPerPixel > 0)
             {
-                var peaks = PeakProvider.GetPeaks(_vals, 0, samplesPerPixel, width);
+                var peaks = AudioUtils.GetPeaks(_vals, 0, samplesPerPixel, width);
 
                 for (int i = 0; i < peaks.Count; i++)
                 {
