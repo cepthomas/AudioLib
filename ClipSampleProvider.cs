@@ -23,7 +23,7 @@ public class ClipSampleProvider : ISampleProvider
 
     #region Properties
     /// <inheritdoc />
-    public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
+    public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibConfig.SampleRate, 1);
 
     /// <summary>Overall gain applied to all samples.</summary>
     public float Gain { get; set; } = 1.0f;
@@ -93,9 +93,9 @@ public class ClipSampleProvider : ISampleProvider
         }
 
         // Maybe resample.
-        if (prov.WaveFormat.SampleRate != AudioLibDefs.SAMPLE_RATE)
+        if (prov.WaveFormat.SampleRate != AudioLibConfig.SampleRate)
         {
-            prov = new WdlResamplingSampleProvider(prov, AudioLibDefs.SAMPLE_RATE);
+            prov = new WdlResamplingSampleProvider(prov, AudioLibConfig.SampleRate);
             Resampled = true;
         }
 

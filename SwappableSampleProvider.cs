@@ -19,7 +19,7 @@ public class SwappableSampleProvider : ISampleProvider
 
     #region Properties
     /// <summary>ISampleProvider implementation.</summary>
-    public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 2);
+    public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibConfig.SampleRate, 2);
     #endregion
 
     #region Public functions

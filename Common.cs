@@ -21,40 +21,34 @@ public class AudioLibException(string message) : Exception(message) { }
 #endregion
 
 
-#region Definitions
-public class AudioLibDefs
+#region Library options
+public class AudioLibConfig
 {
-    //TODO1 these should come from client. Others?
-    /// <summary>Supported types.</summary>
-    public const string AUDIO_FILE_TYPES = "*.wav;*.mp3;*.m4a;*.flac;*.txt";
+    /// <summary>Supported types. Standard windows file type format.</summary>
+    public static string AudioFileTypes { get; set; } = "*.wav;*.mp3;*.m4a;*.flac;*.txt";
 
     /// <summary>Everything internal.</summary>
-    public const int SAMPLE_RATE = 44100;
-    /////////////////////////////////////////
-
-
-
+    public static int SampleRate { get; set; } = 44100;
 
     /// <summary>NAudio doesn't publish this for their API.</summary>
-    public const float MAX_VOLUME = 1.0f;
-
-    /// <summary>Resolution of UI.</summary>
-    public const double RES_VOLUME = MAX_VOLUME / 50;
+    public static float MaxVolume { get; set; } = 1.0f;
 
     /// <summary>Maximum gain.</summary>
-    public const float MAX_GAIN = 5.0f;
-
-    /// <summary>Stream buffer size.</summary>
-    public const int READ_BUFF_SIZE = SAMPLE_RATE;
+    public static float MaxGain { get; set; } = 5.0f;
 
     /// <summary>Standard formatting.</summary>
-    public const string TS_FORMAT = @"mm\.ss\.fff";
+    public static string TimestampFormat { get; set; } = @"mm\.ss\.fff";
 
     /// <summary>Max clip size in minutes. Has a direct effect on memory usage.</summary>
-    public const int MAX_CLIP_MINUTES = 10;
+    public static int MaxClipMinutes { get; set; } = 10;
 
-    /// <summary>Max clip size in samples. Has a direct effect on memory usage.</summary>
-    public const int MAX_SAMPLES = MAX_CLIP_MINUTES * 60 * SAMPLE_RATE;
+    /// <summary>Stream buffer size. Readonly.</summary>
+    public static int ReadBuffSize { get { return SampleRate; } }
 
+    /// <summary>Resolution of UI. Readonly.</summary>
+    public static float VolumeResolution { get { return MaxVolume / 50; } }
+
+    /// <summary>Max clip size in samples. Has a direct effect on memory usage. Readonly.</summary>
+    public static int MaxSamples { get { return MaxClipMinutes * 60 * SampleRate; } }
 }
 #endregion

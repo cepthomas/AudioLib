@@ -143,8 +143,8 @@ public partial class ChannelControl : UserControl
 
         // Volume slider.
         sldVolume.Minimum = 0.0;
-        sldVolume.Maximum = AudioLibDefs.MAX_VOLUME;
-        sldVolume.Resolution = AudioLibDefs.RES_VOLUME;
+        sldVolume.Maximum = AudioLibConfig.MaxVolume;
+        sldVolume.Resolution = AudioLibConfig.VolumeResolution;
         sldVolume.Label = "volume";
         //sldVolume.ValueChanged += Volume_ValueChanged;
 

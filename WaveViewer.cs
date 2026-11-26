@@ -107,7 +107,7 @@ public partial class WaveViewer : UserControl
 
     /// <summary>Length of the clip in msec.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    public int TotalTime { get { return (int)((double)Length / AudioLibDefs.SAMPLE_RATE / 1000.0f); } }
+    public int TotalTime { get { return (int)((double)Length / AudioLibConfig.SampleRate / 1000.0f); } }
 
     /// <summary>Selection start sample. -1 means no selection.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -301,7 +301,7 @@ public partial class WaveViewer : UserControl
             case Keys.Shift: // y gain
                 {
                     _gain += wheelDelta > 0 ? GAIN_INCREMENT : -GAIN_INCREMENT;
-                    _gain = (float)MathUtils.Constrain(_gain, 0.0, AudioLibDefs.MAX_GAIN);
+                    _gain = (float)MathUtils.Constrain(_gain, 0.0, AudioLibConfig.MaxGain);
                     StateChange?.Invoke(this, new() { Value =  Gain = _gain });
                     Invalidate();
                 }

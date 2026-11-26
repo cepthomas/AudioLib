@@ -150,7 +150,7 @@ namespace Ephemera.AudioLib.Test
             };
 
             // File openers.
-            var ftypes = AudioLibDefs.AUDIO_FILE_TYPES.SplitByTokens("|;*");
+            var ftypes = AudioLibConfig.AudioFileTypes.SplitByTokens("|;*");
 
             Directory.GetFiles(_filesDir).
                 Where(fn => ftypes.Contains(Path.GetExtension(fn))).
@@ -248,7 +248,7 @@ namespace Ephemera.AudioLib.Test
                     for (int i = 0; i < sdata.Length; i++) { tdata[i] = float.Parse(sdata[i]); }
                     prov = new ClipSampleProvider(tdata);
                 }
-                else if (AudioLibDefs.AUDIO_FILE_TYPES.Contains($"*{ext}")) // Assume valid audio file type.
+                else if (AudioLibConfig.AudioFileTypes.Contains($"*{ext}")) // Assume valid audio file type.
                 {
                     // Create reader type.
                     prov = new ClipSampleProvider(fn, StereoCoercion.Mono);

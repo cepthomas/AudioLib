@@ -11,19 +11,19 @@
 - AudioPlayer: Fairly thin wrapper around the basic NAudio wave player. Devices are limited to the ones available on your box.
 - ClipSampleProvider: Sample provider that encapsulates a client supplied piece of audio.
 - SwappableSampleProvider: Sample provider that supports hot swapping of input.
-- PeakProvider: Customized version of NAudio's IPeakProvider family for displayiing waveforms.
 - SavingWaveProvider.cs: Render to file.
 - NullSampleProvider.cs: Dummy.
 
 UI:
+- ChannelControl: For controlling the channel. TBD.
 - TimeBar: Elapsed time control. Optional full wave display.
 - WaveViewer: Display and navigate a wave. Adjust gain, extract selection.
-- UiEditors.cs (2k)
+- UiEditors: For audio config.
 
 Utility:
 - AudioFileInfo: Dumps contents of supported audio files.
-- *Converter: Between samples, Audio Time, Bar/Beat.
-- AudioUtils.cs: Conversion, resampling.
+- *Translator: Between samples, Audio Time, Bar/Beat.
+- AudioUtils.cs: Conversion, resampling, peaks.
 - Extensions: NAudio compatible extension methods for the providers implemented here.
 
 

@@ -11,7 +11,7 @@ namespace Ephemera.AudioLib;
 public class NullSampleProvider : ISampleProvider
 {
     /// <inheritdoc />
-    public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
+    public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibConfig.SampleRate, 1);
 
     /// <inheritdoc />
     public int Read(Span<float> buffer)

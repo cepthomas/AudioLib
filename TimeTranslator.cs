@@ -28,7 +28,7 @@ internal class TimeTranslator : ITranslator
         public int msec;
         public TimeDesc(int min, int sec, int msec) { this.min = min; this.sec = sec; this.msec = msec; }
         public TimeDesc() { min = -1; sec = -1; msec = -1; }
-        public bool Valid() { return min >= 0 && min < AudioLibDefs.MAX_CLIP_MINUTES &&
+        public bool Valid() { return min >= 0 && min < AudioLibConfig.MaxClipMinutes &&
                 sec >= 0 && sec < TimeTranslator.SEC_PER_MINUTE &&
                 msec >= 0 && msec < TimeTranslator.MSEC_PER_SECOND; }
     }
@@ -79,7 +79,7 @@ internal class TimeTranslator : ITranslator
     /// <returns></returns>
     public int MsecToSample(double msec)
     {
-        double sample = (double)AudioLibDefs.SAMPLE_RATE * msec / MSEC_PER_SECOND;
+        double sample = (double)AudioLibConfig.SampleRate * msec / MSEC_PER_SECOND;
         return (int)sample;
     }
 
@@ -90,7 +90,7 @@ internal class TimeTranslator : ITranslator
     /// <returns></returns>
     public int SampleToMsec(int sample)
     {
-        double msec = (double)MSEC_PER_SECOND * sample / AudioLibDefs.SAMPLE_RATE;
+        double msec = (double)MSEC_PER_SECOND * sample / AudioLibConfig.SampleRate;
         return (int)Math.Round(msec);
     }
     #endregion

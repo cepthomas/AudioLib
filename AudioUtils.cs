@@ -25,7 +25,7 @@ public class AudioUtils
         int totalRead = 0;
         do
         {
-            var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
+            var buff = new float[AudioLibConfig.ReadBuffSize];
             int numRead = prov.Read(buff.AsSpan(0, buff.Length));
             if (numRead == 0) break;
             // else
@@ -56,7 +56,7 @@ public class AudioUtils
     public static void Export(ISampleProvider prov, string exportFileName)
     {
         List<string> ls = [];
-        var vals = new float[AudioLibDefs.READ_BUFF_SIZE];
+        var vals = new float[AudioLibConfig.ReadBuffSize];
         bool done = false;
         int index = 0;
 
@@ -65,12 +65,12 @@ public class AudioUtils
             ls.Add($"Index,Val");
             while (!done)
             {
-                var sread = prov.Read(vals.AsSpan(0, AudioLibDefs.READ_BUFF_SIZE));
+                var sread = prov.Read(vals.AsSpan(0, AudioLibConfig.ReadBuffSize));
                 for (int i = 0; i < sread; i++)
                 {
                     ls.Add($"{index++}, {vals[i]}");
                 }
-                done = sread != AudioLibDefs.READ_BUFF_SIZE;
+                done = sread != AudioLibConfig.ReadBuffSize;
             }
         }
         else // stereo
@@ -78,12 +78,12 @@ public class AudioUtils
             ls.Add($"Index,Left,Right");
             while (!done)
             {
-                var sread = prov.Read(vals.AsSpan(0, AudioLibDefs.READ_BUFF_SIZE));
+                var sread = prov.Read(vals.AsSpan(0, AudioLibConfig.ReadBuffSize));
                 for (int i = 0; i < sread; i += 2)
                 {
                     ls.Add($"{index++}, {vals[i]}, {vals[i + 1]}");
                 }
-                done = sread != AudioLibDefs.READ_BUFF_SIZE;
+                done = sread != AudioLibConfig.ReadBuffSize;
             }
         }
 

@@ -101,7 +101,7 @@ internal class BarTranslator : ITranslator
     {
         double minPerBeat = 1.0 / BPM;
         double secPerBeat = minPerBeat * 60;
-        double smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
+        double smplPerBeat = AudioLibConfig.SampleRate * secPerBeat;
         double smplPerSubdiv = smplPerBeat / SUBDIVS_PER_BEAT;
         var sample = (int)(smplPerSubdiv * subdiv);
         return sample;
@@ -116,7 +116,7 @@ internal class BarTranslator : ITranslator
     {
         double minPerBeat = 1.0 / BPM;
         double secPerBeat = minPerBeat * 60;
-        double smplPerBeat = AudioLibDefs.SAMPLE_RATE * secPerBeat;
+        double smplPerBeat = AudioLibConfig.SampleRate * secPerBeat;
         double beats = sample / smplPerBeat;
         var subdiv = (int)Math.Round(beats * SUBDIVS_PER_BEAT);
         return subdiv;

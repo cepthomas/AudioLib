@@ -30,9 +30,9 @@ public sealed class AudioPlayer : IDisposable
     public float Volume
     {
         get { return _volume; }
-        set { _volume = (float)MathUtils.Constrain(value, 0.0f, AudioLibDefs.MAX_VOLUME); _waveOut?.Volume = _volume; }
+        set { _volume = (float)MathUtils.Constrain(value, 0.0f, AudioLibConfig.MaxVolume); _waveOut?.Volume = _volume; }
     }
-    float _volume = AudioLibDefs.MAX_VOLUME * 0.7f;
+    float _volume = AudioLibConfig.MaxVolume * 0.7f;
 
     /// <summary>State.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]

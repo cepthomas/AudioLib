@@ -37,7 +37,7 @@ public class SignalGeneratorSampleProvider : ISampleProvider
     public float Amplitude { get; set; } = 0.25f;
 
     /// <inheritdoc />
-    public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibDefs.SAMPLE_RATE, 1);
+    public WaveFormat WaveFormat { get; } = WaveFormat.CreateIeeeFloatWaveFormat(AudioLibConfig.SampleRate, 1);
     #endregion
 
     #region Functions
@@ -51,12 +51,12 @@ public class SignalGeneratorSampleProvider : ISampleProvider
     {
         _wf = wf;
         var per = 1.0 / frequency; // 22.6757 msec/sample
-        _period = (int)(per * AudioLibDefs.SAMPLE_RATE);
+        _period = (int)(per * AudioLibConfig.SampleRate);
 
         switch (_wf)
         {
             case Waveform.Sin:
-                _phaseIncrement = 2.0 * Math.PI * frequency / AudioLibDefs.SAMPLE_RATE;
+                _phaseIncrement = 2.0 * Math.PI * frequency / AudioLibConfig.SampleRate;
                 break;
         }
     }
