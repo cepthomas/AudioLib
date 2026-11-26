@@ -28,11 +28,9 @@
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             btnOpen = new System.Windows.Forms.ToolStripDropDownButton();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            btnSwap = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             btnFileInfo = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            btnResample = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             btnCaps = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
@@ -90,7 +88,7 @@
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnRunBars, toolStripSeparator1, btnSettings, toolStripSeparator2, btnOpen, toolStripSeparator3, btnSwap, toolStripSeparator5, btnFileInfo, toolStripSeparator6, btnResample, toolStripSeparator7, btnCaps, toolStripSeparator8, toolStripLabel1, cmbSelMode, toolStripSeparator4 });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnRunBars, toolStripSeparator1, btnSettings, toolStripSeparator2, btnOpen, toolStripSeparator3, toolStripSeparator5, btnFileInfo, toolStripSeparator6, toolStripSeparator7, btnCaps, toolStripSeparator8, toolStripLabel1, cmbSelMode, toolStripSeparator4 });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new System.Drawing.Size(1000, 27);
@@ -138,16 +136,6 @@
             toolStripSeparator3.Name = "toolStripSeparator3";
             toolStripSeparator3.Size = new System.Drawing.Size(6, 27);
             // 
-            // btnSwap
-            // 
-            btnSwap.CheckOnClick = true;
-            btnSwap.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            btnSwap.ImageTransparentColor = System.Drawing.Color.Magenta;
-            btnSwap.Name = "btnSwap";
-            btnSwap.Size = new System.Drawing.Size(44, 24);
-            btnSwap.Text = "swap";
-            timer1.Tick += Timer1_Tick;
-            // 
             // toolStripSeparator5
             // 
             toolStripSeparator5.Name = "toolStripSeparator5";
@@ -166,15 +154,6 @@
             // 
             toolStripSeparator6.Name = "toolStripSeparator6";
             toolStripSeparator6.Size = new System.Drawing.Size(6, 27);
-            // 
-            // btnResample
-            // 
-            btnResample.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            btnResample.ImageTransparentColor = System.Drawing.Color.Magenta;
-            btnResample.Name = "btnResample";
-            btnResample.Size = new System.Drawing.Size(68, 24);
-            btnResample.Text = "resample";
-            timer1.Tick += Timer1_Tick;
             // 
             // toolStripSeparator7
             // 
@@ -310,11 +289,9 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripDropDownButton btnOpen;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripButton btnSwap;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripButton btnFileInfo;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripButton btnResample;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripButton btnTest;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;

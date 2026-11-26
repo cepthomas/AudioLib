@@ -13,11 +13,7 @@ public sealed class AudioPlayer : IDisposable
 {
     #region Fields
     /// <summary>Wave output play device.</summary>
-    readonly WaveOut? _waveOut = null;
-    #endregion
-
-    #region Backing fields
-    float _volume = AudioLibDefs.MAX_VOLUME * 0.7f;
+    readonly WaveOut _waveOut;// = null;
     #endregion
 
     #region Events
@@ -34,8 +30,9 @@ public sealed class AudioPlayer : IDisposable
     public float Volume
     {
         get { return _volume; }
-        set { _volume = (float)MathUtils.Constrain(value, 0.0f, AudioLibDefs.MAX_VOLUME);  _waveOut?.Volume = _volume; }
+        set { _volume = (float)MathUtils.Constrain(value, 0.0f, AudioLibDefs.MAX_VOLUME); _waveOut?.Volume = _volume; }
     }
+    float _volume = AudioLibDefs.MAX_VOLUME * 0.7f;
 
     /// <summary>State.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -67,9 +64,13 @@ public sealed class AudioPlayer : IDisposable
                     DeviceNumber = i,
                     NumberOfBuffers = 2,
                     BufferMilliseconds = latency / 2,
-                    Volume = Volume                         
+                    Volume = Volume
                 };
+
+
+                // Usually end of file but could be error. Client can handle.
                 _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
+
                 _waveOut.Init(smpl);
                 break;
             }
@@ -86,8 +87,9 @@ public sealed class AudioPlayer : IDisposable
     /// </summary>
     public void Dispose()
     {
-        _waveOut?.Stop();
-        _waveOut?.Dispose();
+        _waveOut.PlaybackStopped -= WaveOut_PlaybackStopped;
+        _waveOut.Stop();
+        _waveOut.Dispose();
     }
     #endregion
 
@@ -100,8 +102,6 @@ public sealed class AudioPlayer : IDisposable
     {
         if (_waveOut is not null)
         {
-           // _waveOut.
-
             if (go)
             {
                 _waveOut.Play();

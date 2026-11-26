@@ -164,32 +164,6 @@ public partial class WaveViewer : UserControl
     /// <param name="prov">Source</param>
     public void Init(ISampleProvider prov)
     {
-       // ///////////////////////////////// orig /////////////////
-       // /////_vals = AudioUtils.ReadAll(prov);
-       // //AudioUtils.Rewind(prov);
-       // var data = new List<float>(AudioLibDefs.READ_BUFF_SIZE);
-
-       // var buff = new float[AudioLibDefs.READ_BUFF_SIZE];
-
-       // int numRead;
-       // int totalRead = 0;
-       //// int maxSamples = AudioLibDefs.MAX_CLIP_SIZE * 60 * AudioLibDefs.SAMPLE_RATE;
-
-       // while ((numRead = prov.Read(buff.AsSpan(0, buff.Length))) > 0)
-       // {
-       //     data.AddRange(buff.Take(numRead));
-
-       //     // Test for max size.
-       //     totalRead += numRead;
-       //     if (totalRead > AudioLibDefs.MAX_SAMPLES)
-       //     {
-       //         throw new InvalidOperationException($"Provider/file too large");
-       //     }
-       // }
-
-       // _vals = [.. data];
-        ///////////////////////////////// orig /////////////////
-
         _vals = AudioUtils.ReadAll(prov);
 
         _max = _vals.Length > 0 ? _vals.Max() : 0;
@@ -304,7 +278,7 @@ public partial class WaveViewer : UserControl
                 }
                 break;
 
-            case Keys.Control: // x zoom TOODO not exactly perfect.
+            case Keys.Control: // x zoom TOOD1 not exactly perfect.
                 {
                     // Get sample to center about.
                     int center = PixelToSample(Width / 2); // or mouse or _marker
