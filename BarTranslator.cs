@@ -6,8 +6,8 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib;
 
-/// <summary>Converter for music time. 0-based - not traditional 1-based.</summary>
-internal class BarConverter : IConverter
+/// <summary>Translator for music time. 0-based - not traditional 1-based.</summary>
+internal class BarTranslator : ITranslator
 {
     #region Constants
     const int SUBDIVS_PER_BEAT = 8;

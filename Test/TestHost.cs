@@ -17,6 +17,9 @@ using Ephemera.AudioLib;
 using System.Linq;
 
 
+// TODO1 bug timeline and editor don't line up. timebar should be smoother.
+
+
 namespace Ephemera.AudioLib.Test
 {
     public partial class TestHost : Form
@@ -37,7 +40,7 @@ namespace Ephemera.AudioLib.Test
         readonly TestSettings _settings;
 
         /// <summary>Test stuff.</summary>
-        IConverter _converter = Converter.Create(WaveSelectionMode.Sample);
+        ITranslator _translator = Translator.Create(WaveSelectionMode.Sample);
 
         /// <summary>
         /// Constructor.
@@ -85,7 +88,7 @@ namespace Ephemera.AudioLib.Test
                     wv1.SelectionMode = mode;
                     wv2.SelectionMode = mode;
                     timeBar.SelectionMode = mode;
-                    _converter = Converter.Create(mode);
+                    _translator = Translator.Create(mode);
                 }
 
                 wv1.Invalidate();
@@ -97,7 +100,7 @@ namespace Ephemera.AudioLib.Test
             sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
 
             // Progress bar.
-            timeBar.CurrentChanged += (_, __) => Tell($"Current timebar:{_converter.Format(timeBar.Current)}");
+            timeBar.CurrentChanged += (_, __) => Tell($"Current timebar:{_translator.Format(timeBar.Current)}");
             timeBar.ProgressColor = Color.Green;
             timeBar.TextColor = Color.White;
             timeBar.BackColor = Color.LightCyan;

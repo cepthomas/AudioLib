@@ -63,7 +63,7 @@ public partial class WaveViewer : UserControl
     readonly Pen _penWave = new(Color.Black, 1);
     readonly Pen _penGrid = new(Color.LightGray, 1);
     readonly Pen _penMark = new(Color.Red, 1);
-    IConverter _converter = new SampleConverter();
+    ITranslator _translator = new SampleTranslator();
 
     readonly ToolTip toolTip;
     readonly Container components;
@@ -71,7 +71,7 @@ public partial class WaveViewer : UserControl
 
     #region Properties
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
-    public WaveSelectionMode SelectionMode { set => _converter = Converter.Create(value); }
+    public WaveSelectionMode SelectionMode { set => _translator = Translator.Create(value); }
 
     /// <summary>The waveform color.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -318,7 +318,7 @@ public partial class WaveViewer : UserControl
     protected override void OnMouseClick(MouseEventArgs e)
     {
         var sample = PixelToSample(e.X);
-        sample = _converter.Snap(sample, _snap);
+        sample = _translator.Snap(sample, _snap);
         StateChangeEventArgs? args = null;
 
         if (sample >= 0)
@@ -367,8 +367,8 @@ public partial class WaveViewer : UserControl
         if (e.X != _lastXPos)
         {
             var sample = PixelToSample(e.X);
-            sample = _converter.Snap(sample, _snap);
-            toolTip.SetToolTip(this, _converter.Format(sample));
+            sample = _translator.Snap(sample, _snap);
+            toolTip.SetToolTip(this, _translator.Format(sample));
             _lastXPos = e.X;
         }
 
@@ -494,14 +494,14 @@ public partial class WaveViewer : UserControl
         // Try coarse.
         for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
         {
-            set.Add(_converter.Snap(incr, SnapType.Coarse));
+            set.Add(_translator.Snap(incr, SnapType.Coarse));
         }
         if (set.Count < 5)
         {
             // Try fine.
             for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
             {
-                set.Add(_converter.Snap(incr, SnapType.Fine));
+                set.Add(_translator.Snap(incr, SnapType.Fine));
             }
         }
         var list = set.OrderBy(x => x).ToList();
@@ -527,7 +527,7 @@ public partial class WaveViewer : UserControl
         {
             float xGrid = MathUtils.Map(list[xs], VisibleStart, VisibleStart + VisibleLength, 0, Width);
             pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
-            pe.Graphics.DrawString($"{_converter.Format(list[xs])}", TextFont, _textBrush, xGrid, 10, _format);
+            pe.Graphics.DrawString($"{_translator.Format(list[xs])}", TextFont, _textBrush, xGrid, 10, _format);
         }
         _format.Alignment = StringAlignment.Center;
 
@@ -536,9 +536,9 @@ public partial class WaveViewer : UserControl
         {
             $"Gain:{_gain:0.00}",
             $"Snap:{_snap}",
-            $"SelStart:{_converter.Format(_selStart)}",
-            $"SelLength:{_converter.Format(_selLength)}",
-            $"Marker:{_converter.Format(_marker)}"
+            $"SelStart:{_translator.Format(_selStart)}",
+            $"SelLength:{_translator.Format(_selLength)}",
+            $"Marker:{_translator.Format(_marker)}"
         };
         //info.Add($"VisStart:{ConverterOps.Format(_visibleStart)}");
         //info.Add($"VisLength:{ConverterOps.Format(VisibleLength)}");

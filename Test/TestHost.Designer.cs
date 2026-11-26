@@ -28,10 +28,8 @@
             toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             btnOpen = new System.Windows.Forms.ToolStripDropDownButton();
             toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             btnFileInfo = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator6 = new System.Windows.Forms.ToolStripSeparator();
-            toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
             btnCaps = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
             toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
@@ -45,6 +43,10 @@
             cc2 = new ChannelControl();
             toolStrip1.SuspendLayout();
             SuspendLayout();
+            // 
+            // timer1
+            // 
+            timer1.Tick += Timer1_Tick;
             // 
             // tvInfo
             // 
@@ -88,7 +90,7 @@
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnRunBars, toolStripSeparator1, btnSettings, toolStripSeparator2, btnOpen, toolStripSeparator3, toolStripSeparator5, btnFileInfo, toolStripSeparator6, toolStripSeparator7, btnCaps, toolStripSeparator8, toolStripLabel1, cmbSelMode, toolStripSeparator4 });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnRunBars, toolStripSeparator1, btnSettings, toolStripSeparator2, btnOpen, toolStripSeparator3, btnFileInfo, toolStripSeparator6, btnCaps, toolStripSeparator8, toolStripLabel1, cmbSelMode, toolStripSeparator4 });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new System.Drawing.Size(1000, 27);
@@ -116,7 +118,6 @@
             btnSettings.Name = "btnSettings";
             btnSettings.Size = new System.Drawing.Size(61, 24);
             btnSettings.Text = "settings";
-            timer1.Tick += Timer1_Tick;
             // 
             // toolStripSeparator2
             // 
@@ -136,11 +137,6 @@
             toolStripSeparator3.Name = "toolStripSeparator3";
             toolStripSeparator3.Size = new System.Drawing.Size(6, 27);
             // 
-            // toolStripSeparator5
-            // 
-            toolStripSeparator5.Name = "toolStripSeparator5";
-            toolStripSeparator5.Size = new System.Drawing.Size(6, 27);
-            // 
             // btnFileInfo
             // 
             btnFileInfo.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
@@ -148,17 +144,11 @@
             btnFileInfo.Name = "btnFileInfo";
             btnFileInfo.Size = new System.Drawing.Size(57, 24);
             btnFileInfo.Text = "file info";
-            timer1.Tick += Timer1_Tick;
             // 
             // toolStripSeparator6
             // 
             toolStripSeparator6.Name = "toolStripSeparator6";
             toolStripSeparator6.Size = new System.Drawing.Size(6, 27);
-            // 
-            // toolStripSeparator7
-            // 
-            toolStripSeparator7.Name = "toolStripSeparator7";
-            toolStripSeparator7.Size = new System.Drawing.Size(6, 27);
             // 
             // btnCaps
             // 
@@ -167,7 +157,6 @@
             btnCaps.Name = "btnCaps";
             btnCaps.Size = new System.Drawing.Size(40, 24);
             btnCaps.Text = "caps";
-            timer1.Tick += Timer1_Tick;
             // 
             // toolStripSeparator8
             // 
@@ -289,10 +278,8 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripDropDownButton btnOpen;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripButton btnFileInfo;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
-        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
         private System.Windows.Forms.ToolStripButton btnTest;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
         private System.Windows.Forms.CheckBox chkPlay;

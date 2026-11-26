@@ -6,8 +6,8 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib;
 
-/// <summary>Converter for audio time.</summary>
-internal class TimeConverter : IConverter
+/// <summary>Translator for audio time.</summary>
+internal class TimeTranslator : ITranslator
 {
     #region Constants
     internal const int MSEC_PER_SECOND = 1000;
@@ -29,8 +29,8 @@ internal class TimeConverter : IConverter
         public TimeDesc(int min, int sec, int msec) { this.min = min; this.sec = sec; this.msec = msec; }
         public TimeDesc() { min = -1; sec = -1; msec = -1; }
         public bool Valid() { return min >= 0 && min < AudioLibDefs.MAX_CLIP_MINUTES &&
-                sec >= 0 && sec < TimeConverter.SEC_PER_MINUTE &&
-                msec >= 0 && msec < TimeConverter.MSEC_PER_SECOND; }
+                sec >= 0 && sec < TimeTranslator.SEC_PER_MINUTE &&
+                msec >= 0 && msec < TimeTranslator.MSEC_PER_SECOND; }
     }
     #endregion
 

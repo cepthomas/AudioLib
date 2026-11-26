@@ -6,8 +6,8 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib;
 
-/// <summary>Abstraction based on selection mode. Does text parsing, formatting, snap. TODO1 maybe needs different names.</summary>
-public interface IConverter
+/// <summary>Abstraction based on selection mode. Does text parsing, formatting, snap.</summary>
+public interface ITranslator
 {
     /// <summary>Snap to neighbor.</summary>
     /// <param name="sample">Test sample.</param>
@@ -30,18 +30,18 @@ public interface IConverter
 }
 
 /// <summary>Helper.</summary>
-public static class Converter
+public static class Translator
 {
-    /// <summary>Make me a converter.</summary>
+    /// <summary>Make me a translator.</summary>
     /// <param name="mode">Which flavor.</param>
-    /// <returns>New converter.</returns>
-    public static IConverter Create(WaveSelectionMode mode)
+    /// <returns>New translator.</returns>
+    public static ITranslator Create(WaveSelectionMode mode)
     {
         return mode switch
         {
-            WaveSelectionMode.Time => new TimeConverter(),
-            WaveSelectionMode.Bar => new BarConverter(),
-            WaveSelectionMode.Sample => new SampleConverter(),
+            WaveSelectionMode.Time => new TimeTranslator(),
+            WaveSelectionMode.Bar => new BarTranslator(),
+            WaveSelectionMode.Sample => new SampleTranslator(),
             _ => throw new NotImplementedException(),
         };
     }

@@ -5,8 +5,8 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib;
 
-/// <summary>Converter for samples.</summary>
-internal class SampleConverter : IConverter
+/// <summary>Translator for samples.</summary>
+internal class SampleTranslator : ITranslator
 {
     #region Constants
     public const int SAMPLE_FINE_RESOLUTION = 1000;
