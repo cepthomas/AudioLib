@@ -10,9 +10,6 @@ using Ephemera.NBagOfTricks.PNUT;
 using Ephemera.NBagOfUis;
 
 
-// TODO1 bug timeline and editor don't line up. timebar should be smoother.
-
-
 namespace Ephemera.AudioLib.Test
 {
     public partial class TestHost : Form
@@ -153,13 +150,11 @@ namespace Ephemera.AudioLib.Test
             // Control etc.
             chkPlay.Click += (_, __) => Play_Click();
             btnRewind.Click += (_, __) => _provClip?.Rewind();
+            btnSettings.Click += (_, __) => DoSettings();
 
             // What do we want to do?
             btnTest.Text = "unit test";
             btnTest.Click += (_, __) => DoUnitTests();
-
-            //btnTest.Text = "settings";
-            //btnTest.Click += (_, __) => DoSettings();
 
             //btnTest.Text = "capabilities";
             //btnTest.Click += (_, __) => DoCaps();
@@ -372,14 +367,7 @@ namespace Ephemera.AudioLib.Test
             }
             else
             {
-                if (_provClip is not null)
-                {
-                    timeBar.Current = _provClip.SampleIndex;
-                }
-                else
-                {
-                    timeBar.Current = 0;
-                }
+                timeBar.Current = _provClip is not null ? _provClip.SampleIndex : 0;
             }
         }
         #endregion

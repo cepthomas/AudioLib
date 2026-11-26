@@ -89,8 +89,7 @@ public class AudioUtils
     }
 
     /// <summary>
-    /// Get wave peak values for UI display.
-    /// App-specific version of NAudio's IPeakProvider -> https://github.com/naudio/NAudio.WaveFormRenderer/tree/master
+    /// Get wave peak values for UI display. Borrowed from NAudio's IPeakProvider. Algos -> https://github.com/naudio/NAudio.WaveFormRenderer/tree/master
     /// </summary>
     /// <param name="vals">Generate peaks from this.</param>
     /// <param name="startIndex">Where to start in source.</param>

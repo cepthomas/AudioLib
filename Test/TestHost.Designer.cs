@@ -16,6 +16,7 @@
         private void InitializeComponent()
         {
             components = new System.ComponentModel.Container();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(TestHost));
             timer1 = new System.Windows.Forms.Timer(components);
             tvInfo = new Ephemera.NBagOfUis.TextViewer();
             timeBar = new TimeBar();
@@ -37,6 +38,8 @@
             btnRewind = new System.Windows.Forms.Button();
             cc1 = new ChannelControl();
             cc2 = new ChannelControl();
+            btnSettings = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -86,7 +89,7 @@
             // toolStrip1
             // 
             toolStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
-            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnRunBars, toolStripSeparator1, btnOpen, toolStripSeparator3, btnTest, toolStripSeparator8, toolStripLabel1, cmbSelMode, toolStripSeparator4 });
+            toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] { btnSettings, toolStripSeparator2, btnRunBars, toolStripSeparator1, btnOpen, toolStripSeparator3, btnTest, toolStripSeparator8, toolStripLabel1, cmbSelMode, toolStripSeparator4 });
             toolStrip1.Location = new System.Drawing.Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new System.Drawing.Size(1000, 27);
@@ -209,6 +212,20 @@
             cc2.Size = new System.Drawing.Size(286, 66);
             cc2.TabIndex = 39;
             // 
+            // btnSettings
+            // 
+            btnSettings.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            btnSettings.Image = (System.Drawing.Image)resources.GetObject("btnSettings.Image");
+            btnSettings.ImageTransparentColor = System.Drawing.Color.Magenta;
+            btnSettings.Name = "btnSettings";
+            btnSettings.Size = new System.Drawing.Size(61, 24);
+            btnSettings.Text = "settings";
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(6, 27);
+            // 
             // TestHost
             // 
             AutoScaleDimensions = new System.Drawing.SizeF(8F, 19F);
@@ -256,5 +273,7 @@
         private System.Windows.Forms.ToolStripButton btnCaps;
         private ChannelControl cc1;
         private ChannelControl cc2;
+        private System.Windows.Forms.ToolStripButton btnSettings;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
     }
 }

@@ -23,13 +23,13 @@ public class SignalGeneratorSampleProvider : ISampleProvider
     readonly double _phaseIncrement;
 
     /// <summary>Flavor.</summary>
-    Waveform _wf; // enum
+    readonly Waveform _wf; // enum
 
-    /// <summary>samples per cycle.</summary>
-    int _period;
+    /// <summary>Samples per cycle.</summary>
+    readonly int _period;
 
     /// <summary>msec total.</summary>
-    int _dur;
+    readonly int _duration;
     #endregion
 
     #region Properties
@@ -46,12 +46,13 @@ public class SignalGeneratorSampleProvider : ISampleProvider
     /// </summary>
     /// <param name="wf"></param>
     /// <param name="frequency"></param>
-    /// <param name="dur"></param>
-    public SignalGeneratorSampleProvider(Waveform wf, int frequency, int dur)
+    /// <param name="duration"></param>
+    public SignalGeneratorSampleProvider(Waveform wf, int frequency, int duration)
     {
         _wf = wf;
         var per = 1.0 / frequency; // 22.6757 msec/sample
         _period = (int)(per * AudioLibConfig.SampleRate);
+        _duration = duration;
 
         switch (_wf)
         {

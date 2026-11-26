@@ -148,13 +148,24 @@ public partial class WaveViewer : UserControl
     public WaveViewer()
     {
         SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
-        // was InitializeComponent():
+
         components = new Container();
+
         SuspendLayout();
-        toolTip = new(components);
+
+        toolTip = new(components)
+        {
+            AutomaticDelay = 0,
+            AutoPopDelay = 0,
+            InitialDelay = 300,
+            ReshowDelay = 0
+        };
+
         ContextMenuStrip = new(components);
         ContextMenuStrip.Opening += ContextMenuStrip_Opening;
+
         Name = "WaveViewer";
+
         ResumeLayout(false);
     }
 
@@ -221,12 +232,6 @@ public partial class WaveViewer : UserControl
             ContextMenuStrip.Items.Add(new ToolStripSeparator());
             ContextMenuStrip.Items.Add("Go To Marker", null, (_, __) => GoToMarker());
             ContextMenuStrip.Items.Add("Remove Marker", null, (_, __) => Marker = -1 );
-
-            // TODO1 New marker.selection ui and logic. was ToolStripParamEditor + event EventHandler<ViewerChangeEventArgs>? ViewerChange;
-            // ContextMenuStrip.Items.Add(new ToolStripLabel("Marker:"));
-            // ToolStripParamEditor edMarker = new() { Value = Marker };
-            // edMarker.ParamChanged += (sender, args) => { Marker = args.Value; ContextMenuStrip.Close(); };
-            // ContextMenuStrip.Items.Add(edMarker);
         }
 
         if (_selStart >= 0)
@@ -234,16 +239,6 @@ public partial class WaveViewer : UserControl
             ContextMenuStrip.Items.Add(new ToolStripSeparator());
             ContextMenuStrip.Items.Add("Go To Selection", null, (_, __) => GoToSelection());
             ContextMenuStrip.Items.Add("Remove Selection", null, (_, __) => { _selStart = -1; _selLength = 0; Invalidate(); });
-
-            // ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Start:"));
-            // ToolStripParamEditor edSelStart = new() { Value = SelStart };
-            // edSelStart.ParamChanged += (sender, args) => { SelStart = args.Value; ContextMenuStrip.Close(); };
-            // ContextMenuStrip.Items.Add(edSelStart);
-
-            // ContextMenuStrip.Items.Add(new ToolStripLabel("Selection Length:"));
-            // ToolStripParamEditor edSelLength = new() { Value = SelLength };
-            // edSelLength.ParamChanged += (sender, args) => { SelLength = args.Value; ContextMenuStrip.Close(); };
-            // ContextMenuStrip.Items.Add(edSelLength);
         }
 
         // Owner might have something to add.
@@ -765,7 +760,7 @@ public partial class WaveViewer : UserControl
     {
         int sample = -1;
 
-        if(pixel >= 0 && pixel < Width)
+        if (pixel >= 0 && pixel < Width)
         {
             sample = pixel * _samplesPerPixel + _visibleStart;
         }

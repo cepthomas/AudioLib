@@ -29,6 +29,12 @@ public partial class TimeBar : UserControl
 
     /// <summary>How to snap.</summary>
     readonly SnapType _snap = SnapType.Fine;
+
+    /// <summary>For painting.</summary>
+    int _visibleStart = 0;
+
+    /// <summary>For painting. Currently not used.</summary>
+    int _samplesPerPixel = 0;
     #endregion
 
     #region Backing fields
@@ -55,7 +61,7 @@ public partial class TimeBar : UserControl
 
     /// <summary>Total length in samples.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    public int Length { get { return _length; } set { _length = value; Invalidate(); } }
+    public int Length { get { return _length; } set { _length = value; _samplesPerPixel = _length / Width; Invalidate(); } }
 
     /// <summary>Selection start sample.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -64,6 +70,8 @@ public partial class TimeBar : UserControl
     /// <summary>Selection length in samples.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
     public int SelLength { get { return _selLength; } set { _selLength = value; Invalidate(); } }
+
+    //_samplesPerPixel = _vals.Length / Width;
 
     /// <summary>For styling.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -102,10 +110,21 @@ public partial class TimeBar : UserControl
     public TimeBar()
     {
         SetStyle(ControlStyles.AllPaintingInWmPaint | ControlStyles.UserPaint | ControlStyles.OptimizedDoubleBuffer, true);
+
         components = new Container();
-        toolTip = new(components);
+
         SuspendLayout();
+
+        toolTip = new(components)
+        {
+            AutomaticDelay = 0,
+            AutoPopDelay = 0,
+            InitialDelay = 300,
+            ReshowDelay = 0
+        };
+
         Name = "TimeBar.cs";
+
         ResumeLayout(false);
     }
 
@@ -207,6 +226,29 @@ public partial class TimeBar : UserControl
 
     #region Private functions
     /// <summary>
+    /// Find sample visible location.
+    /// </summary>
+    /// <param name="sample"></param>
+    /// <returns>The pixel or -1 if not visible.</returns>
+    int SampleToPixel(int sample)
+    {
+        int pixel = -1;
+
+        if (_samplesPerPixel > 0)
+        {
+            int offset = sample - _visibleStart;
+            pixel = offset / _samplesPerPixel;
+
+            if (pixel < 0 || pixel >= Width)
+            {
+                pixel = -1;
+            }
+        }
+
+        return pixel;
+    }
+
+    /// <summary>
     /// Convert x pos to sample index.
     /// </summary>
     /// <param name="pixel">UI location.</param>
@@ -214,27 +256,13 @@ public partial class TimeBar : UserControl
     int PixelToSample(int pixel)
     {
         int sample = -1;
+
         if (pixel >= 0 && pixel < Width)
         {
-            sample = pixel * _length / Width;
+            sample = pixel * _samplesPerPixel + _visibleStart;
         }
 
         return sample;
-    }
-
-    /// <summary>
-    /// Find sample visible location.
-    /// </summary>
-    /// <param name="sample"></param>
-    /// <returns>The pixel or -1 if not visible.</returns>
-    int SampleToPixel(int sample)
-    {
-        int pixel = 0;
-        if (_length > 0)
-        {
-            pixel = MathUtils.Map(sample, 0, _length, 0, Width);
-        }
-        return pixel;
     }
     #endregion
 }
