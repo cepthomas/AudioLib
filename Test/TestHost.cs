@@ -1,20 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Drawing;
-using System.Text;
 using System.IO;
 using System.Windows.Forms;
-using System.Text.Json.Serialization;
-using System.Diagnostics;
-using System.Drawing.Design;
+using System.Linq;
 using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 using Ephemera.NBagOfUis;
-using Ephemera.AudioLib;
-using System.Linq;
 
 
 // TODO1 bug timeline and editor don't line up. timebar should be smoother.
@@ -42,6 +35,7 @@ namespace Ephemera.AudioLib.Test
         /// <summary>Test stuff.</summary>
         ITranslator _translator = Translator.Create(WaveSelectionMode.Sample);
 
+        #region Lifecycle
         /// <summary>
         /// Constructor.
         /// </summary>
@@ -159,10 +153,19 @@ namespace Ephemera.AudioLib.Test
             // Control etc.
             chkPlay.Click += (_, __) => Play_Click();
             btnRewind.Click += (_, __) => _provClip?.Rewind();
-            btnSettings.Click += Settings_Click;
-            btnFileInfo.Click += FileInfo_Click;
-            btnCaps.Click += Caps_Click;
-            btnTest.Click += (_, __) => UnitTests();
+
+            // What do we want to do?
+            btnTest.Text = "unit test";
+            btnTest.Click += (_, __) => DoUnitTests();
+
+            //btnTest.Text = "settings";
+            //btnTest.Click += (_, __) => DoSettings();
+
+            //btnTest.Text = "capabilities";
+            //btnTest.Click += (_, __) => DoCaps();
+
+            //btnTest.Text = "file info";
+            //btnTest.Click += (_, __) => DoFileInfo();
 
             // Go-go-go.
             timer1.Interval = 100;
@@ -170,50 +173,52 @@ namespace Ephemera.AudioLib.Test
             timer1.Enabled = true;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="disposing"></param>
+        protected override void Dispose(bool disposing)
+        {
+            if (disposing && (components != null))
+            {
+                components.Dispose();
+                _player?.Dispose();
+            }
 
-/////////////////////////// TODO1 these? /////////////////////////////////////////////////////////
+            base.Dispose(disposing);
+        }
+        #endregion
+
+        #region Core
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Cc_SelectChange(object? sender, ChannelControl.SelectChangeEventArgs e)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Cc_StateChange(object? sender, ChannelControl.StateChangeEventArgs e)
         {
             throw new NotImplementedException();
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         void Cc_InfoClick(object? sender, ChannelControl.InfoClickEventArgs e)
         {
             throw new NotImplementedException();
         }
-
-        //btnResample.Click += Resample_Click;
-        //void Resample_Click(object? sender, EventArgs e)
-        //{
-        //   string fn = Path.Join(_filesDir, "test.wav");
-        //   AudioUtils.Convert(Conversion.Resample, fn);
-        //}
-
-        //btnSwap.Click += Swap_Click;
-        //void Swap_Click(object? sender, EventArgs args)
-        //{
-        //   if (_prov is null)
-        //   {
-        //       Tell("Open a file first please");
-        //   }
-        //   else
-        //   {
-        //       var newProv = btnSwap.Checked ? _provSwap : _prov;
-        //       _waveOutSwapper.SetInput(newProv); // For listen.
-        //       ShowWave(newProv);
-        //       Tell($"Swapped");
-        //   }
-        //}
-
-
-////////////////////////////////////////////////////////////////////////////////////
-
-
 
         /// <summary>
         /// 
@@ -224,56 +229,6 @@ namespace Ephemera.AudioLib.Test
         {
             string fn = sender!.ToString()!;
             OpenFile(fn);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="fn"></param>
-        void OpenFile(string fn)
-        {
-            // Reset.
-            _player?.Run(false);
-            chkPlay.Checked = false;
-
-            try
-            {
-                var ext = Path.GetExtension(fn).ToLower();
-                ClipSampleProvider? prov = null;
-
-                if (ext == ".txt") // Assume wave from text file. If not it will throw.
-                {
-                    var sdata = File.ReadAllLines(fn);
-                    var tdata = new float[sdata.Length];
-                    for (int i = 0; i < sdata.Length; i++) { tdata[i] = float.Parse(sdata[i]); }
-                    prov = new ClipSampleProvider(tdata);
-                }
-                else if (AudioLibConfig.AudioFileTypes.Contains($"*{ext}")) // Assume valid audio file type.
-                {
-                    // Create reader type.
-                    prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                }
-                else
-                {
-                    throw new AudioLibException($"Unsupported file type [{fn}]");
-                }
-
-                _provClip = prov;
-                wv1.Init(_provClip);
-                _provClip.Rewind();
-                wv2.Init(new NullSampleProvider());
-                Tell($"Show {_provClip}");
-                timeBar.Length = _provClip.SamplesPerChannel;
-                timeBar.Current = 0;
-                var thumb = wv1.RenderThumbnail(timeBar.Width, timeBar.Height, Color.Blue, Color.Pink, true);
-                timeBar.Thumbnail = thumb;
-
-                _provSwap.SetInput(_provClip);
-            }
-            catch (Exception e)
-            {
-                Tell("ERR " + e.Message);
-            }
         }
 
         /// <summary>
@@ -361,19 +316,6 @@ namespace Ephemera.AudioLib.Test
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="args"></param>
-        void FileInfo_Click(object? sender, EventArgs args)
-        {
-            // Dump all test files.
-            bool verbose = false;
-            Tell($"Type{AudioFileInfo.DELIM}File{AudioFileInfo.DELIM}Params");
-            Directory.GetFiles(_filesDir).ForEach(f => { Tell(AudioFileInfo.GetFileInfo(f, verbose)); });
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="args"></param>
         void Timer1_Tick(object? sender, EventArgs args)
         {
             if (btnRunBars.Checked)
@@ -393,13 +335,90 @@ namespace Ephemera.AudioLib.Test
                 }
             }
         }
+        #endregion
+
+        #region Workers
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fn"></param>
+        void OpenFile(string fn)
+        {
+            // Reset.
+            _player?.Run(false);
+            chkPlay.Checked = false;
+
+            try
+            {
+                var ext = Path.GetExtension(fn).ToLower();
+                ClipSampleProvider? prov = null;
+
+                if (ext == ".txt") // Assume wave from text file. If not it will throw.
+                {
+                    var sdata = File.ReadAllLines(fn);
+                    var tdata = new float[sdata.Length];
+                    for (int i = 0; i < sdata.Length; i++) { tdata[i] = float.Parse(sdata[i]); }
+                    prov = new ClipSampleProvider(tdata);
+                }
+                else if (AudioLibConfig.AudioFileTypes.Contains($"*{ext}")) // Assume valid audio file type.
+                {
+                    // Create reader type.
+                    prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                }
+                else
+                {
+                    throw new AudioLibException($"Unsupported file type [{fn}]");
+                }
+
+                _provClip = prov;
+                wv1.Init(_provClip);
+                _provClip.Rewind();
+                wv2.Init(new NullSampleProvider());
+                Tell($"Show {_provClip}");
+                timeBar.Length = _provClip.SamplesPerChannel;
+                timeBar.Current = 0;
+                var thumb = wv1.RenderThumbnail(timeBar.Width, timeBar.Height, Color.Blue, Color.Pink, true);
+                timeBar.Thumbnail = thumb;
+
+                _provSwap.SetInput(_provClip);
+            }
+            catch (Exception e)
+            {
+                Tell("ERR " + e.Message);
+            }
+        }
 
         /// <summary>
         /// 
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        void Caps_Click(object? sender, EventArgs e)
+        void DoSettings()
+        {
+            SettingsEditor.Edit(_settings, "howdy!!!", 400);
+            _settings.Save();
+            Tell("You better restart!");
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        void DoFileInfo()
+        {
+            // Dump all test files.
+            bool verbose = false;
+            Tell($"Type{AudioFileInfo.DELIM}File{AudioFileInfo.DELIM}Params");
+            Directory.GetFiles(_filesDir).ForEach(f => { Tell(AudioFileInfo.GetFileInfo(f, verbose)); });
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void DoCaps()
         {
             // –1 indicates the default output device, while 0 is the first output device.
             for (int id = -1; id < WaveOut.DeviceCount; id++)
@@ -418,28 +437,7 @@ namespace Ephemera.AudioLib.Test
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Settings_Click(object? sender, EventArgs e)
-        {
-            SettingsEditor.Edit(_settings, "howdy!!!", 400);
-            _settings.Save();
-            Tell("You better restart!");
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="s"></param>
-        void Tell(string s)
-        {
-            this.InvokeIfRequired(_ => { tvInfo.Append(s); });
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void UnitTests()
+        void DoUnitTests()
         {
             TestRunner runner = new(OutputFormat.Readable);
             var torun = new[] { "CONVERT" };
@@ -450,16 +448,11 @@ namespace Ephemera.AudioLib.Test
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="disposing"></param>
-        protected override void Dispose(bool disposing)
+        /// <param name="s"></param>
+        void Tell(string s)
         {
-            if (disposing && (components != null))
-            {
-                components.Dispose();
-                _player?.Dispose();
-            }
-
-            base.Dispose(disposing);
+            this.InvokeIfRequired(_ => { tvInfo.Append(s); });
         }
+        #endregion
     }
 }

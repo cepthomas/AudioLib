@@ -2,18 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Text;
-using System.IO;
 using System.Windows.Forms;
 using System.Text.Json.Serialization;
-using System.Diagnostics;
 using System.Drawing.Design;
-using NAudio.Wave;
-using NAudio.Wave.SampleProviders;
 using Ephemera.NBagOfTricks;
-using Ephemera.NBagOfTricks.PNUT;
-using Ephemera.NBagOfUis;
-using Ephemera.AudioLib;
 
 
 namespace Ephemera.AudioLib.Test

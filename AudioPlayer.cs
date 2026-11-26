@@ -13,7 +13,7 @@ public sealed class AudioPlayer : IDisposable
 {
     #region Fields
     /// <summary>Wave output play device.</summary>
-    readonly WaveOut _waveOut;// = null;
+    readonly WaveOut _waveOut;
     #endregion
 
     #region Events

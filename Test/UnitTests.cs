@@ -10,7 +10,7 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib.Test
 {
-    public class CONVERT_SAMPLE : TestSuite
+    public class TRANSLATE_SAMPLE : TestSuite
     {
         public override void RunSuite()
         {
@@ -34,7 +34,7 @@ namespace Ephemera.AudioLib.Test
         }
     }
 
-    public class CONVERT_TIME : TestSuite
+    public class TRANSLATE_TIME : TestSuite
     {
         public override void RunSuite()
         {
@@ -88,7 +88,7 @@ namespace Ephemera.AudioLib.Test
         }
     }
 
-    public class CONVERT_BAR : TestSuite
+    public class TRANSLATE_BAR : TestSuite
     {
         public override void RunSuite()
         {

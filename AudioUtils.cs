@@ -18,8 +18,6 @@ public class AudioUtils
     /// <returns>Values.</returns>
     public static float[] ReadAll(ISampleProvider prov)
     {
-        //AudioUtils.Rewind(prov);
-
         // Accumulate chunks from provider.
         var buffs = new List<(float[] d, int n)>();
         int totalRead = 0;
@@ -139,6 +137,4 @@ public class AudioUtils
 
         return scaledVals;
     }
-
-
 }
