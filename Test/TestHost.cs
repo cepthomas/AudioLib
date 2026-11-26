@@ -232,6 +232,53 @@ namespace Ephemera.AudioLib.Test
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fn"></param>
+        void OpenFile(string fn)
+        {
+            // Reset.
+            _player?.Run(false);
+            chkPlay.Checked = false;
+
+            try
+            {
+                var ext = Path.GetExtension(fn).ToLower();
+
+                if (ext == ".txt") // Assume wave from text file. If not it will throw.
+                {
+                    List<float> vals = [];
+                    File.ReadAllLines(fn).ForEach(l =>  vals.Add(float.Parse(l)));
+                    _provClip = new ClipSampleProvider(vals);
+                }
+                else if (AudioLibConfig.AudioFileTypes.Contains($"*{ext}")) // Assume valid audio file type.
+                {
+                    // Create reader type.
+                    _provClip = new ClipSampleProvider(fn, StereoCoercion.Mono);
+                }
+                else
+                {
+                    throw new AudioLibException($"Unsupported file type [{fn}]");
+                }
+
+                Tell($"OpenFile {_provClip}");
+                _provSwap.SetInput(_provClip);
+
+                // Configure UI components.
+                wv1.Init(_provClip);
+                wv2.Init(new NullSampleProvider());
+
+                timeBar.Length = _provClip.SamplesPerChannel;
+                timeBar.Thumbnail = wv1.RenderThumbnail(timeBar.Width, timeBar.Height, Color.Blue, Color.Pink, true);
+                timeBar.Current = 0;
+            }
+            catch (Exception e)
+            {
+                Tell("ERR " + e.Message);
+            }
+        }
+
+        /// <summary>
         /// Handle UI stuff.
         /// </summary>
         /// <param name="sender"></param>
@@ -337,57 +384,7 @@ namespace Ephemera.AudioLib.Test
         }
         #endregion
 
-        #region Workers
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="fn"></param>
-        void OpenFile(string fn)
-        {
-            // Reset.
-            _player?.Run(false);
-            chkPlay.Checked = false;
-
-            try
-            {
-                var ext = Path.GetExtension(fn).ToLower();
-                ClipSampleProvider? prov = null;
-
-                if (ext == ".txt") // Assume wave from text file. If not it will throw.
-                {
-                    var sdata = File.ReadAllLines(fn);
-                    var tdata = new float[sdata.Length];
-                    for (int i = 0; i < sdata.Length; i++) { tdata[i] = float.Parse(sdata[i]); }
-                    prov = new ClipSampleProvider(tdata);
-                }
-                else if (AudioLibConfig.AudioFileTypes.Contains($"*{ext}")) // Assume valid audio file type.
-                {
-                    // Create reader type.
-                    prov = new ClipSampleProvider(fn, StereoCoercion.Mono);
-                }
-                else
-                {
-                    throw new AudioLibException($"Unsupported file type [{fn}]");
-                }
-
-                _provClip = prov;
-                wv1.Init(_provClip);
-                _provClip.Rewind();
-                wv2.Init(new NullSampleProvider());
-                Tell($"Show {_provClip}");
-                timeBar.Length = _provClip.SamplesPerChannel;
-                timeBar.Current = 0;
-                var thumb = wv1.RenderThumbnail(timeBar.Width, timeBar.Height, Color.Blue, Color.Pink, true);
-                timeBar.Thumbnail = thumb;
-
-                _provSwap.SetInput(_provClip);
-            }
-            catch (Exception e)
-            {
-                Tell("ERR " + e.Message);
-            }
-        }
-
+        #region Test Workers
         /// <summary>
         /// 
         /// </summary>

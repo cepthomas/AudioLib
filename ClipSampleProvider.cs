@@ -116,9 +116,9 @@ public class ClipSampleProvider : ISampleProvider
     /// Constructor from a supplied buffer.
     /// </summary>
     /// <param name="vals">The data to use.</param>
-    public ClipSampleProvider(float[] vals)
+    public ClipSampleProvider(List<float> vals)
     {
-        _vals = vals;
+        _vals = vals.ToArray();
     }
     #endregion
 
