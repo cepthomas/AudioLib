@@ -5,7 +5,7 @@ using NAudio.Wave;
 
 namespace Ephemera.AudioLib;
 
-/// <summary>Sample provider for test waves. TODO1 needs more impl and debug.</summary>
+/// <summary>Sample provider for test waves. TODO2 needs more impl and debug.</summary>
 public class SignalGeneratorSampleProvider : ISampleProvider
 {
     #region Types

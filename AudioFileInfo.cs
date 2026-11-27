@@ -14,7 +14,6 @@ public class AudioFileInfo
     /// <summary>For dumping.</summary>
     public static string DELIM { get; set; } = ",";
 
-
     /// <summary>
     /// Top level function to get file info.
     /// </summary>

@@ -129,7 +129,7 @@ public partial class WaveViewer : UserControl
         int sppMax = _vals.Length / Width;
         _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, sppMax);
 
-        _visLength = Width * _samplesPerPixel;
+        _visLength = _vals.Length;// Width * _samplesPerPixel;
         _visEnd = _visStart + _visLength;
 
         CheckProperties();

@@ -6,13 +6,13 @@ using NAudio.Wave;
 using NAudio.Wave.SampleProviders;
 using Ephemera.NBagOfTricks;
 
-
 namespace Ephemera.AudioLib;
+
 
 public class AudioUtils
 {
     /// <summary>
-    /// Make a buffer from the provider contents. Mono only.
+    /// Make a buffer from the provider contents.
     /// </summary>
     /// <param name="prov">The provider.</param>
     /// <returns>Values.</returns>
@@ -40,7 +40,7 @@ public class AudioUtils
             var src = buff.d.AsSpan(0, buff.n);
             var dest = vals.AsSpan(ind, buff.n);
             src.CopyTo(dest);
-            ind += src.Length;  // buff.n;
+            ind += src.Length;
         });
 
         return vals;
@@ -89,7 +89,7 @@ public class AudioUtils
     }
 
     /// <summary>
-    /// Get wave peak values for UI display. Borrowed from NAudio's IPeakProvider. Algos -> https://github.com/naudio/NAudio.WaveFormRenderer/tree/master
+    /// Get wave peak values for UI display. Borrowed from NAudio's IPeakProvider.
     /// </summary>
     /// <param name="vals">Generate peaks from this.</param>
     /// <param name="startIndex">Where to start in source.</param>
@@ -105,7 +105,7 @@ public class AudioUtils
 
         if (samplesPerPixel > 0)
         {
-            // Uses buckets with min/max. Could also implement average, rms, max/min, ...
+            // Uses buckets with min/max. Could also implement average, rms, max/min, ...  See https://github.com/naudio/NAudio.WaveFormRenderer/tree/master
             for (int srcIndex = startIndex;
                 srcIndex < vals.Length && pixelCount < totalPixels;
                 srcIndex += samplesPerPixel, pixelCount++)
