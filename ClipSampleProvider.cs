@@ -12,7 +12,7 @@ namespace Ephemera.AudioLib;
 /// <summary>
 /// Provider that encapsulates a client supplied audio data subset. When constructed, it reads in the
 /// entire file. Does sample rate conversion if needed.
-/// Mono output only - coerces stereo input per client call.
+/// Mono output only - coerces stereo input per client call. TODO1 support sterreo too!
 /// </summary>
 public class ClipSampleProvider : ISampleProvider
 {

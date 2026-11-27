@@ -9,6 +9,7 @@ using Ephemera.NBagOfTricks;
 using Ephemera.NBagOfTricks.PNUT;
 using Ephemera.NBagOfUis;
 
+// TODO1 ?? harmonize: ChannelControl, MidiLib\MusicTime.cs/TimeBar.cs, AudioLib\BarConverter.cs/TimeBar.cs/TimeConverter.cs, NebId?
 
 namespace Ephemera.AudioLib.Test
 {
@@ -41,7 +42,7 @@ namespace Ephemera.AudioLib.Test
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
 
-            // Get settings.
+            // Get settings. TODO1 Microsoft Sound Mapper doesn't seem to work.
             _settings = (TestSettings)SettingsCore.Load(MiscUtils.GetSourcePath(), typeof(TestSettings));
 
             WindowState = FormWindowState.Normal;
@@ -188,31 +189,32 @@ namespace Ephemera.AudioLib.Test
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Cc_SelectChange(object? sender, ChannelControl.SelectChangeEventArgs e)
+        void Play_Click()
         {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Cc_StateChange(object? sender, ChannelControl.StateChangeEventArgs e)
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        void Cc_InfoClick(object? sender, ChannelControl.InfoClickEventArgs e)
-        {
-            throw new NotImplementedException();
+            if (_provClip is null)
+            {
+                Tell("ERR open a file first please");
+            }
+            else if (_player is null)
+            {
+                Tell("ERR dead player");
+            }
+            else
+            {
+                if (chkPlay.Checked)
+                {
+                    _player.Run(true);
+                    if (!_player.Playing)
+                    {
+                        Tell("ERR: can't run clip!");
+                        chkPlay.Checked = false;
+                    }
+                }
+                else
+                {
+                    _player.Run(chkPlay.Checked);
+                }
+            }
         }
 
         /// <summary>
@@ -261,11 +263,12 @@ namespace Ephemera.AudioLib.Test
 
                 // Configure UI components.
                 wv1.Init(_provClip);
+                _provClip.Rewind(); // need to do this after Init()
                 wv2.Init(new NullSampleProvider());
 
+                timeBar.Reset();
                 timeBar.Length = _provClip.SamplesPerChannel;
                 timeBar.Thumbnail = wv1.RenderThumbnail(timeBar.Width, timeBar.Height, Color.Blue, Color.Pink, true);
-                timeBar.Current = 0;
             }
             catch (Exception e)
             {
@@ -325,32 +328,31 @@ namespace Ephemera.AudioLib.Test
         /// <summary>
         /// 
         /// </summary>
-        void Play_Click()
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Cc_SelectChange(object? sender, ChannelControl.SelectChangeEventArgs e)
         {
-            if (_provClip is null)
-            {
-                Tell("ERR open a file first please");
-            }
-            else if (_player is null)
-            {
-                Tell("ERR dead player");
-            }
-            else
-            {
-                if (chkPlay.Checked)
-                {
-                    _player.Run(true);
-                    if (!_player.Playing)
-                    {
-                        Tell("ERR: can't run clip!");
-                        chkPlay.Checked = false;
-                    }
-                }
-                else
-                {
-                    _player.Run(chkPlay.Checked);
-                }
-            }
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Cc_StateChange(object? sender, ChannelControl.StateChangeEventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        void Cc_InfoClick(object? sender, ChannelControl.InfoClickEventArgs e)
+        {
+            throw new NotImplementedException();
         }
 
         /// <summary>

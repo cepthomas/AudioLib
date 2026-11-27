@@ -29,12 +29,6 @@ public partial class TimeBar : UserControl
 
     /// <summary>How to snap.</summary>
     readonly SnapType _snap = SnapType.Fine;
-
-    /// <summary>For painting.</summary>
-    int _visibleStart = 0;
-
-    /// <summary>For painting. Currently not used.</summary>
-    int _samplesPerPixel = 0;
     #endregion
 
     #region Backing fields
@@ -61,7 +55,7 @@ public partial class TimeBar : UserControl
 
     /// <summary>Total length in samples.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    public int Length { get { return _length; } set { _length = value; _samplesPerPixel = _length / Width; Invalidate(); } }
+    public int Length { get { return _length; } set { _length = value; Invalidate(); } }
 
     /// <summary>Selection start sample.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -70,8 +64,6 @@ public partial class TimeBar : UserControl
     /// <summary>Selection length in samples.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
     public int SelLength { get { return _selLength; } set { _selLength = value; Invalidate(); } }
-
-    //_samplesPerPixel = _vals.Length / Width;
 
     /// <summary>For styling.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
@@ -147,7 +139,20 @@ public partial class TimeBar : UserControl
     #endregion
 
     #region Public functions
+    /// <summary>
+    /// Go around the block.
+    /// </summary>
+    public void Reset()
+    {
+        _thumbnail?.Dispose();
+        _thumbnail = null;
+        _current = 0;
+        _length = 0;
+        _selStart = 0;
+        _selLength = 0;
 
+        Invalidate();
+    }
     #endregion
 
     #region Drawing
@@ -172,14 +177,14 @@ public partial class TimeBar : UserControl
         // Show the selection.
         int start = SelStart;
         int end = SelLength == 0 ? Length : SelStart + SelLength;
-        int xst = SampleToPixel(start);
-        int xend = SampleToPixel(end);
+        int xst = Internal.SampleToPixel(start, Width, 0, _length);
+        int xend = Internal.SampleToPixel(end, Width, 0, _length);
         pe.Graphics.DrawLine(_penMark, xst, 0, xst, Height);
         pe.Graphics.DrawLine(_penMark, xend, 0, xend, Height);
         //pe.Graphics.DrawRectangle(_penMark, xst, 0, xend, Height);
 
         // Draw the progress.
-        int x = SampleToPixel(_current);
+        int x = Internal.SampleToPixel(_current, Width, 0, _length);
         pe.Graphics.DrawLine(_penProgress, x, 0, x, Height);
         //int dstart = SampleToPixel(_start);
         //int dend = SampleToPixel(_current);
@@ -204,7 +209,7 @@ public partial class TimeBar : UserControl
     {
         if (e.X != _lastXPos)
         {
-            var sample = PixelToSample(e.X);
+            var sample = Internal.PixelToSample(e.X, Width, 0, _length);
             sample = _translator.Snap(sample, _snap);
             toolTip.SetToolTip(this, _translator.Format(sample));
             _lastXPos = e.X;
@@ -218,51 +223,50 @@ public partial class TimeBar : UserControl
     /// </summary>
     protected override void OnMouseDown(MouseEventArgs e)
     {
-        _current = PixelToSample(e.X);
+        _current = Internal.PixelToSample(e.X, Width, 0, _length);
         CurrentChanged?.Invoke(this, new EventArgs());
         base.OnMouseDown(e);
     }
     #endregion
 
-    #region Private functions
-    /// <summary>
-    /// Find sample visible location.
-    /// </summary>
-    /// <param name="sample"></param>
-    /// <returns>The pixel or -1 if not visible.</returns>
-    int SampleToPixel(int sample)
-    {
-        int pixel = -1;
+    // #region Private functions
+    // /// <summary>
+    // /// Convert x pos to sample index.
+    // /// </summary>
+    // /// <param name="pixel">UI location.</param>
+    // /// <returns>The sample or -1 if not visible.</returns>
+    // int PixelToSample(int pixel)
+    // {
+    //     int sample = -1;
+    //
+    //     if (pixel >= 0 && pixel < Width)
+    //     {
+    //         sample = pixel * _samplesPerPixel + _visibleStart;
+    //     }
+    //
+    //     return sample;
+    // }
 
-        if (_samplesPerPixel > 0)
-        {
-            int offset = sample - _visibleStart;
-            pixel = offset / _samplesPerPixel;
-
-            if (pixel < 0 || pixel >= Width)
-            {
-                pixel = -1;
-            }
-        }
-
-        return pixel;
-    }
-
-    /// <summary>
-    /// Convert x pos to sample index.
-    /// </summary>
-    /// <param name="pixel">UI location.</param>
-    /// <returns>The sample or -1 if not visible.</returns>
-    int PixelToSample(int pixel)
-    {
-        int sample = -1;
-
-        if (pixel >= 0 && pixel < Width)
-        {
-            sample = pixel * _samplesPerPixel + _visibleStart;
-        }
-
-        return sample;
-    }
-    #endregion
+    // /// <summary>
+    // /// Find sample visible location.
+    // /// </summary>
+    // /// <param name="sample"></param>
+    // /// <returns>The pixel or -1 if not visible.</returns>
+    // int SampleToPixel(int sample)
+    // {
+    //     int pixel = -1;
+    //
+    //     if (_samplesPerPixel > 0)
+    //     {
+    //         int offset = sample - _visibleStart;
+    //         pixel = offset / _samplesPerPixel;
+    //         if (pixel < 0 || pixel >= Width)
+    //         {
+    //             pixel = -1;
+    //         }
+    //     }
+    //
+    //     return pixel;
+    // }
+    // #endregion
 }

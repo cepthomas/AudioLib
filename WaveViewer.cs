@@ -25,15 +25,15 @@ public partial class WaveViewer : UserControl
     float[] _vals = [];
 
     /// <summary>Extent of _vals.</summary>
-    float _min = 0;
+    float _minVal = 0;
 
     /// <summary>Extent of _vals.</summary>
-    float _max = 0;
+    float _maxVal = 0;
 
     /// <summary>For painting. Essentially the zoom factor.</summary>
     int _samplesPerPixel = 0;
 
-    /// <summary>Last pixel.</summary>
+    /// <summary>Last pixel seen.</summary>
     int _lastXPos = 0;
 
     /// <summary>How to snap.</summary>
@@ -56,7 +56,6 @@ public partial class WaveViewer : UserControl
 
     #region Backing fields
     float _gain = 1.0f;
-    int _visibleStart = 0;
     int _selStart = -1;
     int _selLength = 0;
     int _marker = -1;
@@ -64,7 +63,6 @@ public partial class WaveViewer : UserControl
     readonly Pen _penGrid = new(Color.LightGray, 1);
     readonly Pen _penMark = new(Color.Red, 1);
     ITranslator _translator = new SampleTranslator();
-
     readonly ToolTip toolTip;
     readonly Container components;
     #endregion
@@ -101,34 +99,95 @@ public partial class WaveViewer : UserControl
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
     public float Gain { get { return _gain; } set { _gain = value; Invalidate(); } }
 
-    /// <summary>Length of the clip in samples.</summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    public int Length { get { return _vals.Length; } }
-
-    /// <summary>Length of the clip in msec.</summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    public int TotalTime { get { return (int)((double)Length / AudioLibConfig.SampleRate / 1000.0f); } }
-
     /// <summary>Selection start sample. -1 means no selection.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    public int SelStart { get { return _selStart; } set { _selStart = value; Invalidate(); } }
+    public int SelStart { get { return _selStart; } set { _selStart = value; CheckProperties(); Invalidate(); } }
 
     /// <summary>Selection length in samples. 0 means to the end.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    public int SelLength { get { return _selLength; } set { _selLength = value; Invalidate(); } }
+    public int SelLength { get { return _selLength; } set { _selLength = value; CheckProperties(); Invalidate(); } }
 
     /// <summary>General purpose marker location. -1 means no marker.</summary>
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
     public int Marker { get { return _marker; } set { _marker = value; CheckProperties(); Invalidate(); } }
-
-    /// <summary>Visible start sample.</summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    public int VisibleStart { get { return _visibleStart; } set { _visibleStart = value; Invalidate(); } }
-
-    /// <summary>Visible length in samples. Always positive.</summary>
-    [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    public int VisibleLength { get { return Width * _samplesPerPixel; } }
     #endregion
+
+
+
+
+
+    int _visStart = 0;
+    int _visLength = 0;
+    int _visEnd = 0;
+
+    /// <summary>
+    /// Update view per user changes.
+    /// Assumes client sets one or more of: _samplesPerPixel, _visibleStart, _marker, _selStart, _selLength, Width.
+    /// </summary>
+    void RecalcVisible()
+    {
+        int sppMax = _vals.Length / Width;
+        _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, sppMax);
+
+        _visLength = Width * _samplesPerPixel;
+        _visEnd = _visStart + _visLength;
+
+        CheckProperties();
+
+        Invalidate();
+    }
+
+    /// <summary>
+    /// Do a few sanity checks.
+    /// </summary>
+    void CheckProperties()
+    {
+        _selStart = MathUtils.Constrain(_selStart, -1, _vals.Length);
+        _selLength = MathUtils.Constrain(_selLength, 0, _vals.Length - _selStart);
+        _marker = MathUtils.Constrain(_marker, -1, _vals.Length);
+        _visStart = MathUtils.Constrain(_visStart, 0, _vals.Length);
+    }
+
+
+    /// <summary>
+    /// Pan to new center location.
+    /// </summary>
+    /// <param name="sample">Center around this.</param>
+    public void Recenter(int sample)
+    {
+        _visStart = sample - _visLength / 2;
+        RecalcVisible();
+    }
+
+    /// <summary>
+    /// Show original full view.
+    /// </summary>
+    public void ResetView()
+    {
+        _visStart = 0;
+        _samplesPerPixel = _vals.Length / Width;
+        RecalcVisible();
+    }
+
+
+
+    ///// <summary>Length of the clip in samples.</summary>
+    //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+    //public int Length { get { return _vals.Length; } }
+
+    ///// <summary>Length of the clip in msec.</summary>
+    //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+    //public int TotalTime { get { return (int)((double)Length / AudioLibConfig.SampleRate / 1000.0f); } }
+
+    ///// <summary>Visible start sample.</summary>
+    //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+    //public int VisibleStart { get { return _visibleStart; } set { _visibleStart = value; Invalidate(); } }
+
+    ///// <summary>Visible length in samples. Always positive.</summary>
+    //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
+    //public int VisibleLength { get { return Width * _samplesPerPixel; } }
+
+
 
     #region Events
     /// <summary>Value changed by user. Notify owner for display.</summary>
@@ -177,8 +236,8 @@ public partial class WaveViewer : UserControl
     {
         _vals = AudioUtils.ReadAll(prov);
 
-        _max = _vals.Length > 0 ? _vals.Max() : 0;
-        _min = _vals.Length > 0 ? _vals.Min() : 0;
+        _maxVal = _vals.Length > 0 ? _vals.Max() : 0;
+        _minVal = _vals.Length > 0 ? _vals.Min() : 0;
         //prov.Rewind();
 
         _selStart = -1;
@@ -267,16 +326,17 @@ public partial class WaveViewer : UserControl
             case Keys.None: // x pan
                 {
                     int incr = _samplesPerPixel * PAN_INCREMENT;
-                    _visibleStart += wheelDelta > 0 ? incr : -incr; // left or right
-                    _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
-                    Invalidate();
+                    Recenter(wheelDelta > 0 ? incr : -incr); // left or right
+                    //_visibleStart += wheelDelta > 0 ? incr : -incr; // left or right
+                    //_visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
+                    //Invalidate();
                 }
                 break;
 
             case Keys.Control: // x zoom TOOD1 not exactly perfect.
                 {
                     // Get sample to center about.
-                    int center = PixelToSample(Width / 2); // or mouse or _marker
+                    int center = Internal.PixelToSample(Width / 2, Width, 0, _vals.Length); // or mouse or _marker
 
                     double incr = Math.Round(ZOOM_RATIO * _samplesPerPixel);
                     bool dirout = wheelDelta <= 0;
@@ -286,9 +346,11 @@ public partial class WaveViewer : UserControl
                         incr = 1;
                     }
 
-                    _samplesPerPixel += (int)Math.Round(dirout ? +incr : -incr); // +:out -:in
-                    int samplesPerPixelMax = _vals.Length / Width;
-                    _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, samplesPerPixelMax);
+                    Recenter((int)Math.Round(dirout ? +incr : -incr)); // +:out -:in
+
+                    //_samplesPerPixel += (int)Math.Round(dirout ? +incr : -incr); // +:out -:in
+                    //int samplesPerPixelMax = _vals.Length / Width;
+                    //_samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, samplesPerPixelMax);
                     Recenter(center);
                 }
                 break;
@@ -312,7 +374,7 @@ public partial class WaveViewer : UserControl
     /// <param name="e"></param>
     protected override void OnMouseClick(MouseEventArgs e)
     {
-        var sample = PixelToSample(e.X);
+        var sample = Internal.PixelToSample(e.X, Width, _visStart, _visEnd);
         sample = _translator.Snap(sample, _snap);
         StateChangeEventArgs? args = null;
 
@@ -323,18 +385,21 @@ public partial class WaveViewer : UserControl
                 case (MouseButtons.Left, Keys.Alt):
                     _marker = sample;
                     CheckProperties();
+                    Invalidate();
                     args = new() { Which = UiChange.Marker };
                     break;
 
                 case (MouseButtons.Left, Keys.Control):
                     _selStart = sample;
                     CheckProperties();
+                    Invalidate();
                     args = new() { Which = UiChange.SelStart };
                     break;
 
                 case (MouseButtons.Left, Keys.Shift):
                     _selLength = sample - _selStart;
                     CheckProperties();
+                    Invalidate();
                     args = new() { Which = UiChange.SelLength };
                     break;
 
@@ -361,7 +426,7 @@ public partial class WaveViewer : UserControl
     {
         if (e.X != _lastXPos)
         {
-            var sample = PixelToSample(e.X);
+            var sample = Internal.PixelToSample(e.X, Width, _visStart, _visEnd);
             sample = _translator.Snap(sample, _snap);
             toolTip.SetToolTip(this, _translator.Format(sample));
             _lastXPos = e.X;
@@ -422,9 +487,7 @@ public partial class WaveViewer : UserControl
     /// <param name="e"></param>
     protected override void OnResize(EventArgs e)
     {
-        // Recalc scale.
-        _samplesPerPixel = Width > 0 ? _vals.Length / Width : 0;
-        Invalidate();
+        RecalcVisible();
         base.OnResize(e);
     }
     #endregion
@@ -483,18 +546,18 @@ public partial class WaveViewer : UserControl
 
         // X grid lines.
         // Calc the x increment and fit to a fine or coarse set.
-        int sampincr = RoundGranular(VisibleLength / X_NUM_LINES);
+        int sampincr = RoundGranular(_visLength / X_NUM_LINES);
         HashSet<int> set = [];
 
         // Try coarse.
-        for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
+        for (int incr = _visStart; incr < _visEnd; incr++)
         {
             set.Add(_translator.Snap(incr, SnapType.Coarse));
         }
         if (set.Count < 5)
         {
             // Try fine.
-            for (int incr = VisibleStart; incr < VisibleStart + VisibleLength; incr++)
+            for (int incr = _visStart; incr < _visEnd; incr++)
             {
                 set.Add(_translator.Snap(incr, SnapType.Fine));
             }
@@ -520,7 +583,7 @@ public partial class WaveViewer : UserControl
         _format.Alignment = StringAlignment.Far;
         for (int xs = 1; xs < list.Count; xs++)
         {
-            float xGrid = MathUtils.Map(list[xs], VisibleStart, VisibleStart + VisibleLength, 0, Width);
+            float xGrid = MathUtils.Map(list[xs], _visStart, _visEnd, 0, Width);
             pe.Graphics.DrawLine(_penGrid, xGrid, 0, xGrid, Height);
             pe.Graphics.DrawString($"{_translator.Format(list[xs])}", TextFont, _textBrush, xGrid, 10, _format);
         }
@@ -536,13 +599,13 @@ public partial class WaveViewer : UserControl
             $"Marker:{_translator.Format(_marker)}"
         };
         //info.Add($"VisStart:{ConverterOps.Format(_visibleStart)}");
-        //info.Add($"VisLength:{ConverterOps.Format(VisibleLength)}");
+        //info.Add($"VisLength:{ConverterOps.Format(_visibleLength)}");
         pe.Graphics.DrawString(string.Join("  ", info), TextFont, _textBrush, Width / 2, Height - 10, _format);
 
         // Then the data.
         if (_samplesPerPixel > 0)
         {
-            var peaks = AudioUtils.GetPeaks(_vals, _visibleStart, _samplesPerPixel, Width);
+            var peaks = AudioUtils.GetPeaks(_vals, _visStart, _samplesPerPixel, Width);
 
             for (int i = 0; i < peaks.Count; i++)
             {
@@ -573,7 +636,7 @@ public partial class WaveViewer : UserControl
         // Selection?
         if (_selStart >= 0)
         {
-            int x = SampleToPixel(_selStart);
+            int x = Internal.SampleToPixel(_selStart, Width, _visStart, _visEnd);
             if (x >= 0)
             {
                 pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
@@ -582,7 +645,7 @@ public partial class WaveViewer : UserControl
 
             int end = _selLength > 0 ? _selStart + _selLength : _vals.Length;
 
-            x = SampleToPixel(end);
+            x = Internal.SampleToPixel(end, Width, _visStart, _visEnd);
             if (x >= 0)
             {
                 pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
@@ -593,7 +656,7 @@ public partial class WaveViewer : UserControl
         // Marker?
         if (_marker >= 0)
         {
-            int x = SampleToPixel(_marker);
+            int x = Internal.SampleToPixel(_marker, Width, _visStart, _visEnd);
             if (x >= 0)
             {
                 pe.Graphics.DrawLine(_penMark, x, 0, x, Height);
@@ -628,7 +691,7 @@ public partial class WaveViewer : UserControl
         {
             graphics.Clear(backColor);
 
-            float gain = fit ? 0.9f / Math.Max(Math.Abs(_max), Math.Abs(_min)) : _gain;
+            float gain = fit ? 0.9f / Math.Max(Math.Abs(_maxVal), Math.Abs(_minVal)) : _gain;
             int samplesPerPixel = _vals.Length / width;
 
             if (samplesPerPixel > 0)
@@ -666,13 +729,15 @@ public partial class WaveViewer : UserControl
     }
     #endregion
 
+
+
     #region Helpers for private and public use
     /// <summary>
     /// Fit the wave exactly.
     /// </summary>
     public void FitGain()
     {
-        float max = Math.Max(Math.Abs(_max), Math.Abs(_min));
+        float max = Math.Max(Math.Abs(_maxVal), Math.Abs(_minVal));
         Gain = 1.0f / max;
         StateChange?.Invoke(this, new() { Which = UiChange.Gain });
     }
@@ -684,27 +749,6 @@ public partial class WaveViewer : UserControl
     {
         Gain = 1.0f;
         StateChange?.Invoke(this, new() { Which = UiChange.Gain });
-    }
-
-    /// <summary>
-    /// Pan to new center location.
-    /// </summary>
-    /// <param name="sample">Center around this.</param>
-    public void Recenter(int sample)
-    {
-        _visibleStart = sample - VisibleLength / 2;
-        CheckProperties();
-        Invalidate();
-    }
-
-    /// <summary>
-    /// Show original view.
-    /// </summary>
-    public void ResetView()
-    {
-        _visibleStart = 0;
-        _samplesPerPixel = _vals.Length / Width;
-        Invalidate();
     }
 
     /// <summary>
@@ -740,55 +784,45 @@ public partial class WaveViewer : UserControl
     #endregion
 
     #region Private functions
-    /// <summary>
-    /// Do a few sanity checks.
-    /// </summary>
-    void CheckProperties()
-    {
-        _selStart = MathUtils.Constrain(_selStart, -1, _vals.Length);
-        _selLength = MathUtils.Constrain(_selLength, 0, _vals.Length - _selStart);
-        _marker = MathUtils.Constrain(_marker, -1, _vals.Length);
-        _visibleStart = MathUtils.Constrain(_visibleStart, 0, _vals.Length);
-    }
 
-    /// <summary>
-    /// Convert x pos to sample index.
-    /// </summary>
-    /// <param name="pixel">UI location.</param>
-    /// <returns>The sample or -1 if not visible.</returns>
-    int PixelToSample(int pixel)
-    {
-        int sample = -1;
+    // /// <summary>
+    // /// Convert x pos to sample index.
+    // /// </summary>
+    // /// <param name="pixel">UI location.</param>
+    // /// <returns>The sample or -1 if not visible.</returns>
+    // int PixelToSample(int pixel)
+    // {
+    //     int sample = -1;
 
-        if (pixel >= 0 && pixel < Width)
-        {
-            sample = pixel * _samplesPerPixel + _visibleStart;
-        }
+    //     if (pixel >= 0 && pixel < Width)
+    //     {
+    //         sample = pixel * _samplesPerPixel + _visibleStart;
+    //     }
 
-        return sample;
-    }
+    //     return sample;
+    // }
 
-    /// <summary>
-    /// Find sample visible location.
-    /// </summary>
-    /// <param name="sample"></param>
-    /// <returns>The pixel or -1 if not visible.</returns>
-    int SampleToPixel(int sample)
-    {
-        int pixel = -1;
+    // /// <summary>
+    // /// Find sample visible location.
+    // /// </summary>
+    // /// <param name="sample"></param>
+    // /// <returns>The pixel or -1 if not visible.</returns>
+    // int SampleToPixel(int sample)
+    // {
+    //     int pixel = -1;
 
-        if (_samplesPerPixel > 0)
-        {
-            int offset = sample - _visibleStart;
-            pixel = offset / _samplesPerPixel;
+    //     if (_samplesPerPixel > 0)
+    //     {
+    //         int offset = sample - _visibleStart;
+    //         pixel = offset / _samplesPerPixel;
 
-            if (pixel < 0 || pixel >= Width)
-            {
-                pixel = -1;
-            }
-        }
+    //         if (pixel < 0 || pixel >= Width)
+    //         {
+    //             pixel = -1;
+    //         }
+    //     }
 
-        return pixel;
-    }
+    //     return pixel;
+    // }
     #endregion
 }

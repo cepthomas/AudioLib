@@ -98,10 +98,7 @@ public class AudioUtils
     /// <returns></returns>
     public static List<(float max, float min)> GetPeaks(float[] vals, int startIndex, int samplesPerPixel, int totalPixels)
     {
-        if (samplesPerPixel == 0)
-        {
-            throw new ArgumentException($"samplesPerPixel must be > 0");
-        }
+        if (samplesPerPixel == 0) { throw new ArgumentException($"samplesPerPixel must be > 0"); }
 
         List<(float max, float min)> scaledVals = new();
         int pixelCount = 0;

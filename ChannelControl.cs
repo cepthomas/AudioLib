@@ -12,6 +12,13 @@ using Ephemera.NBagOfUis;
 
 namespace Ephemera.AudioLib;
 
+
+// TODO1 needs debug
+// TODO1 hook up meter(s).
+// TODO1 NBagOfUis\Slider.cs: log/db for volume use.  >>> NAudio3\src\NAudio.WinForms\Gui\VolumeSlider.cs
+// TODO1 NBagOfUis\Meter.cs: Add damped/vu, peak/hold  >>> NAudio3\src\NAudio.WinForms\Gui\VolumeMeter.cs
+
+
 #region Types
 /// <summary>Channel playing.</summary>
 public enum ChannelState { Normal, Solo, Mute }
@@ -164,8 +171,6 @@ public partial class ChannelControl : UserControl
         // Info textbox.
         lblInfo.AutoEllipsis = true;
         lblInfo.Click += ChannelInfo_Click;
-
-        // TODO1 hook up meter(s).
 
         // Finalize the control.
         toolTip.InitialDelay = 100;

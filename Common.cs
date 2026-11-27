@@ -6,7 +6,6 @@ using Ephemera.NBagOfTricks;
 
 namespace Ephemera.AudioLib;
 
-#region Types
 /// <summary>How to handle stereo files.</summary>
 public enum StereoCoercion { None, Left, Right, Mono }
 
@@ -18,10 +17,9 @@ public enum SnapType { None, Fine, Coarse };
 
 /// <summary>Library error.</summary>
 public class AudioLibException(string message) : Exception(message) { }
-#endregion
 
 
-#region Library options
+/// <summary>Library options. Client can adjust, carefully.</summary>
 public class AudioLibConfig
 {
     /// <summary>Supported types. Standard windows file type format.</summary>
@@ -51,4 +49,3 @@ public class AudioLibConfig
     /// <summary>Max clip size in samples. Has a direct effect on memory usage. Readonly.</summary>
     public static int MaxSamples { get { return MaxClipMinutes * 60 * SampleRate; } }
 }
-#endregion
