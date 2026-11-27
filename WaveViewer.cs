@@ -9,6 +9,9 @@ using Ephemera.NBagOfTricks;
 using System.Data;
 
 
+//  TODO1 All UI ops (zoom/pan/etc) need more debug. Prob TimeBar too. Some could go in Internal.
+
+
 namespace Ephemera.AudioLib;
 
 /// <summary>Simple mono wave display.</summary>
@@ -32,6 +35,15 @@ public partial class WaveViewer : UserControl
 
     /// <summary>For painting. Essentially the zoom factor.</summary>
     int _samplesPerPixel = 0;
+
+    /// <summary>First visible sample.</summary>
+    int _visStart = 0;
+
+    /// <summary>All visible samples.</summary>
+    int _visLength = 0;
+
+    /// <summary>Last visible sample.</summary>
+    int _visEnd = 0;
 
     /// <summary>Last pixel seen.</summary>
     int _lastXPos = 0;
@@ -111,83 +123,6 @@ public partial class WaveViewer : UserControl
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
     public int Marker { get { return _marker; } set { _marker = value; CheckProperties(); Invalidate(); } }
     #endregion
-
-
-
-
-
-    int _visStart = 0;
-    int _visLength = 0;
-    int _visEnd = 0;
-
-    /// <summary>
-    /// Update view per user changes.
-    /// Assumes client sets one or more of: _samplesPerPixel, _visibleStart, _marker, _selStart, _selLength, Width.
-    /// </summary>
-    void RecalcVisible()
-    {
-        int sppMax = _vals.Length / Width;
-        _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, sppMax);
-
-        _visLength = _vals.Length;// Width * _samplesPerPixel;
-        _visEnd = _visStart + _visLength;
-
-        CheckProperties();
-
-        Invalidate();
-    }
-
-    /// <summary>
-    /// Do a few sanity checks.
-    /// </summary>
-    void CheckProperties()
-    {
-        _selStart = MathUtils.Constrain(_selStart, -1, _vals.Length);
-        _selLength = MathUtils.Constrain(_selLength, 0, _vals.Length - _selStart);
-        _marker = MathUtils.Constrain(_marker, -1, _vals.Length);
-        _visStart = MathUtils.Constrain(_visStart, 0, _vals.Length);
-    }
-
-
-    /// <summary>
-    /// Pan to new center location.
-    /// </summary>
-    /// <param name="sample">Center around this.</param>
-    public void Recenter(int sample)
-    {
-        _visStart = sample - _visLength / 2;
-        RecalcVisible();
-    }
-
-    /// <summary>
-    /// Show original full view.
-    /// </summary>
-    public void ResetView()
-    {
-        _visStart = 0;
-        _samplesPerPixel = _vals.Length / Width;
-        RecalcVisible();
-    }
-
-
-
-    ///// <summary>Length of the clip in samples.</summary>
-    //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    //public int Length { get { return _vals.Length; } }
-
-    ///// <summary>Length of the clip in msec.</summary>
-    //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    //public int TotalTime { get { return (int)((double)Length / AudioLibConfig.SampleRate / 1000.0f); } }
-
-    ///// <summary>Visible start sample.</summary>
-    //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    //public int VisibleStart { get { return _visibleStart; } set { _visibleStart = value; Invalidate(); } }
-
-    ///// <summary>Visible length in samples. Always positive.</summary>
-    //[DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden), Browsable(false)]
-    //public int VisibleLength { get { return Width * _samplesPerPixel; } }
-
-
 
     #region Events
     /// <summary>Value changed by user. Notify owner for display.</summary>
@@ -333,7 +268,7 @@ public partial class WaveViewer : UserControl
                 }
                 break;
 
-            case Keys.Control: // x zoom TOOD1 not exactly perfect.
+            case Keys.Control: // x zoom
                 {
                     // Get sample to center about.
                     int center = Internal.PixelToSample(Width / 2, Width, 0, _vals.Length); // or mouse or _marker
@@ -347,11 +282,7 @@ public partial class WaveViewer : UserControl
                     }
 
                     Recenter((int)Math.Round(dirout ? +incr : -incr)); // +:out -:in
-
-                    //_samplesPerPixel += (int)Math.Round(dirout ? +incr : -incr); // +:out -:in
-                    //int samplesPerPixelMax = _vals.Length / Width;
-                    //_samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, samplesPerPixelMax);
-                    Recenter(center);
+                    //Recenter(center);
                 }
                 break;
 
@@ -784,45 +715,53 @@ public partial class WaveViewer : UserControl
     #endregion
 
     #region Private functions
+    /// <summary>
+    /// Update view per user changes.
+    /// Assumes client sets one or more of: _samplesPerPixel, _visibleStart, _marker, _selStart, _selLength, Width.
+    /// </summary>
+    void RecalcVisible()
+    {
+        int sppMax = _vals.Length / Width;
+        _samplesPerPixel = MathUtils.Constrain(_samplesPerPixel, 0, sppMax);
 
-    // /// <summary>
-    // /// Convert x pos to sample index.
-    // /// </summary>
-    // /// <param name="pixel">UI location.</param>
-    // /// <returns>The sample or -1 if not visible.</returns>
-    // int PixelToSample(int pixel)
-    // {
-    //     int sample = -1;
+        _visLength = _vals.Length;// Width * _samplesPerPixel;
+        _visEnd = _visStart + _visLength;
 
-    //     if (pixel >= 0 && pixel < Width)
-    //     {
-    //         sample = pixel * _samplesPerPixel + _visibleStart;
-    //     }
+        CheckProperties();
 
-    //     return sample;
-    // }
+        Invalidate();
+    }
 
-    // /// <summary>
-    // /// Find sample visible location.
-    // /// </summary>
-    // /// <param name="sample"></param>
-    // /// <returns>The pixel or -1 if not visible.</returns>
-    // int SampleToPixel(int sample)
-    // {
-    //     int pixel = -1;
+    /// <summary>
+    /// Do a few sanity checks.
+    /// </summary>
+    void CheckProperties()
+    {
+        _selStart = MathUtils.Constrain(_selStart, -1, _vals.Length);
+        _selLength = MathUtils.Constrain(_selLength, 0, _vals.Length - _selStart);
+        _marker = MathUtils.Constrain(_marker, -1, _vals.Length);
+        _visStart = MathUtils.Constrain(_visStart, 0, _vals.Length);
+    }
 
-    //     if (_samplesPerPixel > 0)
-    //     {
-    //         int offset = sample - _visibleStart;
-    //         pixel = offset / _samplesPerPixel;
 
-    //         if (pixel < 0 || pixel >= Width)
-    //         {
-    //             pixel = -1;
-    //         }
-    //     }
+    /// <summary>
+    /// Pan to new center location.
+    /// </summary>
+    /// <param name="center">Center around this.</param>
+    public void Recenter(int center)
+    {
+        _visStart = center - _visLength / 2;
+        RecalcVisible();
+    }
 
-    //     return pixel;
-    // }
+    /// <summary>
+    /// Show original full view.
+    /// </summary>
+    public void ResetView()
+    {
+        _visStart = 0;
+        _samplesPerPixel = _vals.Length / Width;
+        RecalcVisible();
+    }
     #endregion
 }

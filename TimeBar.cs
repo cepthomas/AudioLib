@@ -228,45 +228,4 @@ public partial class TimeBar : UserControl
         base.OnMouseDown(e);
     }
     #endregion
-
-    // #region Private functions
-    // /// <summary>
-    // /// Convert x pos to sample index.
-    // /// </summary>
-    // /// <param name="pixel">UI location.</param>
-    // /// <returns>The sample or -1 if not visible.</returns>
-    // int PixelToSample(int pixel)
-    // {
-    //     int sample = -1;
-    //
-    //     if (pixel >= 0 && pixel < Width)
-    //     {
-    //         sample = pixel * _samplesPerPixel + _visibleStart;
-    //     }
-    //
-    //     return sample;
-    // }
-
-    // /// <summary>
-    // /// Find sample visible location.
-    // /// </summary>
-    // /// <param name="sample"></param>
-    // /// <returns>The pixel or -1 if not visible.</returns>
-    // int SampleToPixel(int sample)
-    // {
-    //     int pixel = -1;
-    //
-    //     if (_samplesPerPixel > 0)
-    //     {
-    //         int offset = sample - _visibleStart;
-    //         pixel = offset / _samplesPerPixel;
-    //         if (pixel < 0 || pixel >= Width)
-    //         {
-    //             pixel = -1;
-    //         }
-    //     }
-    //
-    //     return pixel;
-    // }
-    // #endregion
 }

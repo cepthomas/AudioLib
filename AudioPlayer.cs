@@ -45,8 +45,8 @@ public sealed class AudioPlayer : IDisposable
     /// </summary>
     /// <param name="wavOutDevice">Device name.</param>
     /// <param name="latency">How slow.</param>
-    /// <param name="smpl">Provider.</param>
-    public AudioPlayer(string wavOutDevice, int latency, ISampleProvider smpl)
+    /// <param name="prov">Provider.</param>
+    public AudioPlayer(string wavOutDevice, int latency, ISampleProvider prov)
     {
         // NAudio3 changes:
         // DesiredLatency is replaced by BufferMilliseconds. This is a compile break with no shim, and the meaning changed:
@@ -67,11 +67,10 @@ public sealed class AudioPlayer : IDisposable
                     Volume = Volume
                 };
 
-
                 // Usually end of file but could be error. Client can handle.
                 _waveOut.PlaybackStopped += WaveOut_PlaybackStopped;
 
-                _waveOut.Init(smpl);
+                _waveOut.Init(prov);
                 break;
             }
         }

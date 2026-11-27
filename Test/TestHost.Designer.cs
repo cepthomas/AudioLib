@@ -23,6 +23,8 @@
             wv1 = new WaveViewer();
             wv2 = new WaveViewer();
             toolStrip1 = new System.Windows.Forms.ToolStrip();
+            btnSettings = new System.Windows.Forms.ToolStripButton();
+            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             btnRunBars = new System.Windows.Forms.ToolStripButton();
             toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             btnOpen = new System.Windows.Forms.ToolStripDropDownButton();
@@ -38,8 +40,6 @@
             btnRewind = new System.Windows.Forms.Button();
             cc1 = new ChannelControl();
             cc2 = new ChannelControl();
-            btnSettings = new System.Windows.Forms.ToolStripButton();
-            toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             toolStrip1.SuspendLayout();
             SuspendLayout();
             // 
@@ -95,6 +95,20 @@
             toolStrip1.Size = new System.Drawing.Size(1000, 27);
             toolStrip1.TabIndex = 31;
             toolStrip1.Text = "toolStrip1";
+            // 
+            // btnSettings
+            // 
+            btnSettings.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            btnSettings.Image = (System.Drawing.Image)resources.GetObject("btnSettings.Image");
+            btnSettings.ImageTransparentColor = System.Drawing.Color.Magenta;
+            btnSettings.Name = "btnSettings";
+            btnSettings.Size = new System.Drawing.Size(61, 24);
+            btnSettings.Text = "settings";
+            // 
+            // toolStripSeparator2
+            // 
+            toolStripSeparator2.Name = "toolStripSeparator2";
+            toolStripSeparator2.Size = new System.Drawing.Size(6, 27);
             // 
             // btnRunBars
             // 
@@ -193,7 +207,7 @@
             btnRewind.Name = "btnRewind";
             btnRewind.Size = new System.Drawing.Size(81, 45);
             btnRewind.TabIndex = 37;
-            btnRewind.Text = "Rewind";
+            btnRewind.Text = "rewind";
             btnRewind.UseVisualStyleBackColor = false;
             // 
             // cc1
@@ -211,20 +225,6 @@
             cc2.Name = "cc2";
             cc2.Size = new System.Drawing.Size(286, 66);
             cc2.TabIndex = 39;
-            // 
-            // btnSettings
-            // 
-            btnSettings.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
-            btnSettings.Image = (System.Drawing.Image)resources.GetObject("btnSettings.Image");
-            btnSettings.ImageTransparentColor = System.Drawing.Color.Magenta;
-            btnSettings.Name = "btnSettings";
-            btnSettings.Size = new System.Drawing.Size(61, 24);
-            btnSettings.Text = "settings";
-            // 
-            // toolStripSeparator2
-            // 
-            toolStripSeparator2.Name = "toolStripSeparator2";
-            toolStripSeparator2.Size = new System.Drawing.Size(6, 27);
             // 
             // TestHost
             // 

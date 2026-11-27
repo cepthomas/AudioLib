@@ -141,7 +141,7 @@ public class ClipSampleProvider : ISampleProvider
         long numToRead = Math.Min(buffer.Length, end - _sampleIndex);
         for (int n = 0; n < numToRead; n++)
         {
-            buffer[n] = _vals[_sampleIndex] * Gain; // TensorPrimitives.Multiply?
+            buffer[n] = _vals[_sampleIndex] * Gain;
             numRead++;
             _sampleIndex++;
         }

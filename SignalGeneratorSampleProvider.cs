@@ -70,7 +70,7 @@ public class SignalGeneratorSampleProvider : ISampleProvider
             case Waveform.Sin:
                 for (int n = 0; n < buffer.Length; n++)
                 {
-                    buffer[n] = (float)(Amplitude * Math.Sin(_currentPhase)); // TensorPrimitives.Multiply?
+                    buffer[n] = (float)(Amplitude * Math.Sin(_currentPhase));
                     numRead++;
                     _currentPhase += _phaseIncrement;
 

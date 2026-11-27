@@ -42,131 +42,138 @@ namespace Ephemera.AudioLib.Test
             SetStyle(ControlStyles.OptimizedDoubleBuffer | ControlStyles.SupportsTransparentBackColor, true);
             InitializeComponent();
 
-            // Get settings. TODO1 Microsoft Sound Mapper doesn't seem to work.
-            _settings = (TestSettings)SettingsCore.Load(MiscUtils.GetSourcePath(), typeof(TestSettings));
-
-            WindowState = FormWindowState.Normal;
-            StartPosition = FormStartPosition.Manual;
-            Location = new(200, 10);
-            Size = new(1000, 700);
-            Text = "AudioLib Test";
-
-            _filesDir = Path.Join(Environment.GetEnvironmentVariable("DEV_PATH"), "Misc", "TestAudioFiles");
-            if (!Path.Exists(_filesDir))
+            try
             {
-                MessageBox.Show($"Test files path {_filesDir} is not valid.{Environment.NewLine}This needs DEV_PATH set, or hack source to taste.");
-                Environment.Exit(1);
-            }
+                // Get settings. TODO1 Microsoft Sound Mapper doesn't seem to work.
+                _settings = (TestSettings)SettingsCore.Load(MiscUtils.GetSourcePath(), typeof(TestSettings));
 
-            // The rest of the controls.
-            tvInfo.WordWrap = true;
-            tvInfo.Prompt = "> ";
-            tvInfo.Matchers =
-            [
-                new("! ", BgColor: Color.YellowGreen),
-                new("ERR", BgColor: Color.LightPink),
-                new("WRN", BgColor: Color.Plum),
-            ];
+                WindowState = FormWindowState.Normal;
+                StartPosition = FormStartPosition.Manual;
+                Location = new(200, 10);
+                Size = new(1000, 700);
+                Text = "AudioLib Test";
 
-            // Selection mode.
-            cmbSelMode.Items.Add(WaveSelectionMode.Time);
-            cmbSelMode.Items.Add(WaveSelectionMode.Bar);
-            cmbSelMode.Items.Add(WaveSelectionMode.Sample);
-            cmbSelMode.SelectedIndexChanged += (_, __) =>
-            {
-                if (cmbSelMode.SelectedItem is not null)
+                _filesDir = Path.Join(Environment.GetEnvironmentVariable("DEV_PATH"), "Misc", "TestAudioFiles");
+                if (!Path.Exists(_filesDir))
                 {
-                    WaveSelectionMode mode = (WaveSelectionMode)cmbSelMode.SelectedItem;
-                    wv1.SelectionMode = mode;
-                    wv2.SelectionMode = mode;
-                    timeBar.SelectionMode = mode;
-                    _translator = Translator.Create(mode);
+                    MessageBox.Show($"Test files path {_filesDir} is not valid.{Environment.NewLine}This needs DEV_PATH set, or hack source to taste.");
+                    Environment.Exit(1);
                 }
 
-                wv1.Invalidate();
-                timeBar.Invalidate();
-            };
-            cmbSelMode.SelectedItem = _settings.DefaultSelectionMode;
+                // The rest of the controls.
+                tvInfo.WordWrap = true;
+                tvInfo.Prompt = "> ";
+                tvInfo.Matchers =
+                [
+                    new("! ", BgColor: Color.YellowGreen),
+                    new("ERR", BgColor: Color.LightPink),
+                    new("WRN", BgColor: Color.Plum),
+                ];
 
-            // Gain control.
-            sldGain.ValueChanged += (_, __) => wv1.Gain = (float)sldGain.Value;
+                // Selection mode.
+                cmbSelMode.Items.Add(WaveSelectionMode.Time);
+                cmbSelMode.Items.Add(WaveSelectionMode.Bar);
+                cmbSelMode.Items.Add(WaveSelectionMode.Sample);
+                cmbSelMode.SelectedIndexChanged += (_, __) =>
+                {
+                    if (cmbSelMode.SelectedItem is not null)
+                    {
+                        WaveSelectionMode mode = (WaveSelectionMode)cmbSelMode.SelectedItem;
+                        wv1.SelectionMode = mode;
+                        wv2.SelectionMode = mode;
+                        timeBar.SelectionMode = mode;
+                        _translator = Translator.Create(mode);
+                    }
 
-            // Progress bar.
-            timeBar.CurrentChanged += (_, __) => Tell($"Current timebar:{_translator.Format(timeBar.Current)}");
-            timeBar.ProgressColor = Color.Green;
-            timeBar.TextColor = Color.White;
-            timeBar.BackColor = Color.LightCyan;
+                    wv1.Invalidate();
+                    timeBar.Invalidate();
+                };
+                cmbSelMode.SelectedItem = _settings.DefaultSelectionMode;
 
-            // Wave viewers.
-            wv1.WaveColor = Color.Blue;
-            wv1.BackColor = Color.LightYellow;
-            wv1.StateChange += ViewerStateChange;
-            wv1.ContextMenuStrip!.Items.Add("Test item", null, (_, __) => Tell("Test item worked"));
+                // Gain control.
+                sldGain.ValueChanged += (_, __) => { wv1.Gain = (float)sldGain.Value; _provClip?.Gain = wv1.Gain; };
 
-            wv2.WaveColor = Color.Blue;
-            wv2.BackColor = Color.LightYellow;
-            wv2.StateChange += ViewerStateChange;
+                // Progress bar.
+                timeBar.CurrentChanged += (_, __) => Tell($"Current timebar:{_translator.Format(timeBar.Current)}");
+                timeBar.ProgressColor = Color.Green;
+                timeBar.TextColor = Color.White;
+                timeBar.BackColor = Color.LightCyan;
 
-            // Channel controls. Typically voloume/pan/state/selected?? would be persisted per output.
-            cc1.DrawColor = _settings.DrawColor;
-            cc1.SelectedColor = _settings.SelectedColor;
-            cc1.Volume = 0.8;
-            cc1.Pan = -0.6;
-            cc1.Info1 = "Channel 111";
-            cc1.Info2 = "111 We can always carry this a step further.";
-            cc1.State = ChannelState.Solo;
-            cc1.Selected = false;
-            cc1.InfoClick += Cc_InfoClick;
-            cc1.StateChange += Cc_StateChange;
-            cc1.SelectChange += Cc_SelectChange;
+                // Wave viewers.
+                wv1.WaveColor = Color.Blue;
+                wv1.BackColor = Color.LightYellow;
+                wv1.StateChange += ViewerStateChange;
+                wv1.ContextMenuStrip!.Items.Add("Test item", null, (_, __) => Tell("Test item worked"));
 
-            cc2.DrawColor = _settings.DrawColor;
-            cc2.SelectedColor = _settings.SelectedColor;
-            cc2.Volume = 0.7;
-            cc2.Pan = 0.1;
-            cc2.Info1 = "Channel 222";
-            cc2.Info2 = "222 There's really no end to this.";
-            cc2.State = ChannelState.Normal;
-            cc2.Selected = true;
-            cc2.InfoClick += Cc_InfoClick;
-            cc2.StateChange += Cc_StateChange;
-            cc2.SelectChange += Cc_SelectChange;
+                wv2.WaveColor = Color.Blue;
+                wv2.BackColor = Color.LightYellow;
+                wv2.StateChange += ViewerStateChange;
 
-            // Create player with swappable input.
-            _player = new(_settings.WavOutDevice, int.Parse(_settings.Latency), _provSwap) { Volume = 0.5f };
-            _player?.PlaybackStopped += (_, __) =>
+                // Channel controls. Typically voloume/pan/state/selected?? would be persisted per output.
+                cc1.DrawColor = _settings.DrawColor;
+                cc1.SelectedColor = _settings.SelectedColor;
+                cc1.Volume = 0.8;
+                cc1.Pan = -0.6;
+                cc1.Info1 = "Channel 111";
+                cc1.Info2 = "111 We can always carry this a step further.";
+                cc1.State = ChannelState.Solo;
+                cc1.Selected = false;
+                cc1.InfoClick += Cc_InfoClick;
+                cc1.StateChange += Cc_StateChange;
+                cc1.SelectChange += Cc_SelectChange;
+
+                cc2.DrawColor = _settings.DrawColor;
+                cc2.SelectedColor = _settings.SelectedColor;
+                cc2.Volume = 0.7;
+                cc2.Pan = 0.1;
+                cc2.Info1 = "Channel 222";
+                cc2.Info2 = "222 There's really no end to this.";
+                cc2.State = ChannelState.Normal;
+                cc2.Selected = true;
+                cc2.InfoClick += Cc_InfoClick;
+                cc2.StateChange += Cc_StateChange;
+                cc2.SelectChange += Cc_SelectChange;
+
+                // Create player with swappable input.
+                _player = new(_settings.WavOutDevice, int.Parse(_settings.Latency), _provSwap) { Volume = 0.5f };
+                _player?.PlaybackStopped += (_, __) =>
+                {
+                    Tell("Player finished");
+                    this.InvokeIfRequired(_ => chkPlay.Checked = false);
+                    _provClip?.Rewind();
+                };
+
+                // File openers.
+                var ftypes = AudioLibConfig.AudioFileTypes.SplitByTokens("|;*");
+
+                Directory.GetFiles(_filesDir).
+                    Where(fn => ftypes.Contains(Path.GetExtension(fn))).
+                    ForEach(fn => btnOpen.DropDownItems.Add(fn, null, OpenFile_Click));
+
+                // Control etc.
+                chkPlay.Click += (_, __) => Play_Click();
+                btnRewind.Click += (_, __) => _provClip?.Rewind();
+                btnSettings.Click += (_, __) => DoSettings();
+
+                // What do we want to do?
+                btnTest.Text = "unit test";
+                btnTest.Click += (_, __) => DoUnitTests();
+
+                //btnTest.Text = "capabilities";
+                //btnTest.Click += (_, __) => DoCaps();
+
+                //btnTest.Text = "file info";
+                //btnTest.Click += (_, __) => DoFileInfo();
+
+                // Go-go-go.
+                timer1.Interval = 100;
+                timer1.Tick += Timer1_Tick;
+                timer1.Enabled = true;
+            }
+            catch (Exception ex)
             {
-                Tell("Player finished");
-                this.InvokeIfRequired(_ => chkPlay.Checked = false);
-                _provClip?.Rewind();
-            };
-
-            // File openers.
-            var ftypes = AudioLibConfig.AudioFileTypes.SplitByTokens("|;*");
-
-            Directory.GetFiles(_filesDir).
-                Where(fn => ftypes.Contains(Path.GetExtension(fn))).
-                ForEach(fn => btnOpen.DropDownItems.Add(fn, null, OpenFile_Click));
-
-            // Control etc.
-            chkPlay.Click += (_, __) => Play_Click();
-            btnRewind.Click += (_, __) => _provClip?.Rewind();
-            btnSettings.Click += (_, __) => DoSettings();
-
-            // What do we want to do?
-            btnTest.Text = "unit test";
-            btnTest.Click += (_, __) => DoUnitTests();
-
-            //btnTest.Text = "capabilities";
-            //btnTest.Click += (_, __) => DoCaps();
-
-            //btnTest.Text = "file info";
-            //btnTest.Click += (_, __) => DoFileInfo();
-
-            // Go-go-go.
-            timer1.Interval = 100;
-            timer1.Tick += Timer1_Tick;
-            timer1.Enabled = true;
+                Tell($"ERR {ex.Message}");
+            }
         }
 
         /// <summary>
@@ -289,6 +296,7 @@ namespace Ephemera.AudioLib.Test
                 {
                     case WaveViewer.UiChange.Gain:
                         sldGain.Value = wv1.Gain;
+                        _provClip?.Gain = (float)sldGain.Value;
                         break;
 
                     case WaveViewer.UiChange.SelStart:
